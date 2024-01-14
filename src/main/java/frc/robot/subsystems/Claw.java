@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMRollingAvg;
 
 public class Claw extends SubsystemBase {
 
@@ -37,6 +38,9 @@ public class Claw extends SubsystemBase {
 
     DoubleSolenoid pinch = new DoubleSolenoid(1, PneumaticsModuleType.CTREPCM,
             5, 4);
+
+    MMRollingAvg avgDis = new MMRollingAvg(10);
+
 public RobotContainer rc; 
 
     public Claw(RobotContainer rc) {
@@ -94,6 +98,7 @@ public RobotContainer rc;
         double distance = currentPose.getTranslation().minus(target).getNorm();
         distance *= (20/2);
         distance = MathUtil.clamp(distance, 0, 20);
+        distance = avgDis.update(distance);
         armExtensionIn(distance);
         SmartDashboard.putNumber("Arm Extend Distance", distance);
     }
