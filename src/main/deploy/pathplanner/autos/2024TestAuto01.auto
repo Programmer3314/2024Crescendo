@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.36,
+      "y": 5.55
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2024Test01"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "grabCone"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2024Test02"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "dropCone"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
