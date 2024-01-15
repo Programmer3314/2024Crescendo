@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -32,8 +31,8 @@ public class Claw extends SubsystemBase {
 
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
     private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false, false);
-    private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0,
-            0, 0, false, false , false);
+    // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0,
+    //         0, 0, false, false , false);
     //private final VelocityVoltage armExtendVelocity = new VelocityVoltage(0);
 
     DoubleSolenoid pinch = new DoubleSolenoid(1, PneumaticsModuleType.CTREPCM,
@@ -51,11 +50,6 @@ public RobotContainer rc;
         this.rc = rc;
     }
 
-    // TODO: WARNING Constants changed = review formulas for constants
-    // TODO: Review configs moved out of constructor with Refactor,Extract Method
-    // TODO: Review use of .with... formatting for readability
-    // TODO: Must graph Velocity/Position to check tuning
-    // TODO: Check extension in Inches
     private void configArmExtendMotor() {
         double cruiseVelocity = 35; // revolutions/second
         double timeToReachCruiseVelocity = .35; // seconds

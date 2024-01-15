@@ -10,7 +10,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 // import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;s
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,7 +17,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.commands.GoShoot;
@@ -91,9 +89,6 @@ public class RobotContainer {
     NamedCommands.registerCommand("dropCone", new ShootTheConeOut(this));
     NamedCommands.registerCommand("grabCone", new GrabCone(this));
     // Set Up Autochooser
-    // TODO: review AutoBuilder to put all autos in dropdown
-
-
     // Default auto will be `Commands.none()`
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Mode", autoChooser);
@@ -105,9 +100,6 @@ public class RobotContainer {
     //
     // PathPlanner
     //
-    // return new PathPlannerAuto("2024TestAuto01");
-    // return new PathPlannerAuto("TestAuto");
-    // ALternate from chooser
     return autoChooser.getSelected();
 
   }
