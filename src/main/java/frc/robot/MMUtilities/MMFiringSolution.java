@@ -8,6 +8,8 @@ package frc.robot.MMUtilities;
 public class MMFiringSolution {
 
     private MMWaypoint[] waypoints;
+    // TODO: get rid of the following line, because it is confusing with the
+    // parameter below
     private double distance;
 
     public MMFiringSolution(MMWaypoint... waypoints) {
@@ -18,16 +20,14 @@ public class MMFiringSolution {
         MMWaypoint bottomRef = null;
         MMWaypoint topRef = null;
         if (distance <= waypoints[0].getDistance()) {
-            // finalSolution = new MMWaypoint(waypoints[0].getDistance(),
-            // waypoints[0].getAngle(),waypoints[0].getVelocity());
             return waypoints[0];
         }
         if (distance >= waypoints[waypoints.length - 1].getDistance()) {
             return waypoints[waypoints.length - 1];
         }
+        // TODO: Reconsider what the initial index should be
         for (int i = 0; i < waypoints.length; i++) {// find the reference waypoints
             if (distance < waypoints[i].getDistance()) {
-
                 topRef = waypoints[i];
                 bottomRef = waypoints[i - 1];
                 break;

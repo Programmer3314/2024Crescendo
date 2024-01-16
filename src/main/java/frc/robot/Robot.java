@@ -147,8 +147,11 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
+  // TODO: The following utility methods should be moved to
+  // a static MMUtil class to make them easier to migrate from project to project.
+  // TODO: Add similar method for configuring CANCoders
+  // TODO: Let's discuss naming of configureMotor (more or less specific?)
   public static void configureMotor(TalonFX motor, TalonFXConfiguration cfg) {
-
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
       status = motor.getConfigurator().apply(cfg);
@@ -161,6 +164,8 @@ public class Robot extends TimedRobot {
     }
   }
 
+  // TODO: Let's change the names to be more like Units... and to indicate
+  // that they indicate that they change to blue.
   public static Translation2d convertTran(Translation2d translation) {
     if (alliance.equals(DriverStation.Alliance.Red)) {
       return GeometryUtil.flipFieldPosition(translation);
@@ -175,7 +180,7 @@ public class Robot extends TimedRobot {
     return rotation;
   }
 
-  public static Pose2d convertPose(Pose2d pose){
+  public static Pose2d convertPose(Pose2d pose) {
     if (alliance.equals(DriverStation.Alliance.Red)) {
       return GeometryUtil.flipFieldPose(pose);
     }

@@ -6,29 +6,22 @@ package frc.robot.MMUtilities;
 
 /** Add your docs here. */
 public class MMRollingAvg {
-
-    private int sampleCount; 
-
-    private double [] samples;
-
+    private int sampleCount;
+    private double[] samples;
     private int ptr = 0;
-
     private double sum;
 
-    public MMRollingAvg(int sampleCount){
+    public MMRollingAvg(int sampleCount) {
         this.sampleCount = sampleCount;
-        samples = new double [sampleCount];
-
-
+        samples = new double[sampleCount];
     }
 
-    public double update(double currentValue){
+    public double update(double currentValue) {
         sum -= samples[ptr];
         sum += currentValue;
         samples[ptr] = currentValue;
-        ptr = (ptr+1)%sampleCount;
+        ptr = (ptr + 1) % sampleCount;
 
-        return sum/sampleCount;
-
+        return sum / sampleCount;
     }
 }

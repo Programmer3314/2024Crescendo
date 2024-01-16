@@ -92,22 +92,16 @@ public class Claw extends SubsystemBase {
     @Override
     public void periodic() {
         getDesiredWaypoint();
-
+        distExtender();
         SmartDashboard.putNumber("Arm Rotations", armExtendMotor.getPosition().getValue());
         SmartDashboard.putNumber("Arm Velocity", armExtendMotor.getVelocity().getValue());
-
-
-        
-
-        distExtender();
     }
 
     private void getDesiredWaypoint() {
-        Translation2d target = Robot.convertTran(new Translation2d((1.36-Units.feetToMeters(3)),5.55));
+        Translation2d target = Robot.convertTran(new Translation2d((1.36 - Units.feetToMeters(3)), 5.55));
         double distance = rc.drivetrain.getState().Pose.getTranslation().minus(target).getNorm();
         MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
 
-        
         SmartDashboard.putNumber("Velocity", desiredWaypoint.getVelocity());
         SmartDashboard.putNumber("Angle", desiredWaypoint.getAngle());
         SmartDashboard.putNumber("Distance To Target", distance);

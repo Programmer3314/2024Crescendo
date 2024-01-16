@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /** Add your docs here. */
 public class MMController extends CommandXboxController {
-    // TODO: Implement deadzone chaining with individual deadbands(depending on the
-    // joystick)
+    // TODO: LOW PRIORITY Implement deadzone chaining with individual
+    // deadbands(depending on the joystick)
 
     public double deadzone;
 
@@ -75,5 +75,5 @@ public class MMController extends CommandXboxController {
         return v;
     }
 
-    // TODO: Add triggers to change scale/deadzone
+    // TODO: LOW PRIORITY Add triggers to change scale/deadzone
 }

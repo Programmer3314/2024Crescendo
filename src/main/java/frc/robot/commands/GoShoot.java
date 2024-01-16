@@ -19,7 +19,7 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class GoShoot extends Command {
-  
+
   private RobotContainer rc;
   private Command pathCommand;
 
@@ -27,6 +27,7 @@ public class GoShoot extends Command {
   public GoShoot(RobotContainer rc) {
     this.rc = rc;
     // Use addRequirements() here to declare subsystem dependencies.
+    // TODO: Add Requirement for the drivetrain, so that default command starts
   }
 
   // Called when the command is initially scheduled.
@@ -35,8 +36,8 @@ public class GoShoot extends Command {
     Pose2d currentPose = Robot.convertPose(rc.drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(2, 3, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
-      currentPose,
-       new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(180)),
+        currentPose,
+        new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(180)),
         new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180)));
     PathPlannerPath path = new PathPlannerPath(bezierPoints,
         trajectoryConstraints,

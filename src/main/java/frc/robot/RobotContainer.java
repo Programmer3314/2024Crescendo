@@ -35,10 +35,9 @@ public class RobotContainer {
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
-  // TODO: go back to static Claw
+  // TODO: LOW PRIORITY go back to static Claw
   public Claw claw = new Claw(this);
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
-  // .withIsOpenLoop(true);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
