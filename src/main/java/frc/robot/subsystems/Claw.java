@@ -13,6 +13,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -21,26 +22,34 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.MMUtilities.MMRollingAvg;
+import frc.robot.MMUtilities.MMWaypoint;
 
 public class Claw extends SubsystemBase {
 
+    MMFiringSolution firingSolution = new MMFiringSolution(
+            new MMWaypoint(Units.feetToMeters(3), -35, 50),
+            new MMWaypoint(Units.inchesToMeters(93), -44, 70),
+            new MMWaypoint(Units.inchesToMeters(110), -46, 70));
     TalonFX clawMotor = new TalonFX(14, "CANIVORE");
     DigitalInput brakeSensor = new DigitalInput(6);
     VoltageOut voltageRequest = new VoltageOut(0);
 
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
-    private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false, false);
-    // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0,
-    //         0, 0, false, false , false);
-    //private final VelocityVoltage armExtendVelocity = new VelocityVoltage(0);
+    private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false,
+            false);
+    // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new
+    // MotionMagicTorqueCurrentFOC(0,
+    // 0, 0, false, false , false);
+    // private final VelocityVoltage armExtendVelocity = new VelocityVoltage(0);
 
     DoubleSolenoid pinch = new DoubleSolenoid(1, PneumaticsModuleType.CTREPCM,
             5, 4);
 
     MMRollingAvg avgDis = new MMRollingAvg(10);
 
-public RobotContainer rc; 
+    public RobotContainer rc;
 
     public Claw(RobotContainer rc) {
         configClawMotor();
@@ -59,14 +68,15 @@ public RobotContainer rc;
                 .withNeutralMode(NeutralModeValue.Brake);
         cfg.MotionMagic
                 .withMotionMagicCruiseVelocity(cruiseVelocity)
-                .withMotionMagicAcceleration(cruiseVelocity/timeToReachCruiseVelocity)
-                .withMotionMagicJerk(cruiseVelocity/timeToReachCruiseVelocity/timeToReachMaxAcceleration);
+                .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
+                .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
-                .withKS(0.25)  // voltage to overcome static friction
-                .withKV(0.12)  // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100 revs/sec
-                .withKA(0.01)  // "arbitrary" amount to provide crisp response
-                .withKG(0)     // gravity can be used for elevator or arm
-                .withKP(6)     // 2 revs yields 12 volts
+                .withKS(0.25) // voltage to overcome static friction
+                .withKV(0.12) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
+                              // revs/sec
+                .withKA(0.01) // "arbitrary" amount to provide crisp response
+                .withKG(0) // gravity can be used for elevator or arm
+                .withKP(6) // 2 revs yields 12 volts
                 .withKI(0)
                 .withKD(0.1);
         Robot.configureMotor(armExtendMotor, cfg);
@@ -81,16 +91,33 @@ public RobotContainer rc;
 
     @Override
     public void periodic() {
+        getDesiredWaypoint();
+
         SmartDashboard.putNumber("Arm Rotations", armExtendMotor.getPosition().getValue());
         SmartDashboard.putNumber("Arm Velocity", armExtendMotor.getVelocity().getValue());
+
+
+        
+
         distExtender();
     }
 
-    public void distExtender(){
+    private void getDesiredWaypoint() {
+        Translation2d target = Robot.convertTran(new Translation2d((1.36-Units.feetToMeters(3)),5.55));
+        double distance = rc.drivetrain.getState().Pose.getTranslation().minus(target).getNorm();
+        MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
+
+        
+        SmartDashboard.putNumber("Velocity", desiredWaypoint.getVelocity());
+        SmartDashboard.putNumber("Angle", desiredWaypoint.getAngle());
+        SmartDashboard.putNumber("Distance To Target", distance);
+    }
+
+    public void distExtender() {
         Pose2d currentPose = rc.drivetrain.getState().Pose;
-        Translation2d target = Robot.convertTran(new Translation2d(1.36,5.55));
+        Translation2d target = Robot.convertTran(new Translation2d(1.36, 5.55));
         double distance = currentPose.getTranslation().minus(target).getNorm();
-        distance *= (20/2);
+        distance *= (20 / 2);
         distance = MathUtil.clamp(distance, 0, 20);
         distance = avgDis.update(distance);
         armExtensionIn(distance);

@@ -30,7 +30,10 @@ public class RobotContainer {
   final double MaxSpeed = 6; // 6 meters per second desired top speed
   final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
 
-  MMController joystick = new MMController(0, .1 / 2); // My joystick
+  MMController joystick = new MMController(0, .1 / 2)
+      .setScaleXLeft(-MaxSpeed)
+      .setScaleYLeft(-MaxSpeed)
+      .setScaleXRight(-MaxAngularRate);
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   // TODO: go back to static Claw
   public Claw claw = new Claw(this);
@@ -47,22 +50,23 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(() -> drive
-            .withVelocityX(-joystick.getLeftYSmoothed() * MaxSpeed)
-            .withVelocityY(-joystick.getLeftXSmoothed() * MaxSpeed)
-            .withRotationalRate(-joystick.getRightXSmoothed() * MaxAngularRate)));
+            .withVelocityX(joystick.getLeftYSmoothed())
+            .withVelocityY(joystick.getLeftXSmoothed())
+            .withRotationalRate(joystick.getRightXSmoothed())));
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
     joystick.b().whileTrue(new GoShoot(this));
 
     // joystick.y().whileTrue(new InstantCommand(
-    //     () -> claw.armExtensionRot(30)));
+    // () -> claw.armExtensionRot(30)));
     // joystick.x().whileTrue(new InstantCommand(
-    //     () -> claw.armExtensionRot(0)));
+    // () -> claw.armExtensionRot(0)));
 
     // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.b().whileTrue(drivetrain
-        // .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    // .applyRequest(() -> point.withModuleDirection(new
+    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
     joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
