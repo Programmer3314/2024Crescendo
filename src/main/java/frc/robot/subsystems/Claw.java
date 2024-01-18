@@ -44,6 +44,7 @@ public class Claw extends SubsystemBase {
     VoltageOut voltageRequest = new VoltageOut(0);
 
     TalonFX armRotateMotor = new TalonFX(12, "CANIVORE");
+    // TODO: AGGHHHH! The CanCoder fell off the robot!!!!! 
     CANcoder armRotateCanCoder = new CANcoder(5);
 
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
