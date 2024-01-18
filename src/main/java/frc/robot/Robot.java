@@ -5,7 +5,9 @@
 package frc.robot;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.util.GeometryUtil;
 
@@ -151,10 +153,23 @@ public class Robot extends TimedRobot {
   // a static MMUtil class to make them easier to migrate from project to project.
   // TODO: Add similar method for configuring CANCoders
   // TODO: Let's discuss naming of configureMotor (more or less specific?)
-  public static void configureMotor(TalonFX motor, TalonFXConfiguration cfg) {
+  public static void configureDevice(TalonFX motor, TalonFXConfiguration cfg) {
     StatusCode status = StatusCode.StatusCodeNotInitialized;
     for (int i = 0; i < 5; ++i) {
       status = motor.getConfigurator().apply(cfg);
+      if (status.isOK()) {
+        break;
+      }
+    }
+    if (!status.isOK()) {
+      System.out.println("Could not apply configs, error code: " + status.toString());
+    }
+  }
+
+    public static void configureDevice(CANcoder caNcoder, CANcoderConfiguration cfg) {
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = caNcoder.getConfigurator().apply(cfg);
       if (status.isOK()) {
         break;
       }

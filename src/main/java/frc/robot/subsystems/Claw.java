@@ -4,11 +4,17 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,6 +23,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -36,9 +43,13 @@ public class Claw extends SubsystemBase {
     DigitalInput brakeSensor = new DigitalInput(6);
     VoltageOut voltageRequest = new VoltageOut(0);
 
+    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE");
+    CANcoder armRotateCanCoder = new CANcoder(5);
+
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
     private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false,
             false);
+            
     // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new
     // MotionMagicTorqueCurrentFOC(0,
     // 0, 0, false, false , false);
@@ -54,6 +65,8 @@ public class Claw extends SubsystemBase {
     public Claw(RobotContainer rc) {
         configClawMotor();
         configArmExtendMotor();
+        configArmRotateCanCoder();
+        configArmRotateMotor();
         armExtendMotor.setPosition(0);
         armExtensionRot(0);
         this.rc = rc;
@@ -79,14 +92,51 @@ public class Claw extends SubsystemBase {
                 .withKP(6) // 2 revs yields 12 volts
                 .withKI(0)
                 .withKD(0.1);
-        Robot.configureMotor(armExtendMotor, cfg);
+        Robot.configureDevice(armExtendMotor, cfg);
+    }
+
+    private void configArmRotateCanCoder() {
+        CANcoderConfiguration canConfig = new CANcoderConfiguration();
+        canConfig.MagnetSensor
+                .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
+                .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+                .withMagnetOffset(-0.39111328125);
+        Robot.configureDevice(armRotateCanCoder, canConfig);
+    }
+
+    private void configArmRotateMotor() {
+        double cruiseVelocity = 60; // revolutions/second
+        double timeToReachCruiseVelocity = .2; // seconds
+        double timeToReachMaxAcceleration = .1; // seconds
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        cfg.MotorOutput
+                .withNeutralMode(NeutralModeValue.Brake);
+        cfg.MotionMagic
+                .withMotionMagicCruiseVelocity(cruiseVelocity)
+                .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
+                .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
+        cfg.Slot0
+                .withKS(0.25) // voltage to overcome static friction
+                .withKV(0.12) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
+                              // revs/sec
+                .withKA(0.01) // "arbitrary" amount to provide crisp response
+                .withKG(0) // gravity can be used for elevator or arm
+                .withKP(6) // 2 revs yields 12 volts
+                .withKI(0)
+                .withKD(0.1);
+        cfg.Feedback
+                .withFeedbackRemoteSensorID(5)
+                .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+                .withSensorToMechanismRatio(1)
+                .withRotorToSensorRatio((60 / 15) * 48);
+        Robot.configureDevice(armRotateMotor, cfg);
     }
 
     private void configClawMotor() {
         TalonFXConfiguration clawCfg = new TalonFXConfiguration();
         clawCfg.MotorOutput
                 .withNeutralMode(NeutralModeValue.Brake);
-        Robot.configureMotor(clawMotor, clawCfg);
+        Robot.configureDevice(clawMotor, clawCfg);
     }
 
     @Override
@@ -120,6 +170,10 @@ public class Claw extends SubsystemBase {
 
     public void armExtensionRot(double rotations) {
         armExtendMotor.setControl(armExtendMotionMagicVoltage.withPosition(-rotations));
+    }
+
+    public void armRotationRot(double rotations) {
+        armRotateMotor.setControl(armExtendMotionMagicVoltage.withPosition(rotations));
     }
 
     public void armExtensionIn(double inches) {

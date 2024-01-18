@@ -55,13 +55,15 @@ public class RobotContainer {
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
-    joystick.b().whileTrue(new GoShoot(this));
+    // joystick.b().whileTrue(new GoShoot(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
     // joystick.x().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(0)));
 
+    joystick.a().whileTrue(new InstantCommand(() -> claw.armRotationRot(0)));
+    joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-.2)));
     // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.b().whileTrue(drivetrain
     // .applyRequest(() -> point.withModuleDirection(new
