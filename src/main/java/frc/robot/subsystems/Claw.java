@@ -74,7 +74,7 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmExtendMotor() {
-        double cruiseVelocity = 35; // revolutions/second
+        double cruiseVelocity = 1; // revolutions/second // TODO: Review - I set this to 1 from 35
         double timeToReachCruiseVelocity = .35; // seconds
         double timeToReachMaxAcceleration = .1; // seconds
         TalonFXConfiguration cfg = new TalonFXConfiguration();
