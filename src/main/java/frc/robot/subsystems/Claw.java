@@ -72,7 +72,7 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmExtendMotor() {
-        double cruiseVelocity = 1; // revolutions/second // TODO: Review - I set this to 1 from 35
+        double cruiseVelocity = 35; // revolutions/second 
         double timeToReachCruiseVelocity = .35; // seconds
         double timeToReachMaxAcceleration = .1; // seconds
         TalonFXConfiguration cfg = new TalonFXConfiguration();
@@ -104,7 +104,7 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmRotateMotor() {
-        double cruiseVelocity = 60; // revolutions/second
+        double cruiseVelocity = 1; // revolutions/second // TODO: Review - I set this to 1 from 60
         double timeToReachCruiseVelocity = .2; // seconds
         double timeToReachMaxAcceleration = .1; // seconds
         TalonFXConfiguration cfg = new TalonFXConfiguration();
@@ -124,7 +124,7 @@ public class Claw extends SubsystemBase {
                 .withKI(0)
                 .withKD(0.1);
         cfg.Feedback
-                .withFeedbackRemoteSensorID(5)
+                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) // TODO: Review use of getDeviceID
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
                 .withSensorToMechanismRatio(1)
                 .withRotorToSensorRatio((60 / 15) * 48);
