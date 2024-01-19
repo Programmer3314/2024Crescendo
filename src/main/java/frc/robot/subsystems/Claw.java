@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
@@ -104,9 +105,15 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmRotateMotor() {
-        double cruiseVelocity = .5; // revolutions/second // TODO: Review - I set this to 1 from 60
+        double cruiseVelocity = .5; // Sensor revolutions/second 
         double timeToReachCruiseVelocity = .4; // seconds
         double timeToReachMaxAcceleration = .4; // seconds
+        // TODO: review feed forward formulas
+        double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
+        double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec 
+        double maxSensorVelocity = maxRotorVelocity/rotorToSensorRatio; // Max speed in sensor units/sec
+        double feedForwardVoltage = 12/maxSensorVelocity; // Full Voltage/Max Sensor Velocity
+
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput
                 .withNeutralMode(NeutralModeValue.Brake);
@@ -115,20 +122,20 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
-                .withKS(0.25) // voltage to overcome static friction
-                .withKV(24
-                ) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
-                              // revs/sec
-                .withKA(0.01) // "arbitrary" amount to provide crisp response
+                .withKS(0) // voltage to overcome static friction
+                .withKV(feedForwardVoltage) 
+                .withKA(0) // "arbitrary" amount to provide crisp response
+                // TODO: Let's play with kG
                 .withKG(0) // gravity can be used for elevator or arm
-                .withKP(0) // 2 revs yields 12 volts
+                .withGravityType(GravityTypeValue.Arm_Cosine)
+                .withKP(0) 
                 .withKI(0)
                 .withKD(0);
         cfg.Feedback
-                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) // TODO: Review use of getDeviceID
+                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) 
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
                 .withSensorToMechanismRatio(1)
-                .withRotorToSensorRatio((60 / 15) * 48);
+                .withRotorToSensorRatio(rotorToSensorRatio);
         Robot.configureDevice(armRotateMotor, cfg);
     }
 
