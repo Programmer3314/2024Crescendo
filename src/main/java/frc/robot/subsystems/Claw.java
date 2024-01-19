@@ -41,13 +41,13 @@ public class Claw extends SubsystemBase {
     DigitalInput brakeSensor = new DigitalInput(6);
     VoltageOut voltageRequest = new VoltageOut(0);
 
-    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE");
-    // TODO: AGGHHHH! The CanCoder fell off the robot!!!!! 
-    CANcoder armRotateCanCoder = new CANcoder(5);
+    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE"); 
+    CANcoder armRotateCanCoder = new CANcoder(5, "CANIVORE");
 
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
     private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false,
             false);
+    private final MotionMagicVoltage armRotateMotionMagicVoltage = new MotionMagicVoltage(0);
             
     // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new
     // MotionMagicTorqueCurrentFOC(0,
@@ -104,9 +104,9 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmRotateMotor() {
-        double cruiseVelocity = 1; // revolutions/second // TODO: Review - I set this to 1 from 60
-        double timeToReachCruiseVelocity = .2; // seconds
-        double timeToReachMaxAcceleration = .1; // seconds
+        double cruiseVelocity = .5; // revolutions/second // TODO: Review - I set this to 1 from 60
+        double timeToReachCruiseVelocity = .4; // seconds
+        double timeToReachMaxAcceleration = .4; // seconds
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput
                 .withNeutralMode(NeutralModeValue.Brake);
@@ -116,13 +116,14 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
                 .withKS(0.25) // voltage to overcome static friction
-                .withKV(0.12) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
+                .withKV(24
+                ) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
                               // revs/sec
                 .withKA(0.01) // "arbitrary" amount to provide crisp response
                 .withKG(0) // gravity can be used for elevator or arm
-                .withKP(6) // 2 revs yields 12 volts
+                .withKP(0) // 2 revs yields 12 volts
                 .withKI(0)
-                .withKD(0.1);
+                .withKD(0);
         cfg.Feedback
                 .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) // TODO: Review use of getDeviceID
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
@@ -172,7 +173,7 @@ public class Claw extends SubsystemBase {
     }
 
     public void armRotationRot(double rotations) {
-        armRotateMotor.setControl(armExtendMotionMagicVoltage.withPosition(rotations));
+        armRotateMotor.setControl(armRotateMotionMagicVoltage.withPosition(rotations));
     }
 
     public void armExtensionIn(double inches) {

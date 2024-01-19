@@ -63,7 +63,7 @@ public class RobotContainer {
     // () -> claw.armExtensionRot(0)));
 
     joystick.a().whileTrue(new InstantCommand(() -> claw.armRotationRot(0)));
-    joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-.2)));
+    joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-0.2)));
     // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.b().whileTrue(drivetrain
     // .applyRequest(() -> point.withModuleDirection(new
