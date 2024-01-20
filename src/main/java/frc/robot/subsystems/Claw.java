@@ -26,8 +26,9 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMConfigure;
+import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.MMUtilities.MMRollingAvg;
 import frc.robot.MMUtilities.MMWaypoint;
@@ -92,7 +93,7 @@ public class Claw extends SubsystemBase {
                 .withKP(6) // 2 revs yields 12 volts
                 .withKI(0)
                 .withKD(0.1);
-        Robot.configureDevice(armExtendMotor, cfg);
+        MMConfigure.configureDevice(armExtendMotor, cfg);
     }
 
     private void configArmRotateCanCoder() {
@@ -101,7 +102,7 @@ public class Claw extends SubsystemBase {
                 .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
                 .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
                 .withMagnetOffset(-0.390869140625);
-        Robot.configureDevice(armRotateCanCoder, canConfig);
+        MMConfigure.configureDevice(armRotateCanCoder, canConfig);
     }
 
     private void configArmRotateMotor() {
@@ -138,14 +139,14 @@ public class Claw extends SubsystemBase {
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
                 .withSensorToMechanismRatio(1)
                 .withRotorToSensorRatio(rotorToSensorRatio);
-        Robot.configureDevice(armRotateMotor, cfg);
+        MMConfigure.configureDevice(armRotateMotor, cfg);
     }
 
     private void configClawMotor() {
         TalonFXConfiguration clawCfg = new TalonFXConfiguration();
         clawCfg.MotorOutput
                 .withNeutralMode(NeutralModeValue.Brake);
-        Robot.configureDevice(clawMotor, clawCfg);
+        MMConfigure.configureDevice(clawMotor, clawCfg);
     }
 
     @Override
@@ -157,7 +158,7 @@ public class Claw extends SubsystemBase {
     }
 
     private void getDesiredWaypoint() {
-        Translation2d target = Robot.convertTran(new Translation2d((1.36 - Units.feetToMeters(3)), 5.55));
+        Translation2d target = MMField.getBlueTranslation(new Translation2d((1.36 - Units.feetToMeters(3)), 5.55));
         double distance = rc.drivetrain.getState().Pose.getTranslation().minus(target).getNorm();
         MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
 
@@ -168,7 +169,7 @@ public class Claw extends SubsystemBase {
 
     public void distExtender() {
         Pose2d currentPose = rc.drivetrain.getState().Pose;
-        Translation2d target = Robot.convertTran(new Translation2d(1.36, 5.55));
+        Translation2d target = MMField.getBlueTranslation(new Translation2d(1.36, 5.55));
         double distance = currentPose.getTranslation().minus(target).getNorm();
         distance *= (20 / 2);
         distance = MathUtil.clamp(distance, 0, 20);
