@@ -12,11 +12,20 @@ public class MMWaypoint {
     private double distance;
     private double angle;
     private double velocity;
+    private double leftVelocity;
+    private double rightVelocity;
 
     public MMWaypoint(double distance, double angle, double velocity) {
         this.distance = distance;
         this.angle = angle;
         this.velocity = velocity;
+    }
+
+    public MMWaypoint(double distance, double angle, double leftVelocity, double rightVelocity) {
+        this.distance = distance;
+        this.angle = angle;
+        this.leftVelocity = leftVelocity;
+        this.rightVelocity = rightVelocity;
     }
 
     public double getDistance() {
@@ -29,5 +38,13 @@ public class MMWaypoint {
 
     public double getVelocity() {
         return velocity;
+    }
+
+    public double getLeftVelocity() {
+        return leftVelocity;
+    }
+
+    public double getRightVelocity() {
+        return rightVelocity;
     }
 }
