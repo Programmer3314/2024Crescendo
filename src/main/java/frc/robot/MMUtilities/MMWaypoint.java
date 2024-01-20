@@ -21,11 +21,12 @@ public class MMWaypoint {
         this.velocity = velocity;
     }
 
-    public MMWaypoint(double distance, double angle, double leftVelocity, double rightVelocity) {
+    public MMWaypoint(double distance, double angle, double leftVelocity, double rightVelocity, double velocity) {
         this.distance = distance;
         this.angle = angle;
         this.leftVelocity = leftVelocity;
         this.rightVelocity = rightVelocity;
+        this.velocity = velocity;
     }
 
     public double getDistance() {

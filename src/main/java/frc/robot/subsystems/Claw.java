@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -35,22 +36,20 @@ import frc.robot.MMUtilities.MMWaypoint;
 
 public class Claw extends SubsystemBase {
 
-    MMFiringSolution firingSolution = new MMFiringSolution(
-            new MMWaypoint(Units.feetToMeters(3), -35, 50),
-            new MMWaypoint(Units.inchesToMeters(93), -44, 70),
-            new MMWaypoint(Units.inchesToMeters(110), -46, 70));
     TalonFX clawMotor = new TalonFX(14, "CANIVORE");
     DigitalInput brakeSensor = new DigitalInput(6);
     VoltageOut voltageRequest = new VoltageOut(0);
 
-    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE"); 
+    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE");
     CANcoder armRotateCanCoder = new CANcoder(5, "CANIVORE");
 
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
     private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false,
             false);
+
+    private final PositionVoltage armRotationPosition = new PositionVoltage(0);
     private final MotionMagicVoltage armRotateMotionMagicVoltage = new MotionMagicVoltage(0);
-            
+
     // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new
     // MotionMagicTorqueCurrentFOC(0,
     // 0, 0, false, false , false);
@@ -74,7 +73,7 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmExtendMotor() {
-        double cruiseVelocity = 35; // revolutions/second 
+        double cruiseVelocity = 35; // revolutions/second
         double timeToReachCruiseVelocity = .35; // seconds
         double timeToReachMaxAcceleration = .1; // seconds
         TalonFXConfiguration cfg = new TalonFXConfiguration();
@@ -106,16 +105,17 @@ public class Claw extends SubsystemBase {
     }
 
     private void configArmRotateMotor() {
-        double cruiseVelocity = .5; // Sensor revolutions/second 
+        double cruiseVelocity = .5; // Sensor revolutions/second
         double timeToReachCruiseVelocity = .4; // seconds
         double timeToReachMaxAcceleration = .2; // seconds
         // TODO: review feed forward formulas
-        double maxSupplyVoltage = 12; // Max supply 
-        double staticFrictionVoltage = 1; // 
+        double maxSupplyVoltage = 12; // Max supply
+        double staticFrictionVoltage = 1; //
         double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
-        double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec 
-        double maxSensorVelocity = maxRotorVelocity/rotorToSensorRatio; // Max speed in sensor units/sec
-        double feedForwardVoltage = (maxSupplyVoltage-staticFrictionVoltage)/maxSensorVelocity; // Full Voltage/Max Sensor Velocity
+        double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
+        double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
+        double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
+                                                                                                    // Sensor Velocity
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput
@@ -126,19 +126,29 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
                 .withKS(1) // voltage to overcome static friction
-                .withKV(feedForwardVoltage) 
+                .withKV(feedForwardVoltage)
                 .withKA(0) // "arbitrary" amount to provide crisp response
                 // TODO: Let's play with kG
                 .withKG(0) // gravity can be used for elevator or arm
                 .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withKP(12) 
+                .withKP(12)
                 .withKI(0)
                 .withKD(2);
         cfg.Feedback
-                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) 
+                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID())
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
                 .withSensorToMechanismRatio(1)
                 .withRotorToSensorRatio(rotorToSensorRatio);
+        cfg.Slot1
+                .withKS(1) // voltage to overcome static friction
+                .withKV(0)
+                .withKA(0) // "arbitrary" amount to provide crisp response
+                // TODO: Let's play with kG
+                .withKG(0) // gravity can be used for elevator or arm
+                .withGravityType(GravityTypeValue.Arm_Cosine)
+                .withKP(96*2)// 12
+                .withKI(0)
+                .withKD(.25);// 2
         MMConfigure.configureDevice(armRotateMotor, cfg);
     }
 
@@ -151,20 +161,9 @@ public class Claw extends SubsystemBase {
 
     @Override
     public void periodic() {
-        getDesiredWaypoint();
-        //distExtender();
+        SmartDashboard.putNumber("Arm Encoder Value", armRotateCanCoder.getAbsolutePosition().getValue());
         SmartDashboard.putNumber("Arm Rotations", armExtendMotor.getPosition().getValue());
         SmartDashboard.putNumber("Arm Velocity", armExtendMotor.getVelocity().getValue());
-    }
-
-    private void getDesiredWaypoint() {
-        Translation2d target = MMField.getBlueTranslation(new Translation2d((1.36 - Units.feetToMeters(3)), 5.55));
-        double distance = rc.drivetrain.getState().Pose.getTranslation().minus(target).getNorm();
-        MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
-
-        SmartDashboard.putNumber("Velocity", desiredWaypoint.getVelocity());
-        SmartDashboard.putNumber("Angle", desiredWaypoint.getAngle());
-        SmartDashboard.putNumber("Distance To Target", distance);
     }
 
     public void distExtender() {
@@ -184,6 +183,10 @@ public class Claw extends SubsystemBase {
 
     public void armRotationRot(double rotations) {
         armRotateMotor.setControl(armRotateMotionMagicVoltage.withPosition(rotations));
+    }
+
+    public void armRotationPID(double rotations) {
+        armRotateMotor.setControl(armRotationPosition.withSlot(1).withPosition(rotations));
     }
 
     public void armExtensionIn(double inches) {

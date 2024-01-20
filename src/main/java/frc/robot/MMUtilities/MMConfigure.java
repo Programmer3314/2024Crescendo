@@ -13,8 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 /** Add your docs here. */
 public class MMConfigure {
-    // TODO: Add similar method for configuring CANCoders
-    // TODO: Let's discuss naming of configureMotor (more or less specific?)
+    
     public static void configureDevice(TalonFX motor, TalonFXConfiguration cfg) {
         StatusCode status = StatusCode.StatusCodeNotInitialized;
         for (int i = 0; i < 5; ++i) {

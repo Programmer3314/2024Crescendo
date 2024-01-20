@@ -35,7 +35,12 @@ public class MMFiringSolution {
         double desiredAngle = (topRef.getAngle() - bottomRef.getAngle()) * scale + bottomRef.getAngle();
         double desiredVelocity = (topRef.getVelocity() - bottomRef.getVelocity()) * scale + bottomRef.getVelocity();
 
-        return new MMWaypoint(distance, desiredAngle, desiredVelocity);
+        double desiredLeftVelocity = (topRef.getLeftVelocity() - bottomRef.getLeftVelocity()) * scale
+                + bottomRef.getLeftVelocity();
+        double desiredRightVelocity = (topRef.getRightVelocity() - bottomRef.getRightVelocity()) * scale
+                + bottomRef.getRightVelocity();
+
+        return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
     }
 
 }

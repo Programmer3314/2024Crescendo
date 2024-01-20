@@ -18,18 +18,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
+import frc.robot.commands.Aim;
+import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
-  final double MaxSpeed = 6; // 6 meters per second desired top speed
-  final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
+  public final double MaxSpeed = 6; // 6 meters per second desired top speed
+  public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
 
-  MMController joystick = new MMController(0, .1 / 2)
+  public MMController joystick = new MMController(0, .1 / 2)
       .setScaleXLeft(-MaxSpeed)
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
@@ -40,6 +44,7 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
+  public Shooter shooterSubsystem = new Shooter(this);
 
   private final SendableChooser<Command> autoChooser;
 
@@ -54,22 +59,25 @@ public class RobotContainer {
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
-    // joystick.b().whileTrue(new GoShoot(this));
+    joystick.b().whileTrue(new GoShoot(this));
+    joystick.a().whileTrue(new Aim(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
     // joystick.x().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(0)));
 
-    joystick.a().whileTrue(new InstantCommand(() -> claw.armRotationRot(0)));
-    joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-0.2)));
+    // joystick.a().whileTrue(new InstantCommand(() -> claw.armRotationRot(0)));
+    // joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-0.2)));
     // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
     // joystick.b().whileTrue(drivetrain
     // .applyRequest(() -> point.withModuleDirection(new
     // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    joystick.leftBumper().onTrue(
+        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
+            new InstantCommand(Robot::resetVisionUpdate)));
     joystick.rightBumper().onTrue(new InstantCommand(
         () -> claw.openClaw()));
     joystick.rightTrigger().onTrue(new InstantCommand(

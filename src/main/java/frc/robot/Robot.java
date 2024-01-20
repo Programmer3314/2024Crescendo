@@ -41,10 +41,10 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     if (true) {
-      var lastResult = LimelightHelpers.getLatestResults("limelight-right").targetingResults;
+      var lastResult = LimelightHelpers.getLatestResults("limelight-front").targetingResults;
       Pose2d pose = m_robotContainer.drivetrain.getState().Pose;
 
-      if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
+      if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
         Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
         SmartDashboard.putString("llPose", llPose.toString());
         if (visionUpdate < 50 || pose.minus(llPose).getTranslation().getNorm() < 1) {
@@ -140,4 +140,7 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
+  public static void resetVisionUpdate() {
+    visionUpdate = 0;
+  }
 }
