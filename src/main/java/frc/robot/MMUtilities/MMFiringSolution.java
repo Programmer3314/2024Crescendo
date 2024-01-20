@@ -8,9 +8,6 @@ package frc.robot.MMUtilities;
 public class MMFiringSolution {
 
     private MMWaypoint[] waypoints;
-    // TODO: get rid of the following line, because it is confusing with the
-    // parameter below
-    private double distance;
 
     public MMFiringSolution(MMWaypoint... waypoints) {
         this.waypoints = waypoints;
