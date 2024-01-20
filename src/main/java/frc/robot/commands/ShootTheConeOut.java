@@ -9,9 +9,10 @@ import frc.robot.RobotContainer;
 
 public class ShootTheConeOut extends Command {
   RobotContainer rc;
-private int periodic = 0;
+  private int periodic = 0;
+
   public ShootTheConeOut(RobotContainer rc) {
-this.rc = rc;
+    this.rc = rc;
   }
 
   // Called when the command is initially scheduled.
@@ -38,6 +39,6 @@ this.rc = rc;
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return periodic>50;
+    return periodic > 50;
   }
 }
