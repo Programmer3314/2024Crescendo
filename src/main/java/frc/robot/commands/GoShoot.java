@@ -15,8 +15,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMField;
 
 public class GoShoot extends Command {
 
@@ -26,14 +26,13 @@ public class GoShoot extends Command {
   /** Creates a new GoShoot. */
   public GoShoot(RobotContainer rc) {
     this.rc = rc;
-    // Use addRequirements() here to declare subsystem dependencies.
-    // TODO: Add Requirement for the drivetrain, so that default command starts
+    addRequirements(rc.drivetrain);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d currentPose = Robot.convertPose(rc.drivetrain.getState().Pose);
+    Pose2d currentPose = MMField.getBluePose(rc.drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(2, 3, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
         currentPose,
