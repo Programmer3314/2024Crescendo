@@ -100,19 +100,21 @@ public class Claw extends SubsystemBase {
         canConfig.MagnetSensor
                 .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
                 .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-                .withMagnetOffset(-0.39111328125);
+                .withMagnetOffset(-0.390869140625);
         Robot.configureDevice(armRotateCanCoder, canConfig);
     }
 
     private void configArmRotateMotor() {
         double cruiseVelocity = .5; // Sensor revolutions/second 
         double timeToReachCruiseVelocity = .4; // seconds
-        double timeToReachMaxAcceleration = .4; // seconds
+        double timeToReachMaxAcceleration = .2; // seconds
         // TODO: review feed forward formulas
+        double maxSupplyVoltage = 12; // Max supply 
+        double staticFrictionVoltage = 1; // 
         double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
         double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec 
         double maxSensorVelocity = maxRotorVelocity/rotorToSensorRatio; // Max speed in sensor units/sec
-        double feedForwardVoltage = 12/maxSensorVelocity; // Full Voltage/Max Sensor Velocity
+        double feedForwardVoltage = (maxSupplyVoltage-staticFrictionVoltage)/maxSensorVelocity; // Full Voltage/Max Sensor Velocity
 
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput
@@ -122,15 +124,15 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
-                .withKS(0) // voltage to overcome static friction
+                .withKS(1) // voltage to overcome static friction
                 .withKV(feedForwardVoltage) 
                 .withKA(0) // "arbitrary" amount to provide crisp response
                 // TODO: Let's play with kG
                 .withKG(0) // gravity can be used for elevator or arm
                 .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withKP(0) 
+                .withKP(12) 
                 .withKI(0)
-                .withKD(0);
+                .withKD(2);
         cfg.Feedback
                 .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID()) 
                 .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
@@ -149,7 +151,7 @@ public class Claw extends SubsystemBase {
     @Override
     public void periodic() {
         getDesiredWaypoint();
-        distExtender();
+        //distExtender();
         SmartDashboard.putNumber("Arm Rotations", armExtendMotor.getPosition().getValue());
         SmartDashboard.putNumber("Arm Velocity", armExtendMotor.getVelocity().getValue());
     }
