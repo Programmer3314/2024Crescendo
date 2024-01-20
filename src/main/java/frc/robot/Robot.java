@@ -4,16 +4,7 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.pathplanner.lib.util.GeometryUtil;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -149,56 +140,4 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {
   }
 
-  // TODO: The following utility methods should be moved to
-  // a static MMUtil class to make them easier to migrate from project to project.
-  // TODO: Add similar method for configuring CANCoders
-  // TODO: Let's discuss naming of configureMotor (more or less specific?)
-  public static void configureDevice(TalonFX motor, TalonFXConfiguration cfg) {
-    StatusCode status = StatusCode.StatusCodeNotInitialized;
-    for (int i = 0; i < 5; ++i) {
-      status = motor.getConfigurator().apply(cfg);
-      if (status.isOK()) {
-        break;
-      }
-    }
-    if (!status.isOK()) {
-      System.out.println("Could not apply configs, error code: " + status.toString());
-    }
-  }
-
-    public static void configureDevice(CANcoder caNcoder, CANcoderConfiguration cfg) {
-    StatusCode status = StatusCode.StatusCodeNotInitialized;
-    for (int i = 0; i < 5; ++i) {
-      status = caNcoder.getConfigurator().apply(cfg);
-      if (status.isOK()) {
-        break;
-      }
-    }
-    if (!status.isOK()) {
-      System.out.println("Could not apply configs, error code: " + status.toString());
-    }
-  }
-
-  // TODO: Let's change the names to be more like Units... and to indicate
-  // that they indicate that they change to blue.
-  public static Translation2d convertTran(Translation2d translation) {
-    if (alliance.equals(DriverStation.Alliance.Red)) {
-      return GeometryUtil.flipFieldPosition(translation);
-    }
-    return translation;
-  }
-
-  public static Rotation2d convertRot(Rotation2d rotation) {
-    if (alliance.equals(DriverStation.Alliance.Red)) {
-      return GeometryUtil.flipFieldRotation(rotation);
-    }
-    return rotation;
-  }
-
-  public static Pose2d convertPose(Pose2d pose) {
-    if (alliance.equals(DriverStation.Alliance.Red)) {
-      return GeometryUtil.flipFieldPose(pose);
-    }
-    return pose;
-  }
 }
