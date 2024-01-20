@@ -4,9 +4,6 @@
 
 package frc.robot.MMUtilities;
 
-// TODO: The Shooter will have independant left/right velocity
-// TODO: Change the calculation as well. 
-
 /** Add your docs here. */
 public class MMWaypoint {
     private double distance;

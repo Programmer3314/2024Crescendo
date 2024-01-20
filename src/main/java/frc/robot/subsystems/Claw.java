@@ -20,7 +20,6 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -30,9 +29,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMField;
-import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.MMUtilities.MMRollingAvg;
-import frc.robot.MMUtilities.MMWaypoint;
 
 public class Claw extends SubsystemBase {
 
@@ -76,6 +73,12 @@ public class Claw extends SubsystemBase {
         double cruiseVelocity = 35; // revolutions/second
         double timeToReachCruiseVelocity = .35; // seconds
         double timeToReachMaxAcceleration = .1; // seconds
+        double maxSupplyVoltage = 12; // Max supply
+        double staticFrictionVoltage = 1; //
+        double rotorToSensorRatio = 1;
+        double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
+        double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
+        double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
         TalonFXConfiguration cfg = new TalonFXConfiguration();
         cfg.MotorOutput
                 .withNeutralMode(NeutralModeValue.Brake);
@@ -85,7 +88,7 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
                 .withKS(0.25) // voltage to overcome static friction
-                .withKV(0.12) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
+                .withKV(feedForwardVoltage) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
                               // revs/sec
                 .withKA(0.01) // "arbitrary" amount to provide crisp response
                 .withKG(0) // gravity can be used for elevator or arm
@@ -108,7 +111,7 @@ public class Claw extends SubsystemBase {
         double cruiseVelocity = .5; // Sensor revolutions/second
         double timeToReachCruiseVelocity = .4; // seconds
         double timeToReachMaxAcceleration = .2; // seconds
-        // TODO: review feed forward formulas
+
         double maxSupplyVoltage = 12; // Max supply
         double staticFrictionVoltage = 1; //
         double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
@@ -128,7 +131,6 @@ public class Claw extends SubsystemBase {
                 .withKS(1) // voltage to overcome static friction
                 .withKV(feedForwardVoltage)
                 .withKA(0) // "arbitrary" amount to provide crisp response
-                // TODO: Let's play with kG
                 .withKG(0) // gravity can be used for elevator or arm
                 .withGravityType(GravityTypeValue.Arm_Cosine)
                 .withKP(12)
@@ -143,7 +145,6 @@ public class Claw extends SubsystemBase {
                 .withKS(1) // voltage to overcome static friction
                 .withKV(0)
                 .withKA(0) // "arbitrary" amount to provide crisp response
-                // TODO: Let's play with kG
                 .withKG(0) // gravity can be used for elevator or arm
                 .withGravityType(GravityTypeValue.Arm_Cosine)
                 .withKP(96*2)// 12
