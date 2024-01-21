@@ -22,8 +22,8 @@ public class MMFiringSolution {
         if (distance >= waypoints[waypoints.length - 1].getDistance()) {
             return waypoints[waypoints.length - 1];
         }
-        // TODO: Reconsider what the initial index should be
-        for (int i = 0; i < waypoints.length; i++) {// find the reference waypoints
+
+        for (int i = 1; i < waypoints.length; i++) {// find the reference waypoints
             if (distance < waypoints[i].getDistance()) {
                 topRef = waypoints[i];
                 bottomRef = waypoints[i - 1];

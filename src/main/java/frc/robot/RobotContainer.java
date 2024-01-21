@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.NavigableMap;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 // import com.ctre.phoenix6.Utils;
@@ -14,6 +16,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,17 +24,21 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.commands.Aim;
+import frc.robot.commands.ChaseCone;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
   public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
+
+  public final Field2d field = new Field2d();
 
   public MMController joystick = new MMController(0, .1 / 2)
       .setScaleXLeft(-MaxSpeed)
@@ -45,6 +52,8 @@ public class RobotContainer {
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
   public Shooter shooterSubsystem = new Shooter(this);
+
+  public Navigation navigation = new Navigation(this);
 
   private final SendableChooser<Command> autoChooser;
 
@@ -82,6 +91,7 @@ public class RobotContainer {
         () -> claw.openClaw()));
     joystick.rightTrigger().onTrue(new InstantCommand(
         () -> claw.closeClaw()));
+    joystick.leftTrigger().whileTrue(new ChaseCone(this));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
