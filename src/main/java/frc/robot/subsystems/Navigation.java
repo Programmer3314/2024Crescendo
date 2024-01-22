@@ -9,9 +9,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
-import frc.robot.RobotContainer;
-import frc.robot.LimelightHelpers.LimelightTarget_Classifier;
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
+import frc.robot.RobotContainer;
 
 public class Navigation extends SubsystemBase {
   RobotContainer rc;
