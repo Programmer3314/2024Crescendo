@@ -33,9 +33,9 @@ public class ChaseCone extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rotationPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 5, false);
+    rotationPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);
     rotationPIDController.initialize(targetX);
-    yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 5, false);
+    yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);
     yPIDController.initialize(targetY);
   }
 
@@ -45,6 +45,7 @@ public class ChaseCone extends Command {
 
     double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftConeX());
     double driveYVelocity = yPIDController.execute(rc.navigation.getLeftConeY());
+
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
     rc.drivetrain.setControl(drive
         .withVelocityX(driveYVelocity)
@@ -60,8 +61,9 @@ public class ChaseCone extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
-        && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5)
-        || !rc.navigation.hasLeftConeTarget();
+    // return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
+    // && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5)
+    // || !rc.navigation.hasLeftConeTarget();
+    return false;
   }
 }
