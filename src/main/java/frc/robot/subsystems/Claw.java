@@ -19,7 +19,6 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -89,8 +88,9 @@ public class Claw extends SubsystemBase {
                 .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
         cfg.Slot0
                 .withKS(0.25) // voltage to overcome static friction
-                .withKV(feedForwardVoltage) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or 100
-                              // revs/sec
+                .withKV(feedForwardVoltage) // should be 12volts/(max speed in rev/sec) Typical Falcon 6000revs/min or
+                                            // 100
+                // revs/sec
                 .withKA(0.01) // "arbitrary" amount to provide crisp response
                 .withKG(0) // gravity can be used for elevator or arm
                 .withKP(6) // 2 revs yields 12 volts
@@ -108,6 +108,8 @@ public class Claw extends SubsystemBase {
         MMConfigure.configureDevice(armRotateCanCoder, canConfig);
     }
 
+    // TODO: After targetting recognition is okay, move this to the shooter subsystem 
+    // and rename to use for shooter angle (instead of arm angle).
     private void configArmRotateMotor() {
         double cruiseVelocity = .5; // Sensor revolutions/second
         double timeToReachCruiseVelocity = .4; // seconds
@@ -148,7 +150,7 @@ public class Claw extends SubsystemBase {
                 .withKA(0) // "arbitrary" amount to provide crisp response
                 .withKG(0) // gravity can be used for elevator or arm
                 .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withKP(96*2)// 12
+                .withKP(96 * 2)// 12
                 .withKI(0)
                 .withKD(.25);// 2
         MMConfigure.configureDevice(armRotateMotor, cfg);
@@ -219,7 +221,10 @@ public class Claw extends SubsystemBase {
     public boolean isBroken() {
         return !brakeSensor.get();
     }
-    public double getCurrentArmAngle(){
+
+    public double getCurrentArmAngle() {
+        // TODO: try getPosition() instead of getRotorPosition()
+        // Otherwise read the absolute position from from the encoder
         return armRotateMotor.getRotorPosition().getValue();
     }
 }

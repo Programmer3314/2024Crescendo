@@ -20,8 +20,6 @@ public class MMSignalLight extends SubsystemBase {
 
     public MMSignalLight() {
         pneumaticsControlModule = new PneumaticsControlModule(1);
-        // coneLight = pneumaticsControlModule.makeDoubleSolenoid(
-        // 6, 7);
         coneLight = pneumaticsControlModule.makeSolenoid(6);
         cubeLight = pneumaticsControlModule.makeSolenoid(7);
     }
