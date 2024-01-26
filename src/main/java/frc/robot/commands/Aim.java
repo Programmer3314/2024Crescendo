@@ -6,8 +6,11 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.enums.SignalSelection;
 
 public class Aim extends Command {
   RobotContainer rc;
@@ -23,12 +26,24 @@ public class Aim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    //RobotContainer.signalSelection = SignalSelection.Cone_Solid;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
+   double desiredShooterAngle = rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle();
+   double currentShooterAngle = rc.claw.getCurrentArmAngle();
+   Rotation2d desiredRobotAngle = rc.shooterSubsystem.getTargetAngleSpeaker();
+   Rotation2d currentRobotAngle = rc.shooterSubsystem.getCurrentRobotAngle();
+   SmartDashboard.putNumber("AADesired Shooter Angle", desiredShooterAngle);
+   SmartDashboard.putNumber("AAcurrent Shooter Angle", currentShooterAngle);
+   SmartDashboard.putNumber("AADesired Robot angle", desiredRobotAngle.getDegrees());
+   SmartDashboard.putNumber("AAcurrent Robot Angle", currentRobotAngle.getDegrees());
+   if(Math.abs(currentRobotAngle.minus(desiredRobotAngle).getDegrees()) < 2 
+   && Math.abs(currentShooterAngle - desiredShooterAngle) < .01 ){
+     RobotContainer.signalSelection = SignalSelection.Cone_Solid;
+   }
     rc.drivetrain.setControl(drive
         .withVelocityX(rc.joystick.getLeftYSmoothed())
         .withVelocityY(rc.joystick.getLeftXSmoothed())
@@ -40,6 +55,9 @@ public class Aim extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+        RobotContainer.signalSelection = SignalSelection.All_Off;
+
+
   }
 
   // Returns true when the command should end.

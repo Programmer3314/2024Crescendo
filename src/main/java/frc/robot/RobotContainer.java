@@ -26,9 +26,11 @@ import frc.robot.commands.ChaseCone;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
+import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
 
@@ -52,8 +54,10 @@ public class RobotContainer {
   public Shooter shooterSubsystem = new Shooter(this);
 
   public Navigation navigation = new Navigation(this);
+  public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
+  public static SignalSelection signalSelection = SignalSelection.All_Off;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {

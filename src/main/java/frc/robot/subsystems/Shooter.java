@@ -26,6 +26,7 @@ public class Shooter extends SubsystemBase {
   private Pose2d currentPose;
   private double distanceToSpeaker;
   private double speakerTurnRate;
+  private  Rotation2d targetAngleSpeaker;
 
   private MMWaypoint desiredWaypoint;
 
@@ -40,7 +41,7 @@ public class Shooter extends SubsystemBase {
     currentPose = rc.drivetrain.getState().Pose;
 
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
-    Rotation2d targetAngleSpeaker = transformFromSpeaker.getAngle();
+     targetAngleSpeaker = transformFromSpeaker.getAngle();
 
     turnPidController.initialize(targetAngleSpeaker);
 
@@ -63,6 +64,12 @@ public class Shooter extends SubsystemBase {
 
   public MMWaypoint getDesiredSpeakerWaypoint() {
     return desiredWaypoint;
+  }
+  public Rotation2d getTargetAngleSpeaker(){
+    return targetAngleSpeaker;
+  }
+  public Rotation2d getCurrentRobotAngle(){
+    return currentPose.getRotation();
   }
 
 }
