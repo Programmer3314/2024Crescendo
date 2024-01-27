@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.commands.Aim;
 import frc.robot.commands.ChaseCone;
+import frc.robot.commands.FindShoot;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
@@ -72,6 +73,8 @@ public class RobotContainer {
     // joystick.x().whileTrue(new GrabCone(this));
 
     joystick.b().whileTrue(new GoShoot(this));
+
+    joystick.x().whileTrue(new FindShoot(this));
     
     joystick.a().whileTrue(new Aim(this));
 

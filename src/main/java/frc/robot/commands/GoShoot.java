@@ -14,6 +14,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMField;
@@ -27,6 +28,7 @@ public class GoShoot extends Command {
   public GoShoot(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
+    SmartDashboard.putBoolean("GoShootRunning", false);
   }
 
   // Called when the command is initially scheduled.
@@ -44,6 +46,7 @@ public class GoShoot extends Command {
     path.preventFlipping = false;
     pathCommand = AutoBuilder.followPath(path);
     pathCommand.schedule();
+    SmartDashboard.putBoolean("GoShootRunning", true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -54,7 +57,8 @@ public class GoShoot extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    pathCommand.cancel();
+    SmartDashboard.putBoolean("GoShootRunning", false);
+     pathCommand.cancel();
   }
 
   // Returns true when the command should end.
