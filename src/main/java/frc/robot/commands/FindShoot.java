@@ -27,7 +27,7 @@ public class FindShoot extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d targetPose = MMField.getBluePose(MMField.blueWooferPose);
+    Pose2d targetPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
     PathConstraints trajectoryConstraints = new PathConstraints(1, 3, 2 * Math.PI, 4 * Math.PI);
     pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,

@@ -45,26 +45,29 @@ public class GoShoot extends Command {
         new GoalEndState(0, Rotation2d.fromDegrees(180)));
     path.preventFlipping = false;
     pathCommand = AutoBuilder.followPath(path);
-    pathCommand.schedule();
+    //pathCommand.schedule();
+    pathCommand.initialize();
     SmartDashboard.putBoolean("GoShootRunning", true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    pathCommand.execute();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putBoolean("GoShootRunning", false);
-     pathCommand.cancel();
+    // pathCommand.cancel();
+    pathCommand.end(interrupted);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-
-    return false;
+    return pathCommand.isFinished();
+    // return false;
   }
 }
