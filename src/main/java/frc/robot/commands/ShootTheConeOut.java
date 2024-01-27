@@ -18,8 +18,8 @@ public class ShootTheConeOut extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rc.claw.Out();
-    rc.claw.openClaw();
+   // rc.claw.Out();
+   // rc.claw.openClaw();
     periodic = 0;
   }
 
@@ -32,7 +32,7 @@ public class ShootTheConeOut extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.claw.Stop();
+   // rc.claw.Stop();
 
   }
 

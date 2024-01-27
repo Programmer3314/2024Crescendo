@@ -37,15 +37,9 @@ public class Claw extends SubsystemBase {
     DigitalInput brakeSensor = new DigitalInput(6);
     VoltageOut voltageRequest = new VoltageOut(0);
 
-    TalonFX armRotateMotor = new TalonFX(12, "CANIVORE");
-    CANcoder armRotateCanCoder = new CANcoder(5, "CANIVORE");
-
     TalonFX armExtendMotor = new TalonFX(11, "CANIVORE");
     private final MotionMagicVoltage armExtendMotionMagicVoltage = new MotionMagicVoltage(0, true, 0, 0, false, false,
             false);
-
-    private final PositionVoltage armRotationPosition = new PositionVoltage(0);
-    private final MotionMagicVoltage armRotateMotionMagicVoltage = new MotionMagicVoltage(0);
 
     // private final MotionMagicTorqueCurrentFOC armExTorqueCurrentFOC = new
     // MotionMagicTorqueCurrentFOC(0,
@@ -62,8 +56,6 @@ public class Claw extends SubsystemBase {
     public Claw(RobotContainer rc) {
         configClawMotor();
         configArmExtendMotor();
-        configArmRotateCanCoder();
-        configArmRotateMotor();
         armExtendMotor.setPosition(0);
         armExtensionRot(0);
         this.rc = rc;
@@ -99,63 +91,6 @@ public class Claw extends SubsystemBase {
         MMConfigure.configureDevice(armExtendMotor, cfg);
     }
 
-    private void configArmRotateCanCoder() {
-        CANcoderConfiguration canConfig = new CANcoderConfiguration();
-        canConfig.MagnetSensor
-                .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
-                .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-                .withMagnetOffset(-0.390869140625);
-        MMConfigure.configureDevice(armRotateCanCoder, canConfig);
-    }
-
-    // TODO: After targetting recognition is okay, move this to the shooter subsystem 
-    // and rename to use for shooter angle (instead of arm angle).
-    private void configArmRotateMotor() {
-        double cruiseVelocity = .5; // Sensor revolutions/second
-        double timeToReachCruiseVelocity = .4; // seconds
-        double timeToReachMaxAcceleration = .2; // seconds
-
-        double maxSupplyVoltage = 12; // Max supply
-        double staticFrictionVoltage = 1; //
-        double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
-        double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
-        double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
-        double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
-                                                                                                    // Sensor Velocity
-
-        TalonFXConfiguration cfg = new TalonFXConfiguration();
-        cfg.MotorOutput
-                .withNeutralMode(NeutralModeValue.Brake);
-        cfg.MotionMagic
-                .withMotionMagicCruiseVelocity(cruiseVelocity)
-                .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
-                .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
-        cfg.Slot0
-                .withKS(1) // voltage to overcome static friction
-                .withKV(feedForwardVoltage)
-                .withKA(0) // "arbitrary" amount to provide crisp response
-                .withKG(0) // gravity can be used for elevator or arm
-                .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withKP(12)
-                .withKI(0)
-                .withKD(2);
-        cfg.Feedback
-                .withFeedbackRemoteSensorID(armRotateCanCoder.getDeviceID())
-                .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-                .withSensorToMechanismRatio(1)
-                .withRotorToSensorRatio(rotorToSensorRatio);
-        cfg.Slot1
-                .withKS(1) // voltage to overcome static friction
-                .withKV(0)
-                .withKA(0) // "arbitrary" amount to provide crisp response
-                .withKG(0) // gravity can be used for elevator or arm
-                .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withKP(96 * 2)// 12
-                .withKI(0)
-                .withKD(.25);// 2
-        MMConfigure.configureDevice(armRotateMotor, cfg);
-    }
-
     private void configClawMotor() {
         TalonFXConfiguration clawCfg = new TalonFXConfiguration();
         clawCfg.MotorOutput
@@ -165,7 +100,6 @@ public class Claw extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Arm Encoder Value", armRotateCanCoder.getAbsolutePosition().getValue());
         SmartDashboard.putNumber("Arm Rotations", armExtendMotor.getPosition().getValue());
         SmartDashboard.putNumber("Arm Velocity", armExtendMotor.getVelocity().getValue());
     }
@@ -183,14 +117,6 @@ public class Claw extends SubsystemBase {
 
     public void armExtensionRot(double rotations) {
         armExtendMotor.setControl(armExtendMotionMagicVoltage.withPosition(-rotations));
-    }
-
-    public void armRotationRot(double rotations) {
-        armRotateMotor.setControl(armRotateMotionMagicVoltage.withPosition(rotations));
-    }
-
-    public void armRotationPID(double rotations) {
-        armRotateMotor.setControl(armRotationPosition.withSlot(1).withPosition(rotations));
     }
 
     public void armExtensionIn(double inches) {
@@ -222,9 +148,4 @@ public class Claw extends SubsystemBase {
         return !brakeSensor.get();
     }
 
-    public double getCurrentArmAngle() {
-        // TODO: try getPosition() instead of getRotorPosition()
-        // Otherwise read the absolute position from from the encoder
-        return armRotateMotor.getRotorPosition().getValue();
-    }
 }

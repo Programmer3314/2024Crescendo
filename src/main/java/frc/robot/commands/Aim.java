@@ -26,37 +26,30 @@ public class Aim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    //RobotContainer.signalSelection = SignalSelection.Cone_Solid;
+    // RobotContainer.signalSelection = SignalSelection.Cone_Solid;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-   double desiredShooterAngle = rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle();
-   double currentShooterAngle = rc.claw.getCurrentArmAngle();
-   Rotation2d desiredRobotAngle = rc.shooterSubsystem.getTargetAngleSpeaker();
-   Rotation2d currentRobotAngle = rc.shooterSubsystem.getCurrentRobotAngle();
-   SmartDashboard.putNumber("AADesired Shooter Angle", desiredShooterAngle);
-   SmartDashboard.putNumber("AAcurrent Shooter Angle", currentShooterAngle);
-   SmartDashboard.putNumber("AADesired Robot angle", desiredRobotAngle.getDegrees());
-   SmartDashboard.putNumber("AAcurrent Robot Angle", currentRobotAngle.getDegrees());
-   if(Math.abs(currentRobotAngle.minus(desiredRobotAngle).getDegrees()) < 2 
-   && Math.abs(currentShooterAngle - desiredShooterAngle) < .01 ){
-     RobotContainer.signalSelection = SignalSelection.Cone_Solid;
-   }
+    if (rc.shooterSubsystem.isSpeakerShotReady()) {
+      RobotContainer.signalSelection = SignalSelection.Cone_Solid;
+    } else {
+      RobotContainer.signalSelection = SignalSelection.Cone_Off;
+    }
+
     rc.drivetrain.setControl(drive
         .withVelocityX(rc.joystick.getLeftYSmoothed())
         .withVelocityY(rc.joystick.getLeftXSmoothed())
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
 
-    rc.claw.armRotationPID(rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle());
+    rc.shooterSubsystem.shooterRotationPID(rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle());
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-        RobotContainer.signalSelection = SignalSelection.All_Off;
-
+    RobotContainer.signalSelection = SignalSelection.All_Off;
 
   }
 

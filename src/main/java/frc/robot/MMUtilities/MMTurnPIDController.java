@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class MMTurnPIDController extends MMPIDController {
 
     public MMTurnPIDController() {
-        super(5, 0, 0, Math.PI / 2.0, Math.toRadians(3), true);
+        super(6.5, 0, .05, Math.PI / 2.0, Math.toRadians(1), true);
         // 2.5
     }
 

@@ -46,7 +46,7 @@ public class RobotContainer {
       .setScaleXRight(-MaxAngularRate);
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   // TODO: LOW PRIORITY go back to static Claw
-  public Claw claw = new Claw(this);
+ // public Claw claw = new Claw(this);
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -89,10 +89,10 @@ public class RobotContainer {
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
             new InstantCommand(Robot::resetVisionUpdate)));
-    joystick.rightBumper().onTrue(new InstantCommand(
-        () -> claw.openClaw()));
-    joystick.rightTrigger().onTrue(new InstantCommand(
-        () -> claw.closeClaw()));
+    // joystick.rightBumper().onTrue(new InstantCommand(
+       // () -> claw.openClaw()));
+    // joystick.rightTrigger().onTrue(new InstantCommand(
+      //  () -> claw.closeClaw()));
     joystick.leftTrigger().whileTrue(new ChaseCone(this));
 
     if (Utils.isSimulation()) {
