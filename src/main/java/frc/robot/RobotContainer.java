@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
@@ -28,7 +29,6 @@ import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
@@ -70,7 +70,9 @@ public class RobotContainer {
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
+
     joystick.b().whileTrue(new GoShoot(this));
+    
     joystick.a().whileTrue(new Aim(this));
 
     // joystick.y().whileTrue(new InstantCommand(
