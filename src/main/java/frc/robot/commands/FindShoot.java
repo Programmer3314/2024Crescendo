@@ -27,32 +27,33 @@ public class FindShoot extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d targetPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
+    Pose2d targetPose = new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(0));
     PathConstraints trajectoryConstraints = new PathConstraints(1, 3, 2 * Math.PI, 4 * Math.PI);
     pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPose,
         trajectoryConstraints,
         0.0, // Goal end velocity in meters/sec
-        0.0 // Rotation delay distance in meters. This is how far the robot should travel
+        0.2 // Rotation delay distance in meters. This is how far the robot should travel
             // before attempting to rotate.
     );
-    pathfindingCommand.schedule();
+    pathfindingCommand.initialize();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    pathfindingCommand.execute();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    pathfindingCommand.cancel();
+    pathfindingCommand.end(interrupted);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return pathfindingCommand.isFinished();
   }
 }

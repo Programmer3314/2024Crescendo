@@ -17,8 +17,8 @@ public class ChaseCone extends Command {
   MMPIDController yPIDController;
   // double targetX = 233;
   // double targetY = 308;
-  double targetX = 280;
-  double targetY = 390;
+  double targetX = 262;
+  double targetY = 415;
 
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
@@ -38,6 +38,7 @@ public class ChaseCone extends Command {
     yPIDController.initialize(targetY);
   }
 
+  
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
@@ -60,9 +61,9 @@ public class ChaseCone extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
-    // && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5)
-    // || !rc.navigation.hasLeftConeTarget();
-    return false;
+    return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
+    && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5);
+    //|| !rc.navigation.hasLeftConeTarget();
+    // return false;
   }
 }

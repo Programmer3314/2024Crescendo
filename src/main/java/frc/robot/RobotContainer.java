@@ -27,6 +27,7 @@ import frc.robot.commands.ChaseCone;
 import frc.robot.commands.FindShoot;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
+import frc.robot.commands.ShootSmove;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
@@ -75,6 +76,8 @@ public class RobotContainer {
     joystick.b().whileTrue(new GoShoot(this));
 
     joystick.x().whileTrue(new FindShoot(this));
+
+    joystick.y().whileTrue(new ShootSmove(this));
     
     joystick.a().whileTrue(new Aim(this));
 
