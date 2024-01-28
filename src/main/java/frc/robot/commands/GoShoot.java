@@ -38,8 +38,8 @@ public class GoShoot extends Command {
     PathConstraints trajectoryConstraints = new PathConstraints(2, 3, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
         currentPose,
-        MMField.blueWooferApproachPose,
-        MMField.blueWooferPose);
+        MMField.getBlueWooferApproachPose(),
+        MMField.getBlueWooferPose());
     PathPlannerPath path = new PathPlannerPath(bezierPoints,
         trajectoryConstraints,
         new GoalEndState(0, Rotation2d.fromDegrees(180)));

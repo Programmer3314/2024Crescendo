@@ -51,7 +51,7 @@ int onTarget;
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.shooterSubsystem.shooterRotationPID(-0.2);
+    rc.shooterSubsystem.shooterRotationPID(-0.2,2);
     RobotContainer.signalSelection = SignalSelection.All_Off;
 
   }

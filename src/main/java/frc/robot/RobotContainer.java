@@ -22,13 +22,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
+import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
 import frc.robot.commands.ChaseCone;
-import frc.robot.commands.FindShoot;
+import frc.robot.commands.FollowPathFile;
+import frc.robot.commands.PathFindTo;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
-import frc.robot.commands.ShootSmove;
+import frc.robot.commands.NotAim;
 import frc.robot.commands.ShootTheConeOut;
+import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -42,13 +45,12 @@ public class RobotContainer {
 
   public final Field2d field = new Field2d();
 
-  public MMController joystick = new MMController(0, .1 / 2)
+  public MMController joystick = new MMController(0)
+  .setDeadzone(.1/2)
       .setScaleXLeft(-MaxSpeed)
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
-  // TODO: LOW PRIORITY go back to static Claw
- // public Claw claw = new Claw(this);
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -75,11 +77,12 @@ public class RobotContainer {
 
     joystick.b().whileTrue(new GoShoot(this));
 
-    joystick.x().whileTrue(new FindShoot(this));
+    joystick.x().whileTrue(new PathFindTo(this, MMField::getBlueWooferApproachPose));
 
-    joystick.y().whileTrue(new ShootSmove(this));
-    
-    joystick.a().whileTrue(new Aim(this));
+     joystick.y().whileTrue(new AutoSamplerShootSmove(this));
+
+    joystick.a().whileTrue(new NotAim(this));
+   //joystick.a().whileTrue(new ChaseCone(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
@@ -98,9 +101,9 @@ public class RobotContainer {
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
             new InstantCommand(Robot::resetVisionUpdate)));
     // joystick.rightBumper().onTrue(new InstantCommand(
-       // () -> claw.openClaw()));
+    // () -> claw.openClaw()));
     // joystick.rightTrigger().onTrue(new InstantCommand(
-      //  () -> claw.closeClaw()));
+    // () -> claw.closeClaw()));
     joystick.leftTrigger().whileTrue(new ChaseCone(this));
 
     if (Utils.isSimulation()) {
@@ -122,7 +125,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("grabCone", new GrabCone(this));
     // Set Up Autochooser
     // Default auto will be `Commands.none()`
-    autoChooser = AutoBuilder.buildAutoChooser();
+   // autoChooser = AutoBuilder.buildAutoChooser();
+   autoChooser = new SendableChooser<>();
+   autoChooser.addOption("none", Commands.none());
+   autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
+   autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
   }
 

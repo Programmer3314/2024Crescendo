@@ -108,6 +108,15 @@ public class Shooter extends SubsystemBase {
         .withKP(96 * 2)// 12
         .withKI(0)
         .withKD(.25);// 2
+        cfg.Slot2
+        .withKS(1) // voltage to overcome static friction
+        .withKV(0)
+        .withKA(0) // "arbitrary" amount to provide crisp response
+        .withKG(0) // gravity can be used for elevator or arm
+        .withGravityType(GravityTypeValue.Arm_Cosine)
+        .withKP(48)// 12
+        .withKI(0)
+        .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
   }
 
@@ -144,6 +153,10 @@ public class Shooter extends SubsystemBase {
   public void shooterRotationPID(double rotations) {
     shooterRotateMotor.setControl(shooterRotationPosition.withSlot(1).withPosition(rotations));
   }
+   public void shooterRotationPID(double rotations,int slot) {
+    shooterRotateMotor.setControl(shooterRotationPosition.withSlot(slot).withPosition(rotations));
+  }
+
 
   public double getCurrentShooterAngle() {
     return shooterRotateMotor.getPosition().getValue();

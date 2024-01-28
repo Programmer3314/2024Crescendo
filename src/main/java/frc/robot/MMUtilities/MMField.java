@@ -4,6 +4,7 @@
 
 package frc.robot.MMUtilities;
 
+import com.fasterxml.jackson.core.json.ByteSourceJsonBootstrapper;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,7 +15,7 @@ import frc.robot.Robot;
 
 /** Add your docs here. */
 public class MMField {
-    public static Translation2d getBlueTranslation(Translation2d translation) {
+  public static Translation2d getBlueTranslation(Translation2d translation) {
     if (Robot.alliance.equals(DriverStation.Alliance.Red)) {
       return GeometryUtil.flipFieldPosition(translation);
     }
@@ -34,20 +35,32 @@ public class MMField {
     }
     return pose;
   }
-  public static Pose2d blueSpeakerPose = new Pose2d(new Translation2d(0,5.55), new Rotation2d() );
 
-  public static Pose2d currentSpeakerPose(){
+  public static Pose2d blueSpeakerPose = new Pose2d(new Translation2d(0, 5.55), new Rotation2d());
+
+  public static Pose2d currentSpeakerPose() {
     // the following line flips if red
     return getBluePose(blueSpeakerPose);
   }
-  public static Pose2d blueWooferPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180)); 
-  
-  public static Pose2d currentWooferPose(){
-     return getBluePose(blueWooferPose);
-  }
-  public static Pose2d blueWooferApproachPose = new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(180));
 
-  public static Pose2d currentWooferApproachPose(){
+  private static Pose2d blueWooferPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
+
+  public static Pose2d getBlueWooferPose() {
+    return blueWooferPose;
+  }
+
+  public static Pose2d currentWooferPose() {
+    return getBluePose(blueWooferPose);
+  }
+
+  private static Pose2d blueWooferApproachPose = new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(180));
+
+  public static Pose2d getBlueWooferApproachPose() {
+    return blueWooferApproachPose;
+  }
+
+  public static Pose2d currentWooferApproachPose() {
     return getBluePose(blueWooferApproachPose);
   }
+
 }
