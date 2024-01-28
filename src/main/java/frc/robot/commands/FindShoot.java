@@ -11,7 +11,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.MMUtilities.MMField;
+
+// TODO: rework this PathFindTo
+// The parameter should be a Supplier<Pose2d> 
+// so that the value can be determined at activation
+// I suspect atht two constructors can be created 
+// so that the value can be either a supplier or a simple Pose2d
+// Also use a default PathConstraints, goalVelocity, and rotationDelayDist
+// that can be overriden with chained setters
 
 public class FindShoot extends Command {
   RobotContainer rc;
