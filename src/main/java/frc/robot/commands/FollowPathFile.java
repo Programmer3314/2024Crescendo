@@ -12,7 +12,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
-
 public class FollowPathFile extends Command {
   Command pathCommand;
   RobotContainer rc;
@@ -20,27 +19,27 @@ public class FollowPathFile extends Command {
   Supplier<String> pathFileSupplier;
 
   public FollowPathFile(RobotContainer rc, String pathFile) {
-    this.pathFile = pathFile;
     this.rc = rc;
-    addRequirements(rc.drivetrain);
+    this.pathFile = pathFile;
     this.pathFileSupplier = this::getPathFile;
-    
+
+    addRequirements(rc.drivetrain);
   }
 
   public FollowPathFile(RobotContainer rc, Supplier<String> pathFileSupplier) {
     this.rc = rc;
-    
-    addRequirements(rc.drivetrain);
     this.pathFileSupplier = pathFileSupplier;
-    
+
+    addRequirements(rc.drivetrain);
   }
-  private String getPathFile(){
+
+  private String getPathFile() {
     return pathFile;
   }
+
   @Override
   public void initialize() {
     PathPlannerPath path = PathPlannerPath.fromPathFile(pathFileSupplier.get());
-
     pathCommand = AutoBuilder.followPath(path);
     pathCommand.initialize();
   }

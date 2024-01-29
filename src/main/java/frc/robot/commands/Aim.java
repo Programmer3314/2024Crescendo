@@ -15,7 +15,6 @@ public class Aim extends Command {
 
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
-  /** Creates a new Aim. */
   public Aim(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);

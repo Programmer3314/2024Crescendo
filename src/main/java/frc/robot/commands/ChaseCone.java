@@ -22,11 +22,9 @@ public class ChaseCone extends Command {
 
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
-  /** Creates a new ChaseCone. */
   public ChaseCone(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
-    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
@@ -38,7 +36,6 @@ public class ChaseCone extends Command {
     yPIDController.initialize(targetY);
   }
 
-  
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
@@ -62,8 +59,7 @@ public class ChaseCone extends Command {
   @Override
   public boolean isFinished() {
     return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
-    && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5);
-    //|| !rc.navigation.hasLeftConeTarget();
-    // return false;
+        && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5);
+    // || !rc.navigation.hasLeftConeTarget();
   }
 }

@@ -10,10 +10,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-
 
 public class PathFindTo extends Command {
   private RobotContainer rc;
@@ -27,50 +25,47 @@ public class PathFindTo extends Command {
   /** Creates a new FindShoot. */
   public PathFindTo(RobotContainer rc, Pose2d targetPose) {
     this.rc = rc;
-    addRequirements(rc.drivetrain);
     this.targetPose = targetPose;
     this.targetPoseSupplier = this::getTargetPose;
-    
 
-    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(rc.drivetrain);
   }
 
   public PathFindTo(RobotContainer rc, Supplier<Pose2d> targetPoseSupplier) {
     this.rc = rc;
-    addRequirements(rc.drivetrain);
     this.targetPoseSupplier = targetPoseSupplier;
-    // Use addRequirements() here to declare subsystem dependencies.
+
+    addRequirements(rc.drivetrain);
   }
 
-  private Pose2d getTargetPose(){
+  private Pose2d getTargetPose() {
     return targetPose;
   }
 
-public PathFindTo setPathConstraints(PathConstraints pathConstraints){
-  trajectoryConstraints = pathConstraints;
-  return this;
-}
+  public PathFindTo setPathConstraints(PathConstraints pathConstraints) {
+    trajectoryConstraints = pathConstraints;
+    return this;
+  }
 
-public PathFindTo setGoalEndVelocity(double goalEndVelocity){
- this.goalEndVelocity = goalEndVelocity;
-  return this;
-}
+  public PathFindTo setGoalEndVelocity(double goalEndVelocity) {
+    this.goalEndVelocity = goalEndVelocity;
+    return this;
+  }
 
-public PathFindTo setRotationDelayDistance(double rotationDelayDistance){
-  this.rotationDelayDistance = rotationDelayDistance;
-  return this;
-}
+  public PathFindTo setRotationDelayDistance(double rotationDelayDistance) {
+    this.rotationDelayDistance = rotationDelayDistance;
+    return this;
+  }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // Pose2d targetPose = new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(0));
     pathfindingCommand = AutoBuilder.pathfindToPose(
         targetPoseSupplier.get(),
         trajectoryConstraints,
         goalEndVelocity, // Goal end velocity in meters/sec
         rotationDelayDistance // Rotation delay distance in meters. This is how far the robot should travel
-            // before attempting to rotate.
+    // before attempting to rotate.
     );
     pathfindingCommand.initialize();
   }

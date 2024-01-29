@@ -7,7 +7,6 @@ package frc.robot.commands;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
@@ -18,17 +17,17 @@ public class DriveForwardDist extends Command {
   double velocity;
   double distanceTraveled;
   Translation2d initialPosition;
-  /** Creates a new DriveForwardDist. */
-  public DriveForwardDist(RobotContainer rc,double distance, double velocity) {
+
+  // TODO: Create boolean setter to control whether the command should stop 
+  // when done. Default to Stop (the way it is now)
+  public DriveForwardDist(RobotContainer rc, double distance, double velocity) {
     this.rc = rc;
     this.distance = distance;
     this.drive = new SwerveRequest.RobotCentric();
     this.velocity = velocity;
-    
+
     addRequirements(rc.drivetrain);
-    // Use addRequirements() here to declare subsystem dependencies.
   }
-  
 
   // Called when the command is initially scheduled.
   @Override
@@ -53,9 +52,6 @@ public class DriveForwardDist extends Command {
   @Override
   public boolean isFinished() {
     distanceTraveled = rc.drivetrain.getState().Pose.getTranslation().minus(initialPosition).getNorm();
-   return distance <= distanceTraveled;
-
-   
-    
+    return distance <= distanceTraveled;
   }
 }

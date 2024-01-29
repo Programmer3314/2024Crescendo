@@ -4,7 +4,6 @@
 
 package frc.robot.MMUtilities;
 
-import com.fasterxml.jackson.core.json.ByteSourceJsonBootstrapper;
 import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -62,5 +61,4 @@ public class MMField {
   public static Pose2d currentWooferApproachPose() {
     return getBluePose(blueWooferApproachPose);
   }
-
 }

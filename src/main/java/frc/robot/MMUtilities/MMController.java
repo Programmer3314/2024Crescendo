@@ -19,34 +19,37 @@ public class MMController extends CommandXboxController {
     public double scaleXRight = 1;
     public double scaleYLeft = 1;
     public double scaleYRight = 1;
-    
 
     public MMController(int port) {
         super(port);
     }
 
-    public MMController setDeadzone(double deadzone){
-            this.deadzoneLeftY = deadzone;
-            this.deadzoneLeftX = deadzone;
-            this.deadzoneRightX = deadzone;
-            this.deadzoneRightY = deadzone;
-            return this;
+    public MMController setDeadzone(double deadzone) {
+        this.deadzoneLeftY = deadzone;
+        this.deadzoneLeftX = deadzone;
+        this.deadzoneRightX = deadzone;
+        this.deadzoneRightY = deadzone;
+        return this;
     }
-     public MMController setDeadzoneLeftY(double deadzoneLeftY){
-            this.deadzoneLeftY = deadzoneLeftY;
-            return this;
+
+    public MMController setDeadzoneLeftY(double deadzoneLeftY) {
+        this.deadzoneLeftY = deadzoneLeftY;
+        return this;
     }
-    public MMController setDeadzoneLeftX(double deadzoneLeftX){
-            this.deadzoneLeftX = deadzoneLeftX;
-            return this;
+
+    public MMController setDeadzoneLeftX(double deadzoneLeftX) {
+        this.deadzoneLeftX = deadzoneLeftX;
+        return this;
     }
-    public MMController setDeadzoneRightY(double deadzoneRightY){
-            this.deadzoneRightY = deadzoneRightY;
-            return this;
+
+    public MMController setDeadzoneRightY(double deadzoneRightY) {
+        this.deadzoneRightY = deadzoneRightY;
+        return this;
     }
-    public MMController setDeadzoneRightX(double deadzoneRightX){
-            this.deadzoneRightX = deadzoneRightX;
-            return this;
+
+    public MMController setDeadzoneRightX(double deadzoneRightX) {
+        this.deadzoneRightX = deadzoneRightX;
+        return this;
     }
 
     public MMController setScaleXLeft(double scale) {
@@ -59,7 +62,6 @@ public class MMController extends CommandXboxController {
         return this;
     }
 
-
     public MMController setScaleYLeft(double scale) {
         scaleYLeft = scale;
         return this;
@@ -71,22 +73,22 @@ public class MMController extends CommandXboxController {
     }
 
     public double getLeftXSmoothed() {
-        return smoothAxis(super.getLeftX(),deadzoneLeftX) * scaleXLeft;
+        return smoothAxis(super.getLeftX(), deadzoneLeftX) * scaleXLeft;
     }
 
     public double getRightXSmoothed() {
-        return smoothAxis(super.getRightX(),deadzoneRightX) * scaleXRight;
+        return smoothAxis(super.getRightX(), deadzoneRightX) * scaleXRight;
     }
 
     public double getLeftYSmoothed() {
-        return smoothAxis(super.getLeftY(),deadzoneLeftY) * scaleYLeft;
+        return smoothAxis(super.getLeftY(), deadzoneLeftY) * scaleYLeft;
     }
 
     public double getRightYSmoothed() {
-        return smoothAxis(super.getRightY(),deadzoneRightY) * scaleYRight;
+        return smoothAxis(super.getRightY(), deadzoneRightY) * scaleYRight;
     }
 
-    private double smoothAxis(double v,double deadzone) {
+    private double smoothAxis(double v, double deadzone) {
         if (v > -deadzone && v < deadzone) {
             v = 0;
 

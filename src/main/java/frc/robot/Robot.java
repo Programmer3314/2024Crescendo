@@ -17,9 +17,6 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
-  
-
-
   public static DriverStation.Alliance alliance;
 
   @Override
@@ -35,8 +32,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    
 
   }
 

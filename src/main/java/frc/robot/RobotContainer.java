@@ -6,9 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
-// import com.ctre.phoenix6.Utils;
-// import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;s
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,9 +20,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
-import frc.robot.commands.Aim;
 import frc.robot.commands.ChaseCone;
-import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.PathFindTo;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
@@ -46,7 +41,7 @@ public class RobotContainer {
   public final Field2d field = new Field2d();
 
   public MMController joystick = new MMController(0)
-  .setDeadzone(.1/2)
+      .setDeadzone(.1 / 2)
       .setScaleXLeft(-MaxSpeed)
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
@@ -79,10 +74,10 @@ public class RobotContainer {
 
     joystick.x().whileTrue(new PathFindTo(this, MMField::getBlueWooferApproachPose));
 
-     joystick.y().whileTrue(new AutoSamplerShootSmove(this));
+    joystick.y().whileTrue(new AutoSamplerShootSmove(this));
 
     joystick.a().whileTrue(new NotAim(this));
-   //joystick.a().whileTrue(new ChaseCone(this));
+    // joystick.a().whileTrue(new ChaseCone(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
@@ -125,11 +120,11 @@ public class RobotContainer {
     NamedCommands.registerCommand("grabCone", new GrabCone(this));
     // Set Up Autochooser
     // Default auto will be `Commands.none()`
-   // autoChooser = AutoBuilder.buildAutoChooser();
-   autoChooser = new SendableChooser<>();
-   autoChooser.addOption("none", Commands.none());
-   autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
-   autoChooser.setDefaultOption("none", Commands.none());
+    // autoChooser = AutoBuilder.buildAutoChooser();
+    autoChooser = new SendableChooser<>();
+    autoChooser.addOption("none", Commands.none());
+    autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
+    autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
   }
 

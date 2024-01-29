@@ -24,7 +24,9 @@ public class GoShoot extends Command {
   private RobotContainer rc;
   private Command pathCommand;
 
-  /** Creates a new GoShoot. */
+  // TODO: Clean-ups...
+  // remove smartdashboard updates
+  // remove old commented schedule/cancel code
   public GoShoot(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
@@ -45,7 +47,7 @@ public class GoShoot extends Command {
         new GoalEndState(0, Rotation2d.fromDegrees(180)));
     path.preventFlipping = false;
     pathCommand = AutoBuilder.followPath(path);
-    //pathCommand.schedule();
+    // pathCommand.schedule();
     pathCommand.initialize();
     SmartDashboard.putBoolean("GoShootRunning", true);
   }
@@ -68,6 +70,5 @@ public class GoShoot extends Command {
   @Override
   public boolean isFinished() {
     return pathCommand.isFinished();
-    // return false;
   }
 }

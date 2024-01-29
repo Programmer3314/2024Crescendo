@@ -108,7 +108,7 @@ public class Shooter extends SubsystemBase {
         .withKP(96 * 2)// 12
         .withKI(0)
         .withKD(.25);// 2
-        cfg.Slot2
+    cfg.Slot2
         .withKS(1) // voltage to overcome static friction
         .withKV(0)
         .withKA(0) // "arbitrary" amount to provide crisp response
@@ -153,10 +153,10 @@ public class Shooter extends SubsystemBase {
   public void shooterRotationPID(double rotations) {
     shooterRotateMotor.setControl(shooterRotationPosition.withSlot(1).withPosition(rotations));
   }
-   public void shooterRotationPID(double rotations,int slot) {
+
+  public void shooterRotationPID(double rotations, int slot) {
     shooterRotateMotor.setControl(shooterRotationPosition.withSlot(slot).withPosition(rotations));
   }
-
 
   public double getCurrentShooterAngle() {
     return shooterRotateMotor.getPosition().getValue();
@@ -178,13 +178,13 @@ public class Shooter extends SubsystemBase {
     return currentPose.getRotation();
   }
 
-  public boolean isSpeakerShotReady(){
-    //double desiredShooterAngle = getDesiredSpeakerWaypoint().getAngle();
-    //double currentShooterAngle = getCurrentShooterAngle();
-    //Rotation2d desiredRobotAngle = getTargetAngleSpeaker();
-    //Rotation2d currentRobotAngle = getCurrentRobotAngle();
-    
-    return(Math.abs(getCurrentRobotAngle().minus(getTargetAngleSpeaker()).getDegrees()) < 2 
-    && Math.abs(getCurrentShooterAngle() - getDesiredSpeakerWaypoint().getAngle()) < .01 );
+  public boolean isSpeakerShotReady() {
+    // double desiredShooterAngle = getDesiredSpeakerWaypoint().getAngle();
+    // double currentShooterAngle = getCurrentShooterAngle();
+    // Rotation2d desiredRobotAngle = getTargetAngleSpeaker();
+    // Rotation2d currentRobotAngle = getCurrentRobotAngle();
+
+    return (Math.abs(getCurrentRobotAngle().minus(getTargetAngleSpeaker()).getDegrees()) < 2
+        && Math.abs(getCurrentShooterAngle() - getDesiredSpeakerWaypoint().getAngle()) < .01);
   }
 }

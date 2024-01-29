@@ -10,21 +10,20 @@ import frc.robot.LimelightHelpers;
 import frc.robot.RobotContainer;
 
 public class StandardAutoInit extends Command {
-   RobotContainer rc;
-   Pose2d initialPose;
-   int pipeLineFront=0;
-   int pipeLineLeft=1;
+  RobotContainer rc;
+  Pose2d initialPose;
+  int pipeLineFront = 0;
+  int pipeLineLeft = 1;
 
-  /** Creates a new StandardAutoInit. */
-  public StandardAutoInit( RobotContainer rc,Pose2d initialPose) {
-   this.rc = rc;
-   this.initialPose = initialPose;
-    // Use addRequirements() here to declare subsystem dependencies.
+  public StandardAutoInit(RobotContainer rc, Pose2d initialPose) {
+    this.rc = rc;
+    this.initialPose = initialPose;
   }
-  public StandardAutoInit setPipeLine(int pipeLineFront,int pipeLineLeft){
-      this.pipeLineFront = pipeLineFront;
-      this.pipeLineLeft = pipeLineLeft;
-      return this;
+
+  public StandardAutoInit setPipeLine(int pipeLineFront, int pipeLineLeft) {
+    this.pipeLineFront = pipeLineFront;
+    this.pipeLineLeft = pipeLineLeft;
+    return this;
   }
 
   // Called when the command is initially scheduled.
@@ -37,17 +36,17 @@ public class StandardAutoInit extends Command {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+  }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-     return true;
+    return true;
   }
 }

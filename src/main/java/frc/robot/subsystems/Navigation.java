@@ -20,7 +20,6 @@ public class Navigation extends SubsystemBase {
   private double leftConeY;
   private LimelightTarget_Detector[] leftLimelightDetector;
 
-
   /** Creates a new Navigation. */
   public Navigation(RobotContainer rc) {
     this.rc = rc;
@@ -77,10 +76,9 @@ public class Navigation extends SubsystemBase {
   }
 
   public String autoLeftOrRight() {
-    if(leftConeX > 300){
+    if (leftConeX > 300) {
       return "NoteRight";
-    }
-    else{
+    } else {
       return "NoteStraight";
     }
   }

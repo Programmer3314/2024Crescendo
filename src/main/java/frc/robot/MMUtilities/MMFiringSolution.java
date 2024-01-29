@@ -4,7 +4,6 @@
 
 package frc.robot.MMUtilities;
 
-/** Add your docs here. */
 public class MMFiringSolution {
 
     private MMWaypoint[] waypoints;
@@ -13,6 +12,9 @@ public class MMFiringSolution {
         this.waypoints = waypoints;
     }
 
+    // TODO: The shooter design is "fixed" 
+    // make Waypoint and MMFiringSolution use 
+    // Angle, Left & Right velocities, and Index Speed. 
     public MMWaypoint calcSolution(double distance) {
         MMWaypoint bottomRef = null;
         MMWaypoint topRef = null;
@@ -22,7 +24,6 @@ public class MMFiringSolution {
         if (distance >= waypoints[waypoints.length - 1].getDistance()) {
             return waypoints[waypoints.length - 1];
         }
-
         for (int i = 1; i < waypoints.length; i++) {// find the reference waypoints
             if (distance < waypoints[i].getDistance()) {
                 topRef = waypoints[i];

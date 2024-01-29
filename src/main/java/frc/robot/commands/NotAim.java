@@ -9,10 +9,11 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.enums.SignalSelection;
+
 /** Add your docs here. */
 public class NotAim extends Command {
   RobotContainer rc;
-int onTarget;
+  int onTarget;
 
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
 
@@ -26,7 +27,6 @@ int onTarget;
   @Override
   public void initialize() {
     onTarget = 0;
-    // RobotContainer.signalSelection = SignalSelection.Cone_Solid;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -37,7 +37,7 @@ int onTarget;
       onTarget++;
     } else {
       RobotContainer.signalSelection = SignalSelection.Cone_Off;
-      onTarget= 0;
+      onTarget = 0;
     }
 
     rc.drivetrain.setControl(drive
@@ -51,7 +51,7 @@ int onTarget;
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.shooterSubsystem.shooterRotationPID(-0.2,2);
+    rc.shooterSubsystem.shooterRotationPID(-0.2, 2);
     RobotContainer.signalSelection = SignalSelection.All_Off;
 
   }
@@ -59,6 +59,6 @@ int onTarget;
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return onTarget>=20;
+    return onTarget >= 20;
   }
 }
