@@ -24,7 +24,6 @@ public class Navigation extends SubsystemBase {
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
-
   }
 
   @Override
@@ -44,7 +43,6 @@ public class Navigation extends SubsystemBase {
 
       rc.field.setRobotPose(pose);
       SmartDashboard.putString("MMpose", pose.toString());
-
     }
 
     // var llpython = LimelightHelpers.getPythonScriptData("limelight-left");
