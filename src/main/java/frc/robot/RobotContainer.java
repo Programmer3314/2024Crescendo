@@ -27,6 +27,8 @@ import frc.robot.commands.GrabCone;
 import frc.robot.commands.NotAim;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
+import frc.robot.commands.Autos.MustangAuto;
+import frc.robot.commands.Autos.MustangAutoCycle;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -39,6 +41,14 @@ public class RobotContainer {
   public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
+  private Pose2d[] notePoseList = { new Pose2d(6, 6.62, Rotation2d.fromDegrees(90)),
+      new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(90)),
+      new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(0)),
+      new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(90))
+  };
+  private Pose2d[] shootPoseList = { new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
+      MMField.getBlueWooferApproachPose(),
+  };
 
   public MMController joystick = new MMController(0)
       .setDeadzone(.1 / 2)
@@ -56,6 +66,8 @@ public class RobotContainer {
   public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
+  public static SendableChooser<Pose2d> noteChooser;
+  public static SendableChooser<Pose2d> shootChooser;
   public static SignalSelection signalSelection = SignalSelection.All_Off;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -124,8 +136,21 @@ public class RobotContainer {
     autoChooser = new SendableChooser<>();
     autoChooser.addOption("none", Commands.none());
     autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
+    autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
+
+    shootChooser = new SendableChooser<>();
+    noteChooser = new SendableChooser<>();
+    for (int i = 0; i < notePoseList.length; i++) {
+      noteChooser.addOption("Note 0: " + i, notePoseList[i]);
+    }
+    for (int i = 0; i < shootPoseList.length; i++) {
+      shootChooser.addOption("Shoot 0: " + i, shootPoseList[i]);
+    }
+    SmartDashboard.putData("Note Chosen", noteChooser);
+    SmartDashboard.putData("Shot Chosen", shootChooser);
+    // noteChooser.addOption("Note 0", ));// : :
   }
 
   public Command getAutonomousCommand() {

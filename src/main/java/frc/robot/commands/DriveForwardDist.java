@@ -17,9 +17,8 @@ public class DriveForwardDist extends Command {
   double velocity;
   double distanceTraveled;
   Translation2d initialPosition;
+  boolean robotStop = true;
 
-  // TODO: Create boolean setter to control whether the command should stop 
-  // when done. Default to Stop (the way it is now)
   public DriveForwardDist(RobotContainer rc, double distance, double velocity) {
     this.rc = rc;
     this.distance = distance;
@@ -27,6 +26,11 @@ public class DriveForwardDist extends Command {
     this.velocity = velocity;
 
     addRequirements(rc.drivetrain);
+  }
+
+  public DriveForwardDist setRobotStop(boolean robotStop) {
+    this.robotStop = robotStop;
+    return this;
   }
 
   // Called when the command is initially scheduled.
@@ -45,7 +49,9 @@ public class DriveForwardDist extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.drivetrain.setControl(drive.withVelocityX(0.0));
+    if (robotStop) {
+      rc.drivetrain.setControl(drive.withVelocityX(0.0));
+    }
   }
 
   // Returns true when the command should end.

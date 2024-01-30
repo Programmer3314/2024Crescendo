@@ -16,9 +16,6 @@ import frc.robot.commands.PathFindTo;
 public class AutoSamplerShootSmove extends SequentialCommandGroup {
   RobotContainer rc;
 
-  // TODO: 2' is too long to drive at slow speed...
-  // after TODO in DriveForwardDist, make this drive most of the 
-  // distance at 1 m/s then drop to .5 m/s for the final piece
   public AutoSamplerShootSmove(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
@@ -32,7 +29,8 @@ public class AutoSamplerShootSmove extends SequentialCommandGroup {
         new FollowPathFile(rc, "Exit"),
         // new FollowPathFile(rc, rc.navigation::autoLeftOrRight),
         new ChaseCone(rc),
-        new DriveForwardDist(rc, 0.61, .5),
+        new DriveForwardDist(rc, 0.41, 1).setRobotStop(false),
+        new DriveForwardDist(rc, 0.2, .5),
         new PathFindTo(rc, MMField::getBlueWooferApproachPose)
             .setRotationDelayDistance(0.2),
         new NotAim(rc),
