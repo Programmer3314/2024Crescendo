@@ -140,26 +140,23 @@ public class RobotContainer {
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 
-    shootChooser = new SendableChooser<>();
+    // TODO: Break this out to method
     noteChooser = new SendableChooser<>();
     for (int i = 0; i < notePoseList.length; i++) {
       noteChooser.addOption("Note 0: " + i, notePoseList[i]);
     }
+    SmartDashboard.putData("Note Chosen", noteChooser);
+
+    // TODO: Break this out to method
+    shootChooser = new SendableChooser<>();
     for (int i = 0; i < shootPoseList.length; i++) {
       shootChooser.addOption("Shoot 0: " + i, shootPoseList[i]);
     }
-    SmartDashboard.putData("Note Chosen", noteChooser);
     SmartDashboard.putData("Shot Chosen", shootChooser);
-    // noteChooser.addOption("Note 0", ));// : :
+
   }
 
   public Command getAutonomousCommand() {
-    // return Commands.print("No autonomous command configured");
-
-    //
-    // PathPlanner
-    //
     return autoChooser.getSelected();
-
   }
 }

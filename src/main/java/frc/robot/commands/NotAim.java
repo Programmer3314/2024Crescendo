@@ -53,7 +53,6 @@ public class NotAim extends Command {
   public void end(boolean interrupted) {
     rc.shooterSubsystem.shooterRotationPID(-0.2, 2);
     RobotContainer.signalSelection = SignalSelection.All_Off;
-
   }
 
   // Returns true when the command should end.

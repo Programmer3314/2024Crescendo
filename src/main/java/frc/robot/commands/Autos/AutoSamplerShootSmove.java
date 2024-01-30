@@ -29,7 +29,8 @@ public class AutoSamplerShootSmove extends SequentialCommandGroup {
         new FollowPathFile(rc, "Exit"),
         // new FollowPathFile(rc, rc.navigation::autoLeftOrRight),
         new ChaseCone(rc),
-        new DriveForwardDist(rc, 0.41, 1).setRobotStop(false),
+        new DriveForwardDist(rc, 0.41, 1)
+            .setRobotStop(false),
         new DriveForwardDist(rc, 0.2, .5),
         new PathFindTo(rc, MMField::getBlueWooferApproachPose)
             .setRotationDelayDistance(0.2),

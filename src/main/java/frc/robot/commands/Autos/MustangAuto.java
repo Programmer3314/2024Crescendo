@@ -6,32 +6,23 @@ package frc.robot.commands.Autos;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMField;
-import frc.robot.commands.DriveForwardDist;
-import frc.robot.commands.NotAim;
-import frc.robot.commands.PathFindTo;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class MustangAuto extends Command {
-  /** Creates a new MustangAuto. */
   RobotContainer rc;
+  // TODO: when you are ready to expand this to multiple cycles...
+  // consider using SequentialCommandGroup for type of cmd. 
   Command cmd;
 
   public MustangAuto(RobotContainer rc) {
     this.rc = rc;
 
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
     addRequirements(rc.drivetrain);
   }
 
   @Override
   public void initialize() {
-
     cmd = Commands.sequence(
         new StandardAutoInit(rc, MMField.currentWooferPose()),
         new MustangAutoCycle(rc, RobotContainer.noteChooser.getSelected(), RobotContainer.shootChooser.getSelected()));

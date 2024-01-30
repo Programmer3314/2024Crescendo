@@ -4,8 +4,6 @@
 
 package frc.robot.commands.Autos;
 
-import org.ejml.equation.Sequence;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -14,23 +12,18 @@ import frc.robot.commands.DriveForwardDist;
 import frc.robot.commands.NotAim;
 import frc.robot.commands.PathFindTo;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class MustangAutoCycle extends Command {
   RobotContainer rc;
   Pose2d notePose;
   Pose2d shooterPose;
   Command cmd;
 
-  /** Creates a new PaskackAuto. */
   public MustangAutoCycle(RobotContainer rc, Pose2d notePose, Pose2d shooterPose) {
     this.rc = rc;
     this.notePose = notePose;
     this.shooterPose = shooterPose;
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-
   }
 
   @Override
