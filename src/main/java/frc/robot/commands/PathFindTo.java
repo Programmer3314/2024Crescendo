@@ -36,7 +36,7 @@ public class PathFindTo extends Command {
     this.targetPoseSupplier = targetPoseSupplier;
 
     addRequirements(rc.drivetrain);
-  }// TODO: ADD ON THE FLIP (RED) SIDE
+  }// TODO: ADD ON THE FLIP (RED) SIDE - maybe not here, but where needed when this is called - Let's discuss.
 
   private Pose2d getTargetPose() {
     return targetPose;

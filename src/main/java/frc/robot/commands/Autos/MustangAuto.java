@@ -11,6 +11,11 @@ import frc.robot.MMUtilities.MMField;
 
 public class MustangAuto extends Command {
   RobotContainer rc;
+  // TODO: Create MMDeferredCommand that commands... 
+  // like this (built in initialize) would extend.
+  // The class should be a generic specifying the 
+  // command type. 
+
   // TODO: when you are ready to expand this to multiple cycles...
   // consider using SequentialCommandGroup for type of cmd. 
   Command cmd;
