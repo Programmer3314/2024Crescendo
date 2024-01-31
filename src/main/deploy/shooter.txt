@@ -4,6 +4,7 @@ INTAKE:
 -another falcon rotates belts to take notes in 
 -break beam sensor that detects the note coming through the intake as close as possible to the 
 start of the intake opening
+- rotates about 16 degrees
 
 
 SHOOTER:

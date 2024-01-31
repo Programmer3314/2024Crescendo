@@ -21,14 +21,13 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.ChaseCone;
-import frc.robot.commands.PathFindTo;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.NotAim;
+import frc.robot.commands.PathFindTo;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.MustangAuto;
-import frc.robot.commands.Autos.MustangAutoCycle;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -183,6 +182,9 @@ public class RobotContainer {
 
     
   }
+
+  // TODO: Do this again, but leave the "new" outside the method (maybe on the line where the chooser is defined)
+  // as Lamarr suggested, you can do everything else in the method except the new. 
 
   // private void fillShootPoseChooser(String shootPoseName, SendableChooser<Pose2d> shootChooser) {
   //   shootChooser = new SendableChooser<Pose2d>();
