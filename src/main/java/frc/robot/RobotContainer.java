@@ -66,8 +66,10 @@ public class RobotContainer {
   public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
-  public static SendableChooser<Pose2d> noteChooser;
-  public static SendableChooser<Pose2d> shootChooser;
+  public static SendableChooser<Pose2d> noteChooser0;
+  public static SendableChooser<Pose2d> shootChooser0;
+  public static SendableChooser<Pose2d> noteChooser1;
+  public static SendableChooser<Pose2d> shootChooser1;
   public static SignalSelection signalSelection = SignalSelection.All_Off;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -139,22 +141,64 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
+    
+    // noteChooser0 = new SendableChooser<Pose2d>();
+    // noteChooser1 = new SendableChooser<Pose2d>();
+    // shootChooser0 = new SendableChooser<Pose2d>();
+    // shootChooser1 = new SendableChooser<Pose2d>();
 
-    // TODO: Break this out to method
-    noteChooser = new SendableChooser<>();
-    for (int i = 0; i < notePoseList.length; i++) {
-      noteChooser.addOption("Note 0: " + i, notePoseList[i]);
-    }
-    SmartDashboard.putData("Note Chosen", noteChooser);
+    // fillNoteChooser("Note 1", noteChooser0);
+    // fillNoteChooser("Note 2", noteChooser1);
 
-    // TODO: Break this out to method
-    shootChooser = new SendableChooser<>();
+    // fillShootPoseChooser("Shoot Pose 1", shootChooser0);
+    // fillShootPoseChooser("Shoot Pose 2", shootChooser1);
+
+      
+    shootChooser0 = new SendableChooser<Pose2d>();
     for (int i = 0; i < shootPoseList.length; i++) {
-      shootChooser.addOption("Shoot 0: " + i, shootPoseList[i]);
+      shootChooser0.addOption("Shoot: " + i, shootPoseList[i]);
     }
-    SmartDashboard.putData("Shot Chosen", shootChooser);
+    SmartDashboard.putData("shoot Choser", shootChooser0);
+  
 
+    noteChooser0 = new SendableChooser<Pose2d>();
+    for (int i = 0; i < notePoseList.length; i++) {
+      noteChooser0.addOption("Note: " + i, notePoseList[i]);
+    }
+    SmartDashboard.putData("note Chooser", noteChooser0);
+  
+
+        shootChooser1 = new SendableChooser<Pose2d>();
+    for (int i = 0; i < shootPoseList.length; i++) {
+      shootChooser1.addOption("Shoot: " + i, shootPoseList[i]);
+    }
+    SmartDashboard.putData("shoot Choser 1", shootChooser1);
+  
+
+    noteChooser1 = new SendableChooser<Pose2d>();
+    for (int i = 0; i < notePoseList.length; i++) {
+      noteChooser1.addOption("Note: " + i, notePoseList[i]);
+    }
+    SmartDashboard.putData("note Chooser 0", noteChooser1);
+
+    
   }
+
+  // private void fillShootPoseChooser(String shootPoseName, SendableChooser<Pose2d> shootChooser) {
+  //   shootChooser = new SendableChooser<Pose2d>();
+  //   for (int i = 0; i < shootPoseList.length; i++) {
+  //     shootChooser.addOption("Shoot: " + i, shootPoseList[i]);
+  //   }
+  //   SmartDashboard.putData(shootPoseName, shootChooser);
+  // }
+
+  // private void fillNoteChooser(String noteChooserName, SendableChooser<Pose2d> noteChooser) {
+  //   noteChooser = new SendableChooser<Pose2d>();
+  //   for (int i = 0; i < notePoseList.length; i++) {
+  //     noteChooser.addOption("Note: " + i, notePoseList[i]);
+  //   }
+  //   SmartDashboard.putData(noteChooserName, noteChooser);
+  // }
 
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();

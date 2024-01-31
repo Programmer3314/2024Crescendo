@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.DriveForwardDist;
 import frc.robot.commands.NotAim;
 import frc.robot.commands.PathFindTo;
@@ -29,9 +30,9 @@ public class MustangAutoCycle extends Command {
   @Override
   public void initialize() {
     cmd = Commands.sequence(
-        new PathFindTo(rc, notePose),
+        new PathFindTo(rc, MMField.getBluePose(notePose)),
         new DriveForwardDist(rc, .125, .5),
-        new PathFindTo(rc, shooterPose),
+        new PathFindTo(rc, MMField.getBluePose(shooterPose)),
         new NotAim(rc));
     cmd.initialize();
   }

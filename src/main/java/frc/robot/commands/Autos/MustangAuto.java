@@ -4,51 +4,33 @@
 
 package frc.robot.commands.Autos;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
 
-public class MustangAuto extends Command {
-  RobotContainer rc;
-  // TODO: Create MMDeferredCommand that commands... 
-  // like this (built in initialize) would extend.
-  // The class should be a generic specifying the 
-  // command type. 
-
-  // TODO: when you are ready to expand this to multiple cycles...
-  // consider using SequentialCommandGroup for type of cmd. 
-  Command cmd;
+public class MustangAuto extends MMDeferredCommand<SequentialCommandGroup> {
 
   public MustangAuto(RobotContainer rc) {
     this.rc = rc;
-
     addRequirements(rc.drivetrain);
   }
 
   @Override
   public void initialize() {
-    cmd = Commands.sequence(
-        new StandardAutoInit(rc, MMField.currentWooferPose()),
-        new MustangAutoCycle(rc, RobotContainer.noteChooser.getSelected(), RobotContainer.shootChooser.getSelected()));
+    cmd = new SequentialCommandGroup();
+    cmd.addCommands(new StandardAutoInit(rc, MMField.currentWooferPose())
+    .setPipeLine(0, 1));
+    if (RobotContainer.noteChooser0.getSelected() != null) {
+      cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser0.getSelected(),
+          RobotContainer.shootChooser0.getSelected()));
+    }
+    if (RobotContainer.noteChooser1.getSelected() != null) {
+      cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser1.getSelected(),
+          RobotContainer.shootChooser1.getSelected()));
+    }
     cmd.initialize();
+
   }
 
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {
-    cmd.execute();
-  }
-
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {
-    cmd.end(interrupted);
-  }
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return cmd.isFinished();
-  }
 }

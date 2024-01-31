@@ -1,0 +1,25 @@
+INTAKE:
+-goes up and down off floor 1 motor uses rack and pinion 
+-has absolute encoder on intake pinion very little revolutions less than 1 revolution
+-another falcon rotates belts to take notes in 
+-break beam sensor that detects the note coming through the intake as close as possible to the 
+start of the intake opening
+
+
+SHOOTER:
+-After intake note reaches indexer wheels which should stop the note before it reaches the shooter wheels
+-2 falcons on indexer will be set to brake mode
+-break beam sensor will be put to tell when the note is properly in the indexer
+-The shooter itself will be on an absolute encoder rotating about 30 degrees on pivot point
+-gear box ratio for shooter adjustment, pinion does 2 turns... TO BE CONTINUED rotor to mechanism ratio needed...
+maybe 1:1
+-can intake into the shooter at any angle to shooter
+-hard stop on the bottom
+-debug routine full range of motion test
+
+AMP
+-on elevator
+-encoder and home
+-breake beam to check when note got through so we can score in AMP
+-2 falcons
+needs more info
