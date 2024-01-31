@@ -185,6 +185,7 @@ public class RobotContainer {
 
   // TODO: Do this again, but leave the "new" outside the method (maybe on the line where the chooser is defined)
   // as Lamarr suggested, you can do everything else in the method except the new. 
+  // Oh, wait! Even better, create the chooser inside the method and return it. Yeah, that's the ticket, I think.
 
   // private void fillShootPoseChooser(String shootPoseName, SendableChooser<Pose2d> shootChooser) {
   //   shootChooser = new SendableChooser<Pose2d>();
