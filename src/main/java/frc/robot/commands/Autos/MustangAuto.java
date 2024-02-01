@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.DriveForwardDist;
 
 public class MustangAuto extends MMDeferredCommand<SequentialCommandGroup> {
 
@@ -21,6 +22,7 @@ public class MustangAuto extends MMDeferredCommand<SequentialCommandGroup> {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(new StandardAutoInit(rc, MMField.currentWooferPose())
         .setPipeLine(0, 1));
+    cmd.addCommands(new DriveForwardDist(rc, 0.34, -0.5));
     if (RobotContainer.noteChooser0.getSelected() != null) {
       cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser0.getSelected(),
           RobotContainer.shootChooser0.getSelected()));

@@ -18,7 +18,7 @@ public class MMStateMachineState {
     public void transitionTo(MMStateMachineState previousState) {
     };
 
-    public void transistionFrom(MMStateMachineState nextState) {
+    public void transitionFrom(MMStateMachineState nextState) {
     };
 
     public void doState() {

@@ -18,7 +18,7 @@ public class PathFindTo extends Command {
   private Command pathfindingCommand;
   private Pose2d targetPose;
   private Supplier<Pose2d> targetPoseSupplier;
-  private PathConstraints trajectoryConstraints = new PathConstraints(1, 3, 2 * Math.PI, 4 * Math.PI);
+  private PathConstraints trajectoryConstraints = new PathConstraints(1, 3,  Math.PI, 2 * Math.PI);
   private double goalEndVelocity;
   private double rotationDelayDistance;
 
@@ -36,7 +36,7 @@ public class PathFindTo extends Command {
     this.targetPoseSupplier = targetPoseSupplier;
 
     addRequirements(rc.drivetrain);
-  }// TODO: ADD ON THE FLIP (RED) SIDE - maybe not here, but where needed when this is called - Let's discuss.
+  }
 
   private Pose2d getTargetPose() {
     return targetPose;

@@ -25,7 +25,7 @@ public class MMStateMachine {
         if (!firstUpdate) {
             MMStateMachineState nextState = currentState.calcNextState();
             if (currentState != nextState) {
-                currentState.transistionFrom(nextState);
+                currentState.transitionFrom(nextState);
                 stateStartSeconds = currentTime;
                 timeInState = 0;
                 nextState.transitionTo(currentState);

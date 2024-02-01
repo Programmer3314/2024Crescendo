@@ -33,17 +33,17 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.PracticeShooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
   public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
-  private Pose2d[] notePoseList = { new Pose2d(6, 6.62, Rotation2d.fromDegrees(90)),
-      new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(90)),
-      new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(0)),
-      new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(90))
+  private Pose2d[] notePoseList = { new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
+      new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(270)),
+      new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
+      new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
   };
   private Pose2d[] shootPoseList = { new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
       MMField.getBlueWooferApproachPose(),
@@ -59,7 +59,7 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
-  public Shooter shooterSubsystem = new Shooter(this);
+  public PracticeShooter shooterSubsystem = new PracticeShooter(this);
 
   public Navigation navigation = new Navigation(this);
   public MMSignalLight signalLight = new MMSignalLight();
@@ -141,67 +141,42 @@ public class RobotContainer {
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
     
+
+    
     // noteChooser0 = new SendableChooser<Pose2d>();
     // noteChooser1 = new SendableChooser<Pose2d>();
     // shootChooser0 = new SendableChooser<Pose2d>();
     // shootChooser1 = new SendableChooser<Pose2d>();
 
-    // fillNoteChooser("Note 1", noteChooser0);
-    // fillNoteChooser("Note 2", noteChooser1);
+    noteChooser0 = fillNoteChooser("Note 1");
+    noteChooser1 = fillNoteChooser("Note 2");
 
-    // fillShootPoseChooser("Shoot Pose 1", shootChooser0);
-    // fillShootPoseChooser("Shoot Pose 2", shootChooser1);
+    shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
+    shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
-      
-    shootChooser0 = new SendableChooser<Pose2d>();
-    for (int i = 0; i < shootPoseList.length; i++) {
-      shootChooser0.addOption("Shoot: " + i, shootPoseList[i]);
-    }
-    SmartDashboard.putData("shoot Choser", shootChooser0);
-  
-
-    noteChooser0 = new SendableChooser<Pose2d>();
-    for (int i = 0; i < notePoseList.length; i++) {
-      noteChooser0.addOption("Note: " + i, notePoseList[i]);
-    }
-    SmartDashboard.putData("note Chooser", noteChooser0);
-  
-
-        shootChooser1 = new SendableChooser<Pose2d>();
-    for (int i = 0; i < shootPoseList.length; i++) {
-      shootChooser1.addOption("Shoot: " + i, shootPoseList[i]);
-    }
-    SmartDashboard.putData("shoot Choser 1", shootChooser1);
-  
-
-    noteChooser1 = new SendableChooser<Pose2d>();
-    for (int i = 0; i < notePoseList.length; i++) {
-      noteChooser1.addOption("Note: " + i, notePoseList[i]);
-    }
-    SmartDashboard.putData("note Chooser 0", noteChooser1);
-
-    
   }
 
   // TODO: Do this again, but leave the "new" outside the method (maybe on the line where the chooser is defined)
   // as Lamarr suggested, you can do everything else in the method except the new. 
   // Oh, wait! Even better, create the chooser inside the method and return it. Yeah, that's the ticket, I think.
 
-  // private void fillShootPoseChooser(String shootPoseName, SendableChooser<Pose2d> shootChooser) {
-  //   shootChooser = new SendableChooser<Pose2d>();
-  //   for (int i = 0; i < shootPoseList.length; i++) {
-  //     shootChooser.addOption("Shoot: " + i, shootPoseList[i]);
-  //   }
-  //   SmartDashboard.putData(shootPoseName, shootChooser);
-  // }
+  private SendableChooser<Pose2d> fillShootPoseChooser(String shootPoseName) {
+    SendableChooser<Pose2d> shootChooser = new SendableChooser<Pose2d>();
+    for (int i = 0; i < shootPoseList.length; i++) {
+      shootChooser.addOption("Shoot: " + i, shootPoseList[i]);
+    }
+    SmartDashboard.putData(shootPoseName, shootChooser);
+    return shootChooser;
+  }
 
-  // private void fillNoteChooser(String noteChooserName, SendableChooser<Pose2d> noteChooser) {
-  //   noteChooser = new SendableChooser<Pose2d>();
-  //   for (int i = 0; i < notePoseList.length; i++) {
-  //     noteChooser.addOption("Note: " + i, notePoseList[i]);
-  //   }
-  //   SmartDashboard.putData(noteChooserName, noteChooser);
-  // }
+  private SendableChooser<Pose2d> fillNoteChooser(String noteChooserName) {
+        SendableChooser<Pose2d> noteChooser = new SendableChooser<Pose2d>();
+    for (int i = 0; i < notePoseList.length; i++) {
+      noteChooser.addOption("Note: " + i, notePoseList[i]);
+    }
+    SmartDashboard.putData(noteChooserName, noteChooser);
+    return noteChooser;
+  }
 
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
