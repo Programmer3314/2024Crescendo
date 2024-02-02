@@ -30,10 +30,7 @@ import frc.robot.MMUtilities.MMWaypoint;
 
 public class PracticeShooter extends SubsystemBase {
   RobotContainer rc;
-  MMFiringSolution firingSolution = new MMFiringSolution(
-      new MMWaypoint(1.3, -.111, 50),
-      new MMWaypoint(2.5, -.078, 70),
-      new MMWaypoint(3.97, -.057, 70));
+  
   private Pose2d speakerPose;
   private MMTurnPIDController turnPidController = new MMTurnPIDController();
   private Pose2d currentPose;
@@ -52,73 +49,72 @@ public class PracticeShooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public PracticeShooter(RobotContainer rc) {
     this.rc = rc;
-    configShooterRotateCanCoder();
-    configShooterRotateMotor();
+    
   }
 
-  private void configShooterRotateCanCoder() {
-    CANcoderConfiguration canConfig = new CANcoderConfiguration();
-    canConfig.MagnetSensor
-        .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
-        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.390869140625);
-    MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
-  }
+  // private void configShooterRotateCanCoder() {
+  //   CANcoderConfiguration canConfig = new CANcoderConfiguration();
+  //   canConfig.MagnetSensor
+  //       .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
+  //       .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+  //       .withMagnetOffset(-0.390869140625);
+  //   MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
+  // }
 
-  private void configShooterRotateMotor() {
-    double cruiseVelocity = .5; // Sensor revolutions/second
-    double timeToReachCruiseVelocity = .4; // seconds
-    double timeToReachMaxAcceleration = .2; // seconds
+  // private void configShooterRotateMotor() {
+  //   double cruiseVelocity = .5; // Sensor revolutions/second
+  //   double timeToReachCruiseVelocity = .4; // seconds
+  //   double timeToReachMaxAcceleration = .2; // seconds
 
-    double maxSupplyVoltage = 12; // Max supply
-    double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
-    double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
-    double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
-    double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
-                                                                                                // Sensor Velocity
+  //   double maxSupplyVoltage = 12; // Max supply
+  //   double staticFrictionVoltage = 1; //
+  //   double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
+  //   double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
+  //   double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
+  //   double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
+  //                                                                                               // Sensor Velocity
 
-    TalonFXConfiguration cfg = new TalonFXConfiguration();
-    cfg.MotorOutput
-        .withNeutralMode(NeutralModeValue.Brake);
-    cfg.MotionMagic
-        .withMotionMagicCruiseVelocity(cruiseVelocity)
-        .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
-        .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
-    cfg.Slot0
-        .withKS(1) // voltage to overcome static friction
-        .withKV(feedForwardVoltage)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(12)
-        .withKI(0)
-        .withKD(2);
-    cfg.Feedback
-        .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
-        .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-        .withSensorToMechanismRatio(1)
-        .withRotorToSensorRatio(rotorToSensorRatio);
-    cfg.Slot1
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(96 * 2)// 12
-        .withKI(0)
-        .withKD(.25);// 2
-    cfg.Slot2
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(48)// 12
-        .withKI(0)
-        .withKD(.25);// 2
-    MMConfigure.configureDevice(shooterRotateMotor, cfg);
-  }
+  //   TalonFXConfiguration cfg = new TalonFXConfiguration();
+  //   cfg.MotorOutput
+  //       .withNeutralMode(NeutralModeValue.Brake);
+  //   cfg.MotionMagic
+  //       .withMotionMagicCruiseVelocity(cruiseVelocity)
+  //       .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
+  //       .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
+  //   cfg.Slot0
+  //       .withKS(1) // voltage to overcome static friction
+  //       .withKV(feedForwardVoltage)
+  //       .withKA(0) // "arbitrary" amount to provide crisp response
+  //       .withKG(0) // gravity can be used for elevator or arm
+  //       .withGravityType(GravityTypeValue.Arm_Cosine)
+  //       .withKP(12)
+  //       .withKI(0)
+  //       .withKD(2);
+  //   cfg.Feedback
+  //       .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
+  //       .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+  //       .withSensorToMechanismRatio(1)
+  //       .withRotorToSensorRatio(rotorToSensorRatio);
+  //   cfg.Slot1
+  //       .withKS(1) // voltage to overcome static friction
+  //       .withKV(0)
+  //       .withKA(0) // "arbitrary" amount to provide crisp response
+  //       .withKG(0) // gravity can be used for elevator or arm
+  //       .withGravityType(GravityTypeValue.Arm_Cosine)
+  //       .withKP(96 * 2)// 12
+  //       .withKI(0)
+  //       .withKD(.25);// 2
+  //   cfg.Slot2
+  //       .withKS(1) // voltage to overcome static friction
+  //       .withKV(0)
+  //       .withKA(0) // "arbitrary" amount to provide crisp response
+  //       .withKG(0) // gravity can be used for elevator or arm
+  //       .withGravityType(GravityTypeValue.Arm_Cosine)
+  //       .withKP(48)// 12
+  //       .withKI(0)
+  //       .withKD(.25);// 2
+  //   MMConfigure.configureDevice(shooterRotateMotor, cfg);
+  // }
 
   @Override
   public void periodic() {
@@ -133,7 +129,7 @@ public class PracticeShooter extends SubsystemBase {
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
     distanceToSpeaker = transformFromSpeaker.getNorm();
 
-    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+    // desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
 
     SmartDashboard.putNumber("Velocity", desiredWaypoint.getVelocity());
     SmartDashboard.putNumber("Distance To Target", distanceToSpeaker);

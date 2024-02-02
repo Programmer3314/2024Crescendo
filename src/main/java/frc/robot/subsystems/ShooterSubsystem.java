@@ -11,14 +11,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private TalonFX topMotor = new TalonFX(3, "CANIVORE");
-  private TalonFX bottomMotor = new TalonFX(4, "CANIVORE");
-  private TalonFX index1 = new TalonFX(1, "CANIVORE");
-  private TalonFX index2 = new TalonFX(2, "CANIVORE");
   private static double topMotorSpeed = 0;
   private static double bottomMotorSpeed = 0;
   private static double currentLimit = 0;
@@ -74,10 +71,10 @@ public class ShooterSubsystem extends SubsystemBase {
         .withKG(0)
         .withKI(0)
         .withKD(0);
-    Robot.configureMotor(bottomMotor, genericConfig, currentLimit);
-    Robot.configureMotor(topMotor, genericConfig, currentLimit);
-    Robot.configureMotor(index1, genericConfig, currentLimit);
-    Robot.configureMotor(index2, genericConfig, currentLimit);
+    // MMConfigure.configureDevice(bottomMotor, genericConfig);
+    // MMConfigure.configureDevice(topMotor, genericConfig);
+    // MMConfigure.configureDevice(index1, genericConfig);
+    // MMConfigure.configureDevice(index2, genericConfig);
   }
 
   public void setMotorSpeed() {
@@ -95,51 +92,51 @@ public class ShooterSubsystem extends SubsystemBase {
     genericConfig();
   }
 
-  public void runMotors() {
-    topMotor.setControl(topVelVol.withVelocity(topMotorSpeed));
-    bottomMotor.setControl(bottomVelVol.withVelocity(bottomMotorSpeed));
-  }
+  // public void runMotors() {
+  //   topMotor.setControl(topVelVol.withVelocity(topMotorSpeed));
+  //   bottomMotor.setControl(bottomVelVol.withVelocity(bottomMotorSpeed));
+  // }
 
-  public void runTopMotor() {
-    topMotor.setControl(topVelVol.withVelocity(topMotorSpeed));
-  }
+  // public void runTopMotor() {
+  //   topMotor.setControl(topVelVol.withVelocity(topMotorSpeed));
+  // }
 
-  public void runBottomMotor() {
-    bottomMotor.setControl(bottomVelVol.withVelocity(bottomMotorSpeed));
-  }
+  // public void runBottomMotor() {
+  //   bottomMotor.setControl(bottomVelVol.withVelocity(bottomMotorSpeed));
+  // }
 
-  public void stopMotors() {
-    topMotor.set(0);
-    bottomMotor.set(0);
-  }
+  // public void stopMotors() {
+  //   topMotor.set(0);
+  //   bottomMotor.set(0);
+  // }
 
-  public void stopTopMotor() {
-    topMotor.set(0);
-  }
+  // public void stopTopMotor() {
+  //   topMotor.set(0);
+  // }
 
-  public void stopBottomMotor() {
-    bottomMotor.set(0);
-  }
+  // public void stopBottomMotor() {
+  //   bottomMotor.set(0);
+  // }
 
-  public void runIndexers() {
+  // public void runIndexers() {
 
-    index1.setControl(topVelVol.withVelocity(index1Speed));
-    index2.setControl(topVelVol.withVelocity(index2Speed));
-  }
+  //   index1.setControl(topVelVol.withVelocity(index1Speed));
+  //   index2.setControl(topVelVol.withVelocity(index2Speed));
+  // }
 
-  public void stopIndexers() {
-    index2.set(0);
-    index1.set(0);
-  }
+  // public void stopIndexers() {
+  //   index2.set(0);
+  //   index1.set(0);
+  // }
 
   @Override
   public void periodic() {
-     SmartDashboard.putNumber("Returned Top Motor Speed",
-     topMotor.getVelocity().getValue());
-     SmartDashboard.putNumber("Returned Bottom Motor Speed",
-     bottomMotor.getVelocity().getValue());
-    SmartDashboard.putNumber("Returned Index 1 Speed", index1.getVelocity().getValue());
-    SmartDashboard.putNumber("Returned Index 2 Speed", index2.getVelocity().getValue());
+    // SmartDashboard.putNumber("Returned Top Motor Speed",
+    //     topMotor.getVelocity().getValue());
+    // SmartDashboard.putNumber("Returned Bottom Motor Speed",
+    //     bottomMotor.getVelocity().getValue());
+    // SmartDashboard.putNumber("Returned Index 1 Speed", index1.getVelocity().getValue());
+    // SmartDashboard.putNumber("Returned Index 2 Speed", index2.getVelocity().getValue());
 
     SmartDashboard.putNumber("Wanted Top Speed", topMotorSpeed);
     SmartDashboard.putNumber("Wanted Bottom Speed", bottomMotorSpeed);
@@ -184,7 +181,7 @@ public class ShooterSubsystem extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
 
-        stopMotors();
+        // stopMotors();
       }
 
       @Override
@@ -208,8 +205,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runTopMotor();
-        stopBottomMotor();
+        // runLeftMotor();
+        // stopRightMotor();
       }
 
       @Override
@@ -233,8 +230,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runBottomMotor();
-        stopTopMotor();
+        // runRightMotor();
+        // stopLeftMotor();
       }
 
       @Override
@@ -258,7 +255,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runMotors();
+        // runMotors();
       }
 
       @Override

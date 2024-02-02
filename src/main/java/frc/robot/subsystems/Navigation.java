@@ -5,12 +5,14 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.RobotContainer;
+import frc.robot.MMUtilities.MMField;
 
 public class Navigation extends SubsystemBase {
   RobotContainer rc;
@@ -81,4 +83,13 @@ public class Navigation extends SubsystemBase {
       return "NoteStraight";
     }
   }
+
+  public double getDistanceToSpeaker() {
+    Pose2d currentPose = rc.drivetrain.getState().Pose;
+    Translation2d target = MMField.currentSpeakerPose().getTranslation();
+    double distance = currentPose.getTranslation().minus(target).getNorm();
+    return distance;
+  }
+
+  
 }

@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class MMStateMachine {
     double stateStartSeconds;
-    double timeInState;
+    public double timeInState;
 
     MMStateMachineState currentState;
     boolean firstUpdate;
