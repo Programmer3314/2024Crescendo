@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -35,7 +36,7 @@ public class Shooter extends SubsystemBase {
       new MMWaypoint(2.5, -.078, 70),
       new MMWaypoint(3.97, -.057, 70));
 
-  private TalonFX LeftMotor = new TalonFX(3, "CANIVORE");
+  private TalonFX leftMotor = new TalonFX(3, "CANIVORE");
   private TalonFX rightMotor = new TalonFX(4, "CANIVORE");
   private TalonFX index1 = new TalonFX(1, "CANIVORE");
   private TalonFX index2 = new TalonFX(2, "CANIVORE");
@@ -54,6 +55,10 @@ public class Shooter extends SubsystemBase {
   DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
 
+  boolean runAimToSpeaker;
+
+  private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
+
   /** Creates a new Shooter. */
   public Shooter() {
     configShooterRotateCanCoder();
@@ -66,6 +71,11 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    if (runAimToSpeaker) {
+      aimToSpeaker();
+    } else {
+      stopShooterMotors();
+    }
   }
 
   // (Proposed Outline)
@@ -105,6 +115,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         // Intake up
         // Stop All Motors
+        runAimToSpeaker = false;
       }
 
       @Override
@@ -142,6 +153,7 @@ public class Shooter extends SubsystemBase {
         // stop rollers
         // stop feeders
         // setPosition for intake motor(up)
+        runAimToSpeaker = true;
       }
 
       @Override
@@ -232,31 +244,47 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(0);
     MMConfigure.configureDevice(rightMotor, genericConfig);
-    MMConfigure.configureDevice(LeftMotor, genericConfig);
+    MMConfigure.configureDevice(leftMotor, genericConfig);
     MMConfigure.configureDevice(index1, genericConfig);
     MMConfigure.configureDevice(index2, genericConfig);
   }
 
+  public double getLeftShooterVelocity() {
+    return leftMotor.getVelocity().getValue();
+  }
+
+  public double getRightShooterVelocity() {
+    return rightMotor.getVelocity().getValue();
+  }
+
+  public double getShooterAngle() {
+    return shooterRotateMotor.getPosition().getValue();
+  }
+
   public void runMotors(double leftMotorSpeed, double rightMotorSpeed) {
-    LeftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
+    leftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
     rightMotor.setControl(rightVelVol.withVelocity(rightMotorSpeed));
   }
 
   public void runLeftMotor(double leftMotorSpeed) {
-    LeftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
+    leftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
   }
 
   public void runRightMotor(double rightMotorSpeed) {
     rightMotor.setControl(rightVelVol.withVelocity(rightMotorSpeed));
   }
 
-  public void stopMotors() {
-    LeftMotor.set(0);
+  public void setShooterPosition(double position) {
+    shooterRotateMotor.setControl(shooterRotateMotionMagicVoltage.withPosition(position));
+  }
+
+  public void stopShooterMotors() {
+    leftMotor.set(0);
     rightMotor.set(0);
   }
 
   public void stopLeftMotor() {
-    LeftMotor.set(0);
+    leftMotor.set(0);
   }
 
   public void stopRightMotor() {
@@ -279,7 +307,7 @@ public class Shooter extends SubsystemBase {
     MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
     runLeftMotor(desiredWaypoint.getLeftVelocity());
     runRightMotor(desiredWaypoint.getRightVelocity());
-    //
+    setShooterPosition(desiredWaypoint.getAngle());
   }
 
   private void configIntakeRotateCanCoder() {
