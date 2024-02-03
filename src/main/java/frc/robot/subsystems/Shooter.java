@@ -17,52 +17,56 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
+import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
+import frc.robot.MMUtilities.MMTurnPIDController;
 import frc.robot.MMUtilities.MMWaypoint;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
   private ShooterStateMachine ssm = new ShooterStateMachine();
+
+  private MMTurnPIDController turnPidController = new MMTurnPIDController();
+  Rotation2d targetAngleSpeaker;
+  Pose2d speakerPose;
+  Pose2d currentPose;
+  double speakerTurnRate;
   double shooterAngleMargin = .01;
   double shooterVelocityMargin = 2;
+  double rotationMargin = 2;
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
   double shooterDelay = .125;
   boolean runShoot;
 
-  double distanceToSpeaker;
-  MMWaypoint desiredWaypoint;
+  public double distanceToSpeaker;
+  public MMWaypoint desiredWaypoint;
 
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, -.111, 50),
       new MMWaypoint(2.5, -.078, 70),
       new MMWaypoint(3.97, -.057, 70));
 
-  private TalonFX leftMotor = new TalonFX(3, "CANIVORE");
-  private TalonFX rightMotor = new TalonFX(4, "CANIVORE");
-  private TalonFX index1 = new TalonFX(1, "CANIVORE");
-  private TalonFX index2 = new TalonFX(2, "CANIVORE");
+  private TalonFX intakeBelt = new TalonFX(9, "CANIVORE");
+  private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
+  private TalonFX shooterRotateMotor = new TalonFX(11, "CANIVORE");
+  private TalonFX index1 = new TalonFX(12, "CANIVORE");
+  private TalonFX index2 = new TalonFX(13, "CANIVORE");
+  private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
+  private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
 
-  private VelocityVoltage index1VelVol = new VelocityVoltage(0);
-  private VelocityVoltage index2VelVol = new VelocityVoltage(0);
-  private VelocityVoltage leftVelVol = new VelocityVoltage(0);
-  private VelocityVoltage rightVelVol = new VelocityVoltage(0);
-
-  TalonFX intakeRotateMotor = new TalonFX(12, "CANIVORE");
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
-
-  TalonFX shooterRotateMotor = new TalonFX(13, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
-
-  TalonFX intakeBelt = new TalonFX(14, "CANIVORE");
-  private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
 
   DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
@@ -79,6 +83,12 @@ public class Shooter extends SubsystemBase {
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
+  private VelocityVoltage index1VelVol = new VelocityVoltage(0);
+  private VelocityVoltage index2VelVol = new VelocityVoltage(0);
+  private VelocityVoltage leftVelVol = new VelocityVoltage(0);
+  private VelocityVoltage rightVelVol = new VelocityVoltage(0);
+  private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
+
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -94,13 +104,21 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     calcFiringSolution();
+    speakerPose = MMField.currentSpeakerPose();
+    currentPose = rc.drivetrain.getState().Pose;
+    Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
+    targetAngleSpeaker = transformFromSpeaker.getAngle();
+
     ssm.update();
+
+    turnPidController.initialize(targetAngleSpeaker);
+    speakerTurnRate = turnPidController.execute(currentPose.getRotation());
 
     // This method will be called once per scheduler run
     if (runAim) {
-    aimToSpeaker();
+      aimToSpeaker();
     } else {
-    stopShooterMotors();
+      stopShooterMotors();
     }
   }
 
@@ -164,21 +182,18 @@ public class Shooter extends SubsystemBase {
         intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
         index1.setControl(index1VelVol.withVelocity(indexInVel));
         index2.setControl(index2VelVol.withVelocity(-indexInVel));
-        if (runAim) {
-          aimToSpeaker();
-        }
+        setAimFlag(true);
       }
-    
 
       @Override
       public MMStateMachineState calcNextState() {
         if (!shooterBreakBeam.get()) {
           return Index;
         }
-        if(!intakeBreakBeam.get()){
+        if (!intakeBreakBeam.get()) {
           return this;
         }
-        if(abortIntake){
+        if (abortIntake) {
           return Idle;
         }
         return this;
@@ -186,17 +201,16 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState nexState) {
-      stopIntake();
-      setIntakeUp();
+        stopIntake();
+        setIntakeUp();
       }
-      
+
     };
     MMStateMachineState Index = new MMStateMachineState("Index") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         stopIndexers();
-        setAimFlag(true);
         setIntakeFlag(false);
       }
 
@@ -500,9 +514,15 @@ public class Shooter extends SubsystemBase {
 
   }
 
+  public double getSpeakerTurnRate() {
+    return speakerTurnRate;
+  }
+
   public boolean readyToShoot() {
+
     return Math.abs(leftMotor.getVelocity().getValue() - desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
         && Math.abs(rightMotor.getVelocity().getValue() - desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
-        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin;
+        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin
+        && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) < rotationMargin;
   }
 }

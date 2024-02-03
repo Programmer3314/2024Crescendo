@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.Aim;
 import frc.robot.commands.ChaseCone;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
@@ -34,6 +35,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.PracticeShooter;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
@@ -59,7 +62,8 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
-  public PracticeShooter shooterSubsystem = new PracticeShooter(this);
+  public Shooter shooterSubsystem = new Shooter();
+
 
   public Navigation navigation = new Navigation(this);
   public MMSignalLight signalLight = new MMSignalLight();
@@ -80,16 +84,24 @@ public class RobotContainer {
             .withVelocityY(joystick.getLeftXSmoothed())
             .withRotationalRate(joystick.getRightXSmoothed())));
 
+    joystick.rightBumper().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
+    joystick.rightTrigger().onTrue(new InstantCommand(()->shooterSubsystem.setShootFlag(true)))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
+    joystick.a().whileTrue(new Aim(this));
+    joystick.leftTrigger().onTrue(new GoShoot(this));
+    joystick.leftBumper().onTrue(
+        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
+            new InstantCommand(Robot::resetVisionUpdate)));
+
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
 
-    joystick.b().whileTrue(new GoShoot(this));
+    // joystick.b().whileTrue(new GoShoot(this));
+    // joystick.x().whileTrue(new PathFindTo(this, MMField::getBlueWooferApproachPose));
+    // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
+    // joystick.a().whileTrue(new NotAim(this));
 
-    joystick.x().whileTrue(new PathFindTo(this, MMField::getBlueWooferApproachPose));
-
-    joystick.y().whileTrue(new AutoSamplerShootSmove(this));
-
-    joystick.a().whileTrue(new NotAim(this));
     // joystick.a().whileTrue(new ChaseCone(this));
 
     // joystick.y().whileTrue(new InstantCommand(
@@ -105,9 +117,7 @@ public class RobotContainer {
     // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(
-        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
-            new InstantCommand(Robot::resetVisionUpdate)));
+    
     // joystick.rightBumper().onTrue(new InstantCommand(
     // () -> claw.openClaw()));
     // joystick.rightTrigger().onTrue(new InstantCommand(
@@ -155,10 +165,6 @@ public class RobotContainer {
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
   }
-
-  // TODO: Do this again, but leave the "new" outside the method (maybe on the line where the chooser is defined)
-  // as Lamarr suggested, you can do everything else in the method except the new. 
-  // Oh, wait! Even better, create the chooser inside the method and return it. Yeah, that's the ticket, I think.
 
   private SendableChooser<Pose2d> fillShootPoseChooser(String shootPoseName) {
     SendableChooser<Pose2d> shootChooser = new SendableChooser<Pose2d>();

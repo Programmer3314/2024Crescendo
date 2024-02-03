@@ -32,7 +32,7 @@ public class PracticeShooter extends SubsystemBase {
   RobotContainer rc;
   
   private Pose2d speakerPose;
-  private MMTurnPIDController turnPidController = new MMTurnPIDController();
+  // private MMTurnPIDController turnPidController = new MMTurnPIDController();
   private Pose2d currentPose;
   private double distanceToSpeaker;
   private double speakerTurnRate;
@@ -124,9 +124,9 @@ public class PracticeShooter extends SubsystemBase {
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
     targetAngleSpeaker = transformFromSpeaker.getAngle();
 
-    turnPidController.initialize(targetAngleSpeaker);
+    // turnPidController.initialize(targetAngleSpeaker);
 
-    speakerTurnRate = turnPidController.execute(currentPose.getRotation());
+    // speakerTurnRate = turnPidController.execute(currentPose.getRotation());
     distanceToSpeaker = transformFromSpeaker.getNorm();
 
     // desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
