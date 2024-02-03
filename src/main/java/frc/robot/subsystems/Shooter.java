@@ -28,9 +28,18 @@ import frc.robot.MMUtilities.MMWaypoint;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
+  private ShooterStateMachine ssm = new ShooterStateMachine();
+  double shooterAngleMargin = .01;
+  double shooterVelocityMargin = 2;
+  boolean runAim;
   boolean runIntake;
+  boolean abortIntake;
   double shooterDelay = .125;
   boolean runShoot;
+
+  double distanceToSpeaker;
+  MMWaypoint desiredWaypoint;
+
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, -.111, 50),
       new MMWaypoint(2.5, -.078, 70),
@@ -41,6 +50,8 @@ public class Shooter extends SubsystemBase {
   private TalonFX index1 = new TalonFX(1, "CANIVORE");
   private TalonFX index2 = new TalonFX(2, "CANIVORE");
 
+  private VelocityVoltage index1VelVol = new VelocityVoltage(0);
+  private VelocityVoltage index2VelVol = new VelocityVoltage(0);
   private VelocityVoltage leftVelVol = new VelocityVoltage(0);
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
 
@@ -51,13 +62,23 @@ public class Shooter extends SubsystemBase {
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
 
   TalonFX intakeBelt = new TalonFX(14, "CANIVORE");
+  private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
 
   DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
 
-  boolean runAimToSpeaker;
+  double intakeUpPos = .01;
+  double intakeDownPos = 0;
+
+  double intakeVelIn = 100;
+  double intakeVelOut = -100;
+
+  double indexInVel = 30;
+  double index1ShootVel = 70;
+  double index2ShootVel = -70;
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
+  private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -66,15 +87,20 @@ public class Shooter extends SubsystemBase {
     configIntakeRotateCanCoder();
     configIntakeRotateMotor();
     configMotors();
+    ssm.setInitial(ssm.Start);
+
   }
 
   @Override
   public void periodic() {
+    calcFiringSolution();
+    ssm.update();
+
     // This method will be called once per scheduler run
-    if (runAimToSpeaker) {
-      aimToSpeaker();
+    if (runAim) {
+    aimToSpeaker();
     } else {
-      stopShooterMotors();
+    stopShooterMotors();
     }
   }
 
@@ -113,14 +139,16 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // Intake up
-        // Stop All Motors
-        runAimToSpeaker = false;
+        setIntakeUp();
+        setAimFlag(false);
+        stopIndexers();
+        stopShooterMotors();
+        stopIntake();
+
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        // check intake flag ->
         if (runIntake) {
           return DropIntake;
         }
@@ -132,28 +160,44 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // setPosition for intake motor(down)
-        // setVelocity for rollers (in)
-        // setVelocity for feeders(in)
-        // run Command for shooters to spin up
+        setIntakeDown();
+        intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
+        index1.setControl(index1VelVol.withVelocity(indexInVel));
+        index2.setControl(index2VelVol.withVelocity(-indexInVel));
+        if (runAim) {
+          aimToSpeaker();
+        }
       }
+    
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (!intakeBreakBeam.get()) {
+        if (!shooterBreakBeam.get()) {
           return Index;
+        }
+        if(!intakeBreakBeam.get()){
+          return this;
+        }
+        if(abortIntake){
+          return Idle;
         }
         return this;
       }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nexState) {
+      stopIntake();
+      setIntakeUp();
+      }
+      
     };
     MMStateMachineState Index = new MMStateMachineState("Index") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // stop rollers
-        // stop feeders
-        // setPosition for intake motor(up)
-        runAimToSpeaker = true;
+        stopIndexers();
+        setAimFlag(true);
+        setIntakeFlag(false);
       }
 
       @Override
@@ -169,14 +213,10 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
 
       @Override
-      public void transitionTo(MMStateMachineState previousState) {
-
-      }
-
-      @Override
       public MMStateMachineState calcNextState() {
-        // if at angle based on waypoint & at speed based on waypoint -> shoot
-
+        if (readyToShoot() && runShoot) {
+          return Shoot;
+        }
         return this;
       }
     };
@@ -185,7 +225,9 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // Run feeders based on waypoint
+        index1.setControl(index1VelVol.withVelocity(index1ShootVel));
+        index2.setControl(index2VelVol.withVelocity(index2ShootVel));
+        setShootFlag(false);
       }
 
       @Override
@@ -202,11 +244,6 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState ShootPauseBroken = new MMStateMachineState("ShootPauseBroken") {
 
       @Override
-      public void transitionTo(MMStateMachineState previousState) {
-
-      }
-
-      @Override
       public MMStateMachineState calcNextState() {
         if (shooterBreakBeam.get()) {
           return ShootPause;
@@ -215,11 +252,6 @@ public class Shooter extends SubsystemBase {
       }
     };
     MMStateMachineState ShootPause = new MMStateMachineState("ShootPause") {
-
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        //
-      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -301,10 +333,11 @@ public class Shooter extends SubsystemBase {
     index1.set(0);
   }
 
-  public void aimToSpeaker() {
-    double distance = rc.navigation.getDistanceToSpeaker();
+  public void stopIntake() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
+  }
 
-    MMWaypoint desiredWaypoint = firingSolution.calcSolution(distance);
+  public void aimToSpeaker() {
     runLeftMotor(desiredWaypoint.getLeftVelocity());
     runRightMotor(desiredWaypoint.getRightVelocity());
     setShooterPosition(desiredWaypoint.getAngle());
@@ -436,5 +469,40 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
+  }
+
+  public void calcFiringSolution() {
+    distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
+    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+  }
+
+  public Shooter setIntakeFlag(boolean run) {
+    runIntake = run;
+    return this;
+  }
+
+  public Shooter setShootFlag(boolean run) {
+    runShoot = run;
+    return this;
+  }
+
+  public Shooter setAimFlag(boolean aim) {
+    runAim = aim;
+    return this;
+  }
+
+  public void setIntakeUp() {
+    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeUpPos));
+  }
+
+  public void setIntakeDown() {
+    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(1).withPosition(intakeDownPos));
+
+  }
+
+  public boolean readyToShoot() {
+    return Math.abs(leftMotor.getVelocity().getValue() - desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
+        && Math.abs(rightMotor.getVelocity().getValue() - desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
+        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin;
   }
 }
