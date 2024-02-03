@@ -15,7 +15,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -45,6 +44,7 @@ public class Shooter extends SubsystemBase {
       new MMWaypoint(2.5, -.078, 70),
       new MMWaypoint(3.97, -.057, 70));
 
+  // TODO: Assign new CAN IDs for motors and encoders
   private TalonFX leftMotor = new TalonFX(3, "CANIVORE");
   private TalonFX rightMotor = new TalonFX(4, "CANIVORE");
   private TalonFX index1 = new TalonFX(1, "CANIVORE");
@@ -88,7 +88,6 @@ public class Shooter extends SubsystemBase {
     configIntakeRotateMotor();
     configMotors();
     ssm.setInitial(ssm.Start);
-
   }
 
   @Override
@@ -96,11 +95,10 @@ public class Shooter extends SubsystemBase {
     calcFiringSolution();
     ssm.update();
 
-    // This method will be called once per scheduler run
     if (runAim) {
-    aimToSpeaker();
+      aimToSpeaker();
     } else {
-    stopShooterMotors();
+      stopShooterMotors();
     }
   }
 
@@ -136,7 +134,6 @@ public class Shooter extends SubsystemBase {
     };
 
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
-
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeUp();
@@ -144,7 +141,6 @@ public class Shooter extends SubsystemBase {
         stopIndexers();
         stopShooterMotors();
         stopIntake();
-
       }
 
       @Override
@@ -164,21 +160,21 @@ public class Shooter extends SubsystemBase {
         intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
         index1.setControl(index1VelVol.withVelocity(indexInVel));
         index2.setControl(index2VelVol.withVelocity(-indexInVel));
+        // TODO: Isn't this being handled in periodic?
         if (runAim) {
           aimToSpeaker();
         }
       }
-    
 
       @Override
       public MMStateMachineState calcNextState() {
         if (!shooterBreakBeam.get()) {
           return Index;
         }
-        if(!intakeBreakBeam.get()){
+        if (!intakeBreakBeam.get()) {
           return this;
         }
-        if(abortIntake){
+        if (abortIntake) {
           return Idle;
         }
         return this;
@@ -186,10 +182,10 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState nexState) {
-      stopIntake();
-      setIntakeUp();
+        stopIntake();
+        setIntakeUp();
       }
-      
+
     };
     MMStateMachineState Index = new MMStateMachineState("Index") {
 
@@ -348,7 +344,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.390869140625);
+        .withMagnetOffset(-0.390869140625); // TODO: Update with real values
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
@@ -357,7 +353,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.390869140625);
+        .withMagnetOffset(-0.390869140625); // TODO: Update with real values
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
@@ -368,12 +364,12 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
+    double rotorToSensorRatio = (60.0 / 15.0) * 48.0; // TODO: Update with real values
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
-
+    // TODO: Update with real values
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -423,12 +419,13 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = (60.0 / 15.0) * 48.0;
+    double rotorToSensorRatio = (60.0 / 15.0) * 48.0; // TODO: Update with real values
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
 
+    // TODO: Update with real values
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -441,8 +438,8 @@ public class Shooter extends SubsystemBase {
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(12)
+        .withGravityType(GravityTypeValue.Arm_Cosine) 
+        .withKP(12) 
         .withKI(0)
         .withKD(2);
     cfg.Feedback
