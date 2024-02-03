@@ -46,8 +46,10 @@ public class Shooter extends SubsystemBase {
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
-  double shooterDelay = .125;
   boolean runShoot;
+  boolean runOutTake;
+  double shooterDelay = .125;
+  double outTakeDelay = .125;
 
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
@@ -88,7 +90,6 @@ public class Shooter extends SubsystemBase {
   private VelocityVoltage leftVelVol = new VelocityVoltage(0);
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
-
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -219,7 +220,9 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
-
+        if (runOutTake){
+          return IntakeReverse;
+        }
         return this;
       }
     };
@@ -270,6 +273,60 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= shooterDelay) {
+          return Idle;
+        } else {
+          return this;
+        }
+      }
+    };
+
+    MMStateMachineState IntakeReverse = new MMStateMachineState("IntakeReverse") {
+
+      public void transitionTo(MMStateMachineState previousState) {
+        setIntakeDown();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (Math.abs(intakeRotateMotor.getPosition().getValue()-intakeDownPos) < .05) {
+          return IndexReverse;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState IndexReverse = new MMStateMachineState("IndexReverse") {
+
+      public void transitionTo(MMStateMachineState previousState) {
+        reverseIndexers(index1ShootVel, index2ShootVel);
+        outTake();
+        setReverseIntakeFlag(false);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!intakeBreakBeam.get()) {
+          return IntakeBrokenPause;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState IntakeBrokenPause = new MMStateMachineState("ShootPauseBroken") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (intakeBreakBeam.get()) {
+          return IntakePause;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState IntakePause = new MMStateMachineState("IntakePause") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= outTakeDelay) {
           return Idle;
         } else {
           return this;
@@ -342,6 +399,16 @@ public class Shooter extends SubsystemBase {
     index2.setControl(leftVelVol.withVelocity(index2Speed));
   }
 
+  public void shootIndexers(double index1ShootSpeed, double index2ShootSpeed) {
+    index1.setControl(leftVelVol.withVelocity(index1ShootSpeed));
+    index2.setControl(leftVelVol.withVelocity(index2ShootSpeed));
+  }
+
+  public void reverseIndexers(double index1Speed, double index2Speed) {
+    index1.setControl(leftVelVol.withVelocity(-index1Speed));
+    index2.setControl(leftVelVol.withVelocity(-index2Speed));
+  }
+
   public void stopIndexers() {
     index2.set(0);
     index1.set(0);
@@ -349,6 +416,10 @@ public class Shooter extends SubsystemBase {
 
   public void stopIntake() {
     intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
+  }
+
+  public void outTake() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelOut));
   }
 
   public void aimToSpeaker() {
@@ -505,6 +576,11 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setReverseIntakeFlag(boolean run) {
+    runOutTake = run;
+    return this;
+  }
+
   public void setIntakeUp() {
     intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeUpPos));
   }
@@ -524,5 +600,8 @@ public class Shooter extends SubsystemBase {
         && Math.abs(rightMotor.getVelocity().getValue() - desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
         && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin
         && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) < rotationMargin;
+  }
+  public String currentStateName(){
+    return ssm.currentState.getName();
   }
 }

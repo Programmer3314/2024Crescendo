@@ -21,6 +21,7 @@ public class Navigation extends SubsystemBase {
   private double leftConeX;
   private double leftConeY;
   private LimelightTarget_Detector[] leftLimelightDetector;
+  private String limelightName = "limelight-right";
 
   /** Creates a new Navigation. */
   public Navigation(RobotContainer rc) {
@@ -31,14 +32,18 @@ public class Navigation extends SubsystemBase {
   @Override
   public void periodic() {
     if (true) {
-      var lastResult = LimelightHelpers.getLatestResults("limelight-front").targetingResults;
+      var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
       Pose2d pose = rc.drivetrain.getState().Pose;
 
       // TODO: Try setting this back to only needing 1 target.
-      if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
+
+      if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
         Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
         SmartDashboard.putString("llPose", llPose.toString());
-        if (visionUpdate < 50 || pose.minus(llPose).getTranslation().getNorm() < 1) {
+        double margin = pose.minus(llPose).getTranslation().getNorm();
+        if (visionUpdate < 50 
+        || margin < .25
+        || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
           rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
           visionUpdate++;
         }

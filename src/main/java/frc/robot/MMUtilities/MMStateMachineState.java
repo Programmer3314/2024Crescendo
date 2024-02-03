@@ -23,4 +23,8 @@ public class MMStateMachineState {
 
     public void doState() {
     };
+
+    public String getName(){
+        return name;
+    }
 }

@@ -34,9 +34,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
-import frc.robot.subsystems.PracticeShooter;
 import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.ShooterSubsystem;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
@@ -62,7 +60,7 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
-  public Shooter shooterSubsystem = new Shooter();
+  // public Shooter shooterSubsystem = new Shooter();
 
 
   public Navigation navigation = new Navigation(this);
@@ -84,15 +82,15 @@ public class RobotContainer {
             .withVelocityY(joystick.getLeftXSmoothed())
             .withRotationalRate(joystick.getRightXSmoothed())));
 
-    joystick.rightBumper().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
-    joystick.rightTrigger().onTrue(new InstantCommand(()->shooterSubsystem.setShootFlag(true)))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
+    // joystick.rightBumper().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
+    // .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
+    // joystick.rightTrigger().onTrue(new InstantCommand(()->shooterSubsystem.setShootFlag(true)))
+    // .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
+    // joystick.b().onTrue(new InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     joystick.a().whileTrue(new Aim(this));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
-        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()),
-            new InstantCommand(Robot::resetVisionUpdate)));
+        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
