@@ -23,31 +23,30 @@ public class Aim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    // rc.shooterSubsystem.setAimFlag(true);
+
     // RobotContainer.signalSelection = SignalSelection.Cone_Solid;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (rc.shooterSubsystem.isSpeakerShotReady()) {
-      RobotContainer.signalSelection = SignalSelection.Cone_Solid;
-    } else {
-      RobotContainer.signalSelection = SignalSelection.Cone_Off;
-    }
+    // if (rc.shooterSubsystem.readyToShoot()) {
+    //   RobotContainer.signalSelection = SignalSelection.Cone_Solid;
+    // } else {
+    //   RobotContainer.signalSelection = SignalSelection.Cone_Off;
+    // }
 
-    rc.drivetrain.setControl(drive
-        .withVelocityX(rc.joystick.getLeftYSmoothed())
-        .withVelocityY(rc.joystick.getLeftXSmoothed())
-        .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
-
-    rc.shooterSubsystem.shooterRotationPID(rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle());
+    // rc.drivetrain.setControl(drive
+    //     .withVelocityX(rc.joystick.getLeftYSmoothed())
+    //     .withVelocityY(rc.joystick.getLeftXSmoothed())
+    //     .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     RobotContainer.signalSelection = SignalSelection.All_Off;
-
   }
 
   // Returns true when the command should end.

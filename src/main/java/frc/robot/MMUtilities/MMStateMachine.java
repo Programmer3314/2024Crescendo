@@ -10,7 +10,7 @@ public class MMStateMachine {
     double stateStartSeconds;
     public double timeInState;
 
-    MMStateMachineState currentState;
+    public MMStateMachineState currentState;
     boolean firstUpdate;
 
     public MMStateMachine setInitial(MMStateMachineState initialState) {

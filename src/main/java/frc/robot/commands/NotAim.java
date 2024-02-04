@@ -26,32 +26,31 @@ public class NotAim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    // rc.shooterSubsystem.setAimFlag(true);
     onTarget = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (rc.shooterSubsystem.isSpeakerShotReady()) {
-      RobotContainer.signalSelection = SignalSelection.Cone_Solid;
-      onTarget++;
-    } else {
-      RobotContainer.signalSelection = SignalSelection.Cone_Off;
-      onTarget = 0;
-    }
+    // if (rc.shooterSubsystem.readyToShoot()) {
+    //   RobotContainer.signalSelection = SignalSelection.Cone_Solid;
+    //   onTarget++;
+    // } else {
+    //   RobotContainer.signalSelection = SignalSelection.Cone_Off;
+    //   onTarget = 0;
+    // }
 
-    rc.drivetrain.setControl(drive
-        .withVelocityX(rc.joystick.getLeftYSmoothed())
-        .withVelocityY(rc.joystick.getLeftXSmoothed())
-        .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
+    // rc.drivetrain.setControl(drive
+    //     .withVelocityX(rc.joystick.getLeftYSmoothed())
+    //     .withVelocityY(rc.joystick.getLeftXSmoothed())
+    //     .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
 
-    rc.shooterSubsystem.shooterRotationPID(rc.shooterSubsystem.getDesiredSpeakerWaypoint().getAngle());
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.shooterSubsystem.shooterRotationPID(-0.2, 2);
     RobotContainer.signalSelection = SignalSelection.All_Off;
   }
 

@@ -16,53 +16,58 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
+import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
+import frc.robot.MMUtilities.MMTurnPIDController;
 import frc.robot.MMUtilities.MMWaypoint;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
   private ShooterStateMachine ssm = new ShooterStateMachine();
+
+  private MMTurnPIDController turnPidController = new MMTurnPIDController();
+  Rotation2d targetAngleSpeaker;
+  Pose2d speakerPose;
+  Pose2d currentPose;
+  double speakerTurnRate;
   double shooterAngleMargin = .01;
   double shooterVelocityMargin = 2;
+  double rotationMargin = 2;
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
-  double shooterDelay = .125;
   boolean runShoot;
+  boolean runOutTake;
+  double shooterDelay = .125;
+  double outTakeDelay = .125;
 
-  double distanceToSpeaker;
-  MMWaypoint desiredWaypoint;
+  public double distanceToSpeaker;
+  public MMWaypoint desiredWaypoint;
 
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, -.111, 50),
       new MMWaypoint(2.5, -.078, 70),
       new MMWaypoint(3.97, -.057, 70));
 
-  // TODO: Assign new CAN IDs for motors and encoders
-  private TalonFX leftMotor = new TalonFX(3, "CANIVORE");
-  private TalonFX rightMotor = new TalonFX(4, "CANIVORE");
-  private TalonFX index1 = new TalonFX(1, "CANIVORE");
-  private TalonFX index2 = new TalonFX(2, "CANIVORE");
+  private TalonFX intakeBelt = new TalonFX(9, "CANIVORE");
+  private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
+  private TalonFX shooterRotateMotor = new TalonFX(11, "CANIVORE");
+  private TalonFX index1 = new TalonFX(12, "CANIVORE");
+  private TalonFX index2 = new TalonFX(13, "CANIVORE");
+  private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
+  private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
 
-  private VelocityVoltage index1VelVol = new VelocityVoltage(0);
-  private VelocityVoltage index2VelVol = new VelocityVoltage(0);
-  private VelocityVoltage leftVelVol = new VelocityVoltage(0);
-  private VelocityVoltage rightVelVol = new VelocityVoltage(0);
-
-  TalonFX intakeRotateMotor = new TalonFX(12, "CANIVORE");
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
-
-  TalonFX shooterRotateMotor = new TalonFX(13, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
-
-  TalonFX intakeBelt = new TalonFX(14, "CANIVORE");
-  private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
 
   DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
@@ -79,6 +84,11 @@ public class Shooter extends SubsystemBase {
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
+  private VelocityVoltage index1VelVol = new VelocityVoltage(0);
+  private VelocityVoltage index2VelVol = new VelocityVoltage(0);
+  private VelocityVoltage leftVelVol = new VelocityVoltage(0);
+  private VelocityVoltage rightVelVol = new VelocityVoltage(0);
+  private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
 
   /** Creates a new Shooter. */
   public Shooter() {
@@ -93,7 +103,18 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     calcFiringSolution();
+    speakerPose = MMField.currentSpeakerPose();
+    currentPose = rc.drivetrain.getState().Pose;
+    Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
+    targetAngleSpeaker = transformFromSpeaker.getAngle();
+
     ssm.update();
+
+    turnPidController.initialize(targetAngleSpeaker);
+    speakerTurnRate = turnPidController.execute(currentPose.getRotation());
+
+    turnPidController.initialize(targetAngleSpeaker);
+    speakerTurnRate = turnPidController.execute(currentPose.getRotation());
 
     if (runAim) {
       aimToSpeaker();
@@ -160,10 +181,7 @@ public class Shooter extends SubsystemBase {
         intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
         index1.setControl(index1VelVol.withVelocity(indexInVel));
         index2.setControl(index2VelVol.withVelocity(-indexInVel));
-        // TODO: Isn't this being handled in periodic?
-        if (runAim) {
-          aimToSpeaker();
-        }
+        setAimFlag(true);
       }
 
       @Override
@@ -192,7 +210,6 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         stopIndexers();
-        setAimFlag(true);
         setIntakeFlag(false);
       }
 
@@ -201,7 +218,9 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
-
+        if (runOutTake){
+          return IntakeReverse;
+        }
         return this;
       }
     };
@@ -252,6 +271,60 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= shooterDelay) {
+          return Idle;
+        } else {
+          return this;
+        }
+      }
+    };
+
+    MMStateMachineState IntakeReverse = new MMStateMachineState("IntakeReverse") {
+
+      public void transitionTo(MMStateMachineState previousState) {
+        setIntakeDown();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (Math.abs(intakeRotateMotor.getPosition().getValue()-intakeDownPos) < .05) {
+          return IndexReverse;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState IndexReverse = new MMStateMachineState("IndexReverse") {
+
+      public void transitionTo(MMStateMachineState previousState) {
+        reverseIndexers(index1ShootVel, index2ShootVel);
+        outTake();
+        setReverseIntakeFlag(false);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!intakeBreakBeam.get()) {
+          return IntakeBrokenPause;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState IntakeBrokenPause = new MMStateMachineState("ShootPauseBroken") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (intakeBreakBeam.get()) {
+          return IntakePause;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState IntakePause = new MMStateMachineState("IntakePause") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= outTakeDelay) {
           return Idle;
         } else {
           return this;
@@ -324,6 +397,16 @@ public class Shooter extends SubsystemBase {
     index2.setControl(leftVelVol.withVelocity(index2Speed));
   }
 
+  public void shootIndexers(double index1ShootSpeed, double index2ShootSpeed) {
+    index1.setControl(leftVelVol.withVelocity(index1ShootSpeed));
+    index2.setControl(leftVelVol.withVelocity(index2ShootSpeed));
+  }
+
+  public void reverseIndexers(double index1Speed, double index2Speed) {
+    index1.setControl(leftVelVol.withVelocity(-index1Speed));
+    index2.setControl(leftVelVol.withVelocity(-index2Speed));
+  }
+
   public void stopIndexers() {
     index2.set(0);
     index1.set(0);
@@ -331,6 +414,10 @@ public class Shooter extends SubsystemBase {
 
   public void stopIntake() {
     intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
+  }
+
+  public void outTake() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelOut));
   }
 
   public void aimToSpeaker() {
@@ -488,6 +575,11 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setReverseIntakeFlag(boolean run) {
+    runOutTake = run;
+    return this;
+  }
+
   public void setIntakeUp() {
     intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeUpPos));
   }
@@ -497,9 +589,18 @@ public class Shooter extends SubsystemBase {
 
   }
 
+  public double getSpeakerTurnRate() {
+    return speakerTurnRate;
+  }
+
   public boolean readyToShoot() {
+
     return Math.abs(leftMotor.getVelocity().getValue() - desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
         && Math.abs(rightMotor.getVelocity().getValue() - desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
-        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin;
+        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin
+        && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) < rotationMargin;
+  }
+  public String currentStateName(){
+    return ssm.currentState.getName();
   }
 }
