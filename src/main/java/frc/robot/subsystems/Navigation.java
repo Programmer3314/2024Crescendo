@@ -27,6 +27,7 @@ public class Navigation extends SubsystemBase {
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
+    LimelightHelpers.setPipelineIndex("limelight-left",1);
   }
 
   @Override

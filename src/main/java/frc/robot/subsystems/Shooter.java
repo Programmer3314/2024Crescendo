@@ -4,6 +4,10 @@
 
 package frc.robot.subsystems;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
+import org.ejml.equation.Sequence;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -20,6 +24,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
@@ -33,7 +41,6 @@ import frc.robot.MMUtilities.MMWaypoint;
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
   private ShooterStateMachine ssm = new ShooterStateMachine();
-
   private MMTurnPIDController turnPidController = new MMTurnPIDController();
   Rotation2d targetAngleSpeaker;
   Pose2d speakerPose;
@@ -42,6 +49,7 @@ public class Shooter extends SubsystemBase {
   double shooterAngleMargin = .01;
   double shooterVelocityMargin = 2;
   double rotationMargin = 2;
+  // TODO: replace with real margins
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
@@ -49,6 +57,21 @@ public class Shooter extends SubsystemBase {
   boolean runOutTake;
   double shooterDelay = .125;
   double outTakeDelay = .125;
+
+  boolean runDiagnosticTest;
+  double diagnosticRunTime = 3;
+  double diagnosticShooterAngle = .02;
+  double diagnosticLeftMotorSpeed = 50;
+  double diagnosticRightMotorSpeed = -diagnosticLeftMotorSpeed;;
+
+  boolean diagnosticDesiredIntakeUp;
+  boolean diagnosticDesiredIntakeDown;
+  boolean diagnosticDesiredIntakeIn;
+  boolean diagnosticDesiredIntakeOut;
+  boolean diagnosticDesiredIndexIn;
+  boolean diagnosticDesiredIndexOut;
+  boolean diagnosticDesiredShooterAngle;
+  boolean diagnosticDesiredShooterVel;
 
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
@@ -76,11 +99,18 @@ public class Shooter extends SubsystemBase {
   double intakeDownPos = 0;
 
   double intakeVelIn = 100;
-  double intakeVelOut = -100;
+  double intakeVelOut = -intakeVelIn;
 
-  double indexInVel = 30;
+  double index1InVel = 30;
+  double index2InVel = -index1InVel;
+  double index1OutVel = -index1InVel;
+  double index2OutVel = -index2InVel;
+
   double index1ShootVel = 70;
-  double index2ShootVel = -70;
+  double index2ShootVel = -index1ShootVel;
+  // TODO Use waypoint Values for shooter index velocity (also change reverse)
+  double index1ReverseVel = -index1ShootVel;
+  double index2ReverseVel = -index2ShootVel;
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
@@ -98,6 +128,8 @@ public class Shooter extends SubsystemBase {
     configIntakeRotateMotor();
     configMotors();
     ssm.setInitial(ssm.Start);
+    SmartDashboard.putData("Run Diagnostic",
+        new InstantCommand(() -> this.setRunDiagnostic(true)));
   }
 
   @Override
@@ -117,6 +149,16 @@ public class Shooter extends SubsystemBase {
       aimToSpeaker();
     } else {
       stopShooterMotors();
+    }
+    if (runDiagnosticTest) {
+      SmartDashboard.putBoolean("diagnosticIntakeDown", diagnosticDesiredIntakeDown);
+      SmartDashboard.putBoolean("diagnosticIntakeIn", diagnosticDesiredIntakeIn);
+      SmartDashboard.putBoolean("diagnosticIntakeOut", diagnosticDesiredIntakeOut);
+      SmartDashboard.putBoolean("diagnosticIntakeUp", diagnosticDesiredIntakeUp);
+      SmartDashboard.putBoolean("diagnosticIndexIn", diagnosticDesiredIndexIn);
+      SmartDashboard.putBoolean("diagnosticIndexOut", diagnosticDesiredIndexOut);
+      SmartDashboard.putBoolean("diagnosticShooterAngle", diagnosticDesiredShooterAngle);
+      SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredShooterVel);
     }
   }
 
@@ -166,18 +208,20 @@ public class Shooter extends SubsystemBase {
         if (runIntake) {
           return DropIntake;
         }
+        if (runDiagnosticTest) {
+          return DiagnosticSetIntakeDown;
+        }
         return this;
       }
     };
-
     MMStateMachineState DropIntake = new MMStateMachineState("DropIntake") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
-        intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
-        index1.setControl(index1VelVol.withVelocity(indexInVel));
-        index2.setControl(index2VelVol.withVelocity(-indexInVel));
+        runIntakeIn();
+        index1.setControl(index1VelVol.withVelocity(index1InVel));
+        index2.setControl(index2VelVol.withVelocity(index2InVel));
         setAimFlag(true);
       }
 
@@ -200,7 +244,6 @@ public class Shooter extends SubsystemBase {
         stopIntake();
         setIntakeUp();
       }
-
     };
     MMStateMachineState Index = new MMStateMachineState("Index") {
 
@@ -292,8 +335,8 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState IndexReverse = new MMStateMachineState("IndexReverse") {
 
       public void transitionTo(MMStateMachineState previousState) {
-        reverseIndexers(index1ShootVel, index2ShootVel);
-        outTake();
+        runIndexers(index1ShootVel, index2ShootVel);
+        runIntakeOut();
         setReverseIntakeFlag(false);
       }
 
@@ -327,23 +370,181 @@ public class Shooter extends SubsystemBase {
         }
       }
     };
-  }
+    MMStateMachineState DiagnosticSetIntakeDown = new MMStateMachineState("DiagnosticSetIntakeDown") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setIntakeDown();
+      }
 
-  public void configMotors() {
-    TalonFXConfiguration genericConfig = new TalonFXConfiguration();
-    genericConfig.Slot0
-        .withKS(.25)
-        .withKV(.12)
-        .withKA(.01)
-        .withKG(0)
-        .withKP(.125)
-        .withKG(0)
-        .withKI(0)
-        .withKD(0);
-    MMConfigure.configureDevice(rightMotor, genericConfig);
-    MMConfigure.configureDevice(leftMotor, genericConfig);
-    MMConfigure.configureDevice(index1, genericConfig);
-    MMConfigure.configureDevice(index2, genericConfig);
+      @Override
+      public void doState() {
+        diagnosticDesiredIntakeDown = isInMargin(intakeDownPos, getIntakePos(), rotationMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticIntakeIn;
+        }
+        return this;
+
+      }
+
+    };
+    MMStateMachineState DiagnosticIntakeIn = new MMStateMachineState("DiagnosticIntakeIn") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, getIntakeVel(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticIntakeOut;
+        }
+        return this;
+
+      }
+    };
+    MMStateMachineState DiagnosticIntakeOut = new MMStateMachineState("DiagnosticIntakeOut") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeOut();
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIntakeOut = isInMargin(intakeVelOut, getIntakeVel(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticSetIntakeUp;
+        }
+        return this;
+
+      }
+    };
+    MMStateMachineState DiagnosticSetIntakeUp = new MMStateMachineState("DiagnosticSetIntakeUp") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIntake();
+        setIntakeUp();
+
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIntakeUp = isInMargin(intakeUpPos, getIntakePos(), rotationMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticRunIndexIn;
+        }
+        return this;
+
+      }
+
+    };
+    MMStateMachineState DiagnosticRunIndexIn = new MMStateMachineState("DiagnosticRunIndexIn") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIndexers(index1InVel, index2InVel);
+
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIndexIn = isInMargin(index1InVel, getIndex1Vel(), shooterVelocityMargin)
+            && isInMargin(index2InVel, getIndex2Vel(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticRunIndexOut;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState DiagnosticRunIndexOut = new MMStateMachineState("DiagnosticRunIndexOut") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIndexers(index1OutVel, index2OutVel);
+
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIndexOut = isInMargin(index2OutVel, getIndex2Vel(), shooterVelocityMargin)
+            && isInMargin(index1OutVel, getIndex1Vel(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticAngle;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState DiagnosticAngle = new MMStateMachineState("DiagnosticAngle") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIndexers();
+        setShooterPosition(diagnosticShooterAngle);
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredShooterAngle = isInMargin(diagnosticShooterAngle, getShooterAngle(), shooterAngleMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return DiagnosticShoot;
+        }
+        return this;
+
+      }
+
+    };
+    MMStateMachineState DiagnosticShoot = new MMStateMachineState("DiagnosticShoot") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runMotors(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(),
+            shooterVelocityMargin)
+            && isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime) {
+          return Idle;
+        }
+        return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nextState) {
+        setRunDiagnostic(false);
+      }
+    };
+
   }
 
   public double getLeftShooterVelocity() {
@@ -356,6 +557,24 @@ public class Shooter extends SubsystemBase {
 
   public double getShooterAngle() {
     return shooterRotateMotor.getPosition().getValue();
+  }
+  public double getIntakePos() {
+    return intakeRotateMotor.getPosition().getValue();
+  }
+
+  public double getIntakeVel() {
+    return intakeRotateMotor.getVelocity().getValue();
+  }
+
+  public double getIndex1Vel() {
+    return index1.getVelocity().getValue();
+  }
+
+  public double getIndex2Vel() {
+    return index2.getVelocity().getValue();
+  }
+  public double getSpeakerTurnRate() {
+    return speakerTurnRate;
   }
 
   public void runMotors(double leftMotorSpeed, double rightMotorSpeed) {
@@ -389,18 +608,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runIndexers(double index1Speed, double index2Speed) {
-    index1.setControl(leftVelVol.withVelocity(index1Speed));
-    index2.setControl(leftVelVol.withVelocity(index2Speed));
-  }
-
-  public void shootIndexers(double index1ShootSpeed, double index2ShootSpeed) {
-    index1.setControl(leftVelVol.withVelocity(index1ShootSpeed));
-    index2.setControl(leftVelVol.withVelocity(index2ShootSpeed));
-  }
-
-  public void reverseIndexers(double index1Speed, double index2Speed) {
-    index1.setControl(leftVelVol.withVelocity(-index1Speed));
-    index2.setControl(leftVelVol.withVelocity(-index2Speed));
+    index1.setControl(index1VelVol.withVelocity(index1Speed));
+    index2.setControl(index2VelVol.withVelocity(index2Speed));
   }
 
   public void stopIndexers() {
@@ -412,7 +621,7 @@ public class Shooter extends SubsystemBase {
     intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
   }
 
-  public void outTake() {
+  public void runIntakeOut() {
     intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelOut));
   }
 
@@ -420,6 +629,87 @@ public class Shooter extends SubsystemBase {
     runLeftMotor(desiredWaypoint.getLeftVelocity());
     runRightMotor(desiredWaypoint.getRightVelocity());
     setShooterPosition(desiredWaypoint.getAngle());
+  }
+
+  public void calcFiringSolution() {
+    distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
+    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+  }
+
+  public Shooter setIntakeFlag(boolean run) {
+    runIntake = run;
+    return this;
+  }
+
+  public Shooter setShootFlag(boolean run) {
+    runShoot = run;
+    return this;
+  }
+
+  public Shooter setAimFlag(boolean aim) {
+    runAim = aim;
+    return this;
+  }
+
+  public void setRunDiagnostic(boolean isTrue) {
+    runDiagnosticTest = isTrue;
+  }
+
+  public void runIntakeIn() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
+  }
+
+  public Shooter setReverseIntakeFlag(boolean run) {
+    runOutTake = run;
+    return this;
+  }
+
+  public void setIntakeUp() {
+    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeUpPos));
+  }
+
+  public void setIntakeDown() {
+    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(1).withPosition(intakeDownPos));
+
+  }
+
+  public boolean readyToShoot() {
+
+    return isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(), shooterVelocityMargin)
+        // )Math.abs(leftMotor.getVelocity().getValue() -
+        // desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
+        && isInMargin(rightMotor.getVelocity().getValue(), desiredWaypoint.getRightVelocity(), shooterVelocityMargin)
+        // && Math.abs(rightMotor.getVelocity().getValue() -
+        // desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
+        && isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(), shooterAngleMargin)
+        // && Math.abs(shooterRotateMotor.getPosition().getValue() -
+        // desiredWaypoint.getAngle()) < shooterAngleMargin
+        && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) <= rotationMargin;
+  }
+
+  public boolean isInMargin(double value1, double value2, double margin) {
+    return Math.abs(value1 - value2) <= margin;
+  }
+
+  public String currentStateName() {
+    return ssm.currentState.getName();
+  }
+
+  public void configMotors() {
+    TalonFXConfiguration genericConfig = new TalonFXConfiguration();
+    genericConfig.Slot0
+        .withKS(.25)
+        .withKV(.12)
+        .withKA(.01)
+        .withKG(0)
+        .withKP(.125)
+        .withKG(0)
+        .withKI(0)
+        .withKD(0);
+    MMConfigure.configureDevice(rightMotor, genericConfig);
+    MMConfigure.configureDevice(leftMotor, genericConfig);
+    MMConfigure.configureDevice(index1, genericConfig);
+    MMConfigure.configureDevice(index2, genericConfig);
   }
 
   private void configIntakeRotateCanCoder() {
@@ -549,55 +839,5 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
-  }
-
-  public void calcFiringSolution() {
-    distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
-    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
-  }
-
-  public Shooter setIntakeFlag(boolean run) {
-    runIntake = run;
-    return this;
-  }
-
-  public Shooter setShootFlag(boolean run) {
-    runShoot = run;
-    return this;
-  }
-
-  public Shooter setAimFlag(boolean aim) {
-    runAim = aim;
-    return this;
-  }
-
-  public Shooter setReverseIntakeFlag(boolean run) {
-    runOutTake = run;
-    return this;
-  }
-
-  public void setIntakeUp() {
-    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeUpPos));
-  }
-
-  public void setIntakeDown() {
-    intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(1).withPosition(intakeDownPos));
-
-  }
-
-  public double getSpeakerTurnRate() {
-    return speakerTurnRate;
-  }
-
-  public boolean readyToShoot() {
-
-    return Math.abs(leftMotor.getVelocity().getValue() - desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
-        && Math.abs(rightMotor.getVelocity().getValue() - desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
-        && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin
-        && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) < rotationMargin;
-  }
-
-  public String currentStateName() {
-    return ssm.currentState.getName();
   }
 }

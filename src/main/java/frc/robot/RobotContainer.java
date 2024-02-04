@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
@@ -62,7 +63,6 @@ public class RobotContainer {
   Telemetry logger = new Telemetry(MaxSpeed);
   // public Shooter shooterSubsystem = new Shooter();
 
-
   public Navigation navigation = new Navigation(this);
   public MMSignalLight signalLight = new MMSignalLight();
 
@@ -82,21 +82,28 @@ public class RobotContainer {
             .withVelocityY(joystick.getLeftXSmoothed())
             .withRotationalRate(joystick.getRightXSmoothed())));
 
-    // joystick.rightBumper().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
+    // joystick.rightBumper().onTrue(new
+    // InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
     // .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
-    // joystick.rightTrigger().onTrue(new InstantCommand(()->shooterSubsystem.setShootFlag(true)))
+    // joystick.rightTrigger().onTrue(new
+    // InstantCommand(()->shooterSubsystem.setShootFlag(true)))
     // .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
-    // joystick.b().onTrue(new InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
+    // joystick.b().onTrue(new
+    // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     joystick.a().whileTrue(new Aim(this));
+    SmartDashboard.putData("Run Diagnostic",
+        new GoShoot(this));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
+    
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
 
     // joystick.b().whileTrue(new GoShoot(this));
-    // joystick.x().whileTrue(new PathFindTo(this, MMField::getBlueWooferApproachPose));
+    // joystick.x().whileTrue(new PathFindTo(this,
+    // MMField::getBlueWooferApproachPose));
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
 
@@ -115,12 +122,12 @@ public class RobotContainer {
     // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    
+
     // joystick.rightBumper().onTrue(new InstantCommand(
     // () -> claw.openClaw()));
     // joystick.rightTrigger().onTrue(new InstantCommand(
     // () -> claw.closeClaw()));
-    joystick.leftTrigger().whileTrue(new ChaseCone(this));
+    // joystick.leftTrigger().whileTrue(new ChaseCone(this));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -148,9 +155,7 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
-    
 
-    
     // noteChooser0 = new SendableChooser<Pose2d>();
     // noteChooser1 = new SendableChooser<Pose2d>();
     // shootChooser0 = new SendableChooser<Pose2d>();
@@ -174,7 +179,7 @@ public class RobotContainer {
   }
 
   private SendableChooser<Pose2d> fillNoteChooser(String noteChooserName) {
-        SendableChooser<Pose2d> noteChooser = new SendableChooser<Pose2d>();
+    SendableChooser<Pose2d> noteChooser = new SendableChooser<Pose2d>();
     for (int i = 0; i < notePoseList.length; i++) {
       noteChooser.addOption("Note: " + i, notePoseList[i]);
     }
