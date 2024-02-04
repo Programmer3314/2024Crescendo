@@ -113,9 +113,6 @@ public class Shooter extends SubsystemBase {
     turnPidController.initialize(targetAngleSpeaker);
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
 
-    turnPidController.initialize(targetAngleSpeaker);
-    speakerTurnRate = turnPidController.execute(currentPose.getRotation());
-
     if (runAim) {
       aimToSpeaker();
     } else {
@@ -218,7 +215,7 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
-        if (runOutTake){
+        if (runOutTake) {
           return IntakeReverse;
         }
         return this;
@@ -272,9 +269,8 @@ public class Shooter extends SubsystemBase {
       public MMStateMachineState calcNextState() {
         if (timeInState >= shooterDelay) {
           return Idle;
-        } else {
-          return this;
         }
+        return this;
       }
     };
 
@@ -286,7 +282,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (Math.abs(intakeRotateMotor.getPosition().getValue()-intakeDownPos) < .05) {
+        if (Math.abs(intakeRotateMotor.getPosition().getValue() - intakeDownPos) < .05) {
           return IndexReverse;
         }
         return this;
@@ -525,8 +521,8 @@ public class Shooter extends SubsystemBase {
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine) 
-        .withKP(12) 
+        .withGravityType(GravityTypeValue.Arm_Cosine)
+        .withKP(12)
         .withKI(0)
         .withKD(2);
     cfg.Feedback
@@ -600,7 +596,8 @@ public class Shooter extends SubsystemBase {
         && Math.abs(shooterRotateMotor.getPosition().getValue() - desiredWaypoint.getAngle()) < shooterAngleMargin
         && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) < rotationMargin;
   }
-  public String currentStateName(){
+
+  public String currentStateName() {
     return ssm.currentState.getName();
   }
 }
