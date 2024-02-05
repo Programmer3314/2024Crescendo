@@ -742,7 +742,7 @@ public class Shooter extends SubsystemBase {
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
-    // TODO: Update with real values
+    // TODO: HIGH PRIORITY Update with safe/real values
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -755,7 +755,7 @@ public class Shooter extends SubsystemBase {
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
+        .withGravityType(GravityTypeValue.Elevator_Static)
         .withKP(12)
         .withKI(0)
         .withKD(2);
@@ -764,24 +764,24 @@ public class Shooter extends SubsystemBase {
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
-    cfg.Slot1
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(96 * 2)// 12
-        .withKI(0)
-        .withKD(.25);// 2
-    cfg.Slot2
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(48)// 12
-        .withKI(0)
-        .withKD(.25);// 2
+    // cfg.Slot1
+    //     .withKS(1) // voltage to overcome static friction
+    //     .withKV(0)
+    //     .withKA(0) // "arbitrary" amount to provide crisp response
+    //     .withKG(0) // gravity can be used for elevator or arm
+    //     .withGravityType(GravityTypeValue.Elevator_Static)
+    //     .withKP(96 * 2)// 12
+    //     .withKI(0)
+    //     .withKD(.25);// 2
+    // cfg.Slot2
+    //     .withKS(1) // voltage to overcome static friction
+    //     .withKV(0)
+    //     .withKA(0) // "arbitrary" amount to provide crisp response
+    //     .withKG(0) // gravity can be used for elevator or arm
+    //     .withGravityType(GravityTypeValue.Arm_Cosine)
+    //     .withKP(48)// 12
+    //     .withKI(0)
+    //     .withKD(.25);// 2
     MMConfigure.configureDevice(intakeRotateMotor, cfg);
   }
 
@@ -798,7 +798,7 @@ public class Shooter extends SubsystemBase {
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
 
-    // TODO: Update with real values
+    // TODO: HIGH PRIORITY Update with safe/real values
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -820,24 +820,24 @@ public class Shooter extends SubsystemBase {
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
-    cfg.Slot1
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(96 * 2)// 12
-        .withKI(0)
-        .withKD(.25);// 2
-    cfg.Slot2
-        .withKS(1) // voltage to overcome static friction
-        .withKV(0)
-        .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
-        .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(48)// 12
-        .withKI(0)
-        .withKD(.25);// 2
+    // cfg.Slot1
+    //     .withKS(1) // voltage to overcome static friction
+    //     .withKV(0)
+    //     .withKA(0) // "arbitrary" amount to provide crisp response
+    //     .withKG(0) // gravity can be used for elevator or arm
+    //     .withGravityType(GravityTypeValue.Arm_Cosine)
+    //     .withKP(96 * 2)// 12
+    //     .withKI(0)
+    //     .withKD(.25);// 2
+    // cfg.Slot2
+    //     .withKS(1) // voltage to overcome static friction
+    //     .withKV(0)
+    //     .withKA(0) // "arbitrary" amount to provide crisp response
+    //     .withKG(0) // gravity can be used for elevator or arm
+    //     .withGravityType(GravityTypeValue.Arm_Cosine)
+    //     .withKP(48)// 12
+    //     .withKI(0)
+    //     .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
   }
 }
