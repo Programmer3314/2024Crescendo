@@ -85,6 +85,10 @@ public class RobotContainer {
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     joystick.a().whileTrue(new Aim(this));
+    // TODO: Try this again, but this time...
+    // Create a funtion that creates the command currently created in 
+    // GoShoot.Initialize(), then use the function with DeferedCommand 
+    // in the putData below. 
     SmartDashboard.putData("Run Diagnostic",
         new GoShoot(this));
     joystick.leftTrigger().onTrue(new GoShoot(this));
