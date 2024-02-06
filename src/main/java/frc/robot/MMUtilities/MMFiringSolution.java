@@ -12,7 +12,6 @@ public class MMFiringSolution {
         this.waypoints = waypoints;
     }
 
-    // TODO: The shooter design is "fixed" 
     // make Waypoint and MMFiringSolution use 
     // Angle, Left & Right velocities, and Index Speed. 
     public MMWaypoint calcSolution(double distance) {

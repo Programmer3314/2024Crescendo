@@ -16,17 +16,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
-import frc.robot.commands.ChaseCone;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
-import frc.robot.commands.NotAim;
-import frc.robot.commands.PathFindTo;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.MustangAuto;
@@ -35,7 +30,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
-import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed

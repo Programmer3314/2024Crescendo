@@ -4,10 +4,6 @@
 
 package frc.robot.subsystems;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
-import org.ejml.equation.Sequence;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -25,9 +21,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
@@ -59,7 +53,8 @@ public class Shooter extends SubsystemBase {
   double outTakeDelay = .125;
 
   boolean runDiagnosticTest;
-  double diagnosticRunTime = 3;
+  double diagnosticRunTime = 2;
+  double diagnosticTimeOut = 5;
   double diagnosticShooterAngle = .02;
   double diagnosticLeftMotorSpeed = 50;
   double diagnosticRightMotorSpeed = -diagnosticLeftMotorSpeed;;
@@ -103,14 +98,10 @@ public class Shooter extends SubsystemBase {
 
   double index1InVel = 30;
   double index2InVel = -index1InVel;
-  double index1OutVel = -index1InVel;
-  double index2OutVel = -index2InVel;
 
-  double index1ShootVel = 70;
-  double index2ShootVel = -index1ShootVel;
   // TODO Use waypoint Values for shooter index velocity (also change reverse)
-  double index1ReverseVel = -index1ShootVel;
-  double index2ReverseVel = -index2ShootVel;
+  double index1OutVel = -30;
+  double index2OutVel = 30;
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
@@ -201,6 +192,7 @@ public class Shooter extends SubsystemBase {
         stopIndexers();
         stopShooterMotors();
         stopIntake();
+        setRunDiagnostic(false);
       }
 
       @Override
@@ -220,8 +212,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
-        index1.setControl(index1VelVol.withVelocity(index1InVel));
-        index2.setControl(index2VelVol.withVelocity(index2InVel));
+        runIndexIn();
         setAimFlag(true);
       }
 
@@ -280,8 +271,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        index1.setControl(index1VelVol.withVelocity(index1ShootVel));
-        index2.setControl(index2VelVol.withVelocity(index2ShootVel));
+        runIndexShoot();
         setShootFlag(false);
       }
 
@@ -335,7 +325,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState IndexReverse = new MMStateMachineState("IndexReverse") {
 
       public void transitionTo(MMStateMachineState previousState) {
-        runIndexers(index1ShootVel, index2ShootVel);
+        runIndexOut();
         runIntakeOut();
         setReverseIntakeFlag(false);
       }
@@ -383,8 +373,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeDown) {
           return DiagnosticIntakeIn;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
 
@@ -404,8 +397,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexIn) {
           return DiagnosticIntakeOut;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
 
@@ -424,8 +420,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeOut) {
           return DiagnosticSetIntakeUp;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
 
@@ -446,8 +445,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeUp) {
           return DiagnosticRunIndexIn;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
 
@@ -457,7 +459,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticRunIndexIn = new MMStateMachineState("DiagnosticRunIndexIn") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runIndexers(index1InVel, index2InVel);
+        runIndexIn();
 
       }
 
@@ -469,8 +471,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexIn) {
           return DiagnosticRunIndexOut;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
       }
@@ -478,8 +483,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticRunIndexOut = new MMStateMachineState("DiagnosticRunIndexOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runIndexers(index1OutVel, index2OutVel);
-
+        runIndexOut();
       }
 
       @Override
@@ -490,8 +494,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexOut) {
           return DiagnosticAngle;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
       }
@@ -510,38 +517,38 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterAngle) {
           return DiagnosticShoot;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
         }
         return this;
 
       }
-
     };
     MMStateMachineState DiagnosticShoot = new MMStateMachineState("DiagnosticShoot") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runMotors(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
+        runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
       }
 
       @Override
       public void doState() {
         diagnosticDesiredShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(),
-            shooterVelocityMargin)
+            shooterVelocityMargin)// TODO use separate diagnostics for left & right motors
             && isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(), shooterVelocityMargin);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime) {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterVel) {
+          return Idle;
+        }
+        if (timeInState >= diagnosticTimeOut) {
           return Idle;
         }
         return this;
-      }
-
-      @Override
-      public void transitionFrom(MMStateMachineState nextState) {
-        setRunDiagnostic(false);
       }
     };
 
@@ -558,6 +565,7 @@ public class Shooter extends SubsystemBase {
   public double getShooterAngle() {
     return shooterRotateMotor.getPosition().getValue();
   }
+
   public double getIntakePos() {
     return intakeRotateMotor.getPosition().getValue();
   }
@@ -573,11 +581,12 @@ public class Shooter extends SubsystemBase {
   public double getIndex2Vel() {
     return index2.getVelocity().getValue();
   }
+
   public double getSpeakerTurnRate() {
     return speakerTurnRate;
   }
 
-  public void runMotors(double leftMotorSpeed, double rightMotorSpeed) {
+  public void runShooters(double leftMotorSpeed, double rightMotorSpeed) {
     leftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
     rightMotor.setControl(rightVelVol.withVelocity(rightMotorSpeed));
   }
@@ -673,6 +682,21 @@ public class Shooter extends SubsystemBase {
 
   }
 
+  public void runIndexIn() {
+    index1.setControl(index1VelVol.withVelocity(index1InVel));
+    index2.setControl(index2VelVol.withVelocity(index2InVel));
+  }
+
+  public void runIndexShoot() {
+    index1.setControl(index1VelVol.withVelocity(desiredWaypoint.getLeftVelocity()));
+    index2.setControl(index1VelVol.withVelocity(desiredWaypoint.getRightVelocity()));
+  }
+
+  public void runIndexOut() {
+    index1.setControl(index1VelVol.withVelocity(index1OutVel));
+    index2.setControl(index2VelVol.withVelocity(index2OutVel));
+  }
+
   public boolean readyToShoot() {
 
     return isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(), shooterVelocityMargin)
@@ -742,7 +766,7 @@ public class Shooter extends SubsystemBase {
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
-    // TODO: HIGH PRIORITY Update with safe/real values
+
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -756,32 +780,32 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(12)
+        .withKP(2)
         .withKI(0)
-        .withKD(2);
+        .withKD(0);
     cfg.Feedback
         .withFeedbackRemoteSensorID(intakeRotateCanCoder.getDeviceID())
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
     // cfg.Slot1
-    //     .withKS(1) // voltage to overcome static friction
-    //     .withKV(0)
-    //     .withKA(0) // "arbitrary" amount to provide crisp response
-    //     .withKG(0) // gravity can be used for elevator or arm
-    //     .withGravityType(GravityTypeValue.Elevator_Static)
-    //     .withKP(96 * 2)// 12
-    //     .withKI(0)
-    //     .withKD(.25);// 2
+    // .withKS(1) // voltage to overcome static friction
+    // .withKV(0)
+    // .withKA(0) // "arbitrary" amount to provide crisp response
+    // .withKG(0) // gravity can be used for elevator or arm
+    // .withGravityType(GravityTypeValue.Elevator_Static)
+    // .withKP(96 * 2)// 12
+    // .withKI(0)
+    // .withKD(.25);// 2
     // cfg.Slot2
-    //     .withKS(1) // voltage to overcome static friction
-    //     .withKV(0)
-    //     .withKA(0) // "arbitrary" amount to provide crisp response
-    //     .withKG(0) // gravity can be used for elevator or arm
-    //     .withGravityType(GravityTypeValue.Arm_Cosine)
-    //     .withKP(48)// 12
-    //     .withKI(0)
-    //     .withKD(.25);// 2
+    // .withKS(1) // voltage to overcome static friction
+    // .withKV(0)
+    // .withKA(0) // "arbitrary" amount to provide crisp response
+    // .withKG(0) // gravity can be used for elevator or arm
+    // .withGravityType(GravityTypeValue.Arm_Cosine)
+    // .withKP(48)// 12
+    // .withKI(0)
+    // .withKD(.25);// 2
     MMConfigure.configureDevice(intakeRotateMotor, cfg);
   }
 
@@ -798,7 +822,6 @@ public class Shooter extends SubsystemBase {
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
 
-    // TODO: HIGH PRIORITY Update with safe/real values
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
@@ -812,32 +835,32 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(12)
+        .withKP(2)
         .withKI(0)
-        .withKD(2);
+        .withKD(0);
     cfg.Feedback
         .withFeedbackRemoteSensorID(intakeRotateCanCoder.getDeviceID())
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
     // cfg.Slot1
-    //     .withKS(1) // voltage to overcome static friction
-    //     .withKV(0)
-    //     .withKA(0) // "arbitrary" amount to provide crisp response
-    //     .withKG(0) // gravity can be used for elevator or arm
-    //     .withGravityType(GravityTypeValue.Arm_Cosine)
-    //     .withKP(96 * 2)// 12
-    //     .withKI(0)
-    //     .withKD(.25);// 2
+    // .withKS(1) // voltage to overcome static friction
+    // .withKV(0)
+    // .withKA(0) // "arbitrary" amount to provide crisp response
+    // .withKG(0) // gravity can be used for elevator or arm
+    // .withGravityType(GravityTypeValue.Arm_Cosine)
+    // .withKP(96 * 2)// 12
+    // .withKI(0)
+    // .withKD(.25);// 2
     // cfg.Slot2
-    //     .withKS(1) // voltage to overcome static friction
-    //     .withKV(0)
-    //     .withKA(0) // "arbitrary" amount to provide crisp response
-    //     .withKG(0) // gravity can be used for elevator or arm
-    //     .withGravityType(GravityTypeValue.Arm_Cosine)
-    //     .withKP(48)// 12
-    //     .withKI(0)
-    //     .withKD(.25);// 2
+    // .withKS(1) // voltage to overcome static friction
+    // .withKV(0)
+    // .withKA(0) // "arbitrary" amount to provide crisp response
+    // .withKG(0) // gravity can be used for elevator or arm
+    // .withGravityType(GravityTypeValue.Arm_Cosine)
+    // .withKP(48)// 12
+    // .withKI(0)
+    // .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
   }
 }

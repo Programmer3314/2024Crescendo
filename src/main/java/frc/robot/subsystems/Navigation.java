@@ -36,7 +36,6 @@ public class Navigation extends SubsystemBase {
       var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
       Pose2d pose = rc.drivetrain.getState().Pose;
 
-      // TODO: Try setting this back to only needing 1 target.
 
       if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
         Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
