@@ -4,9 +4,17 @@
 
 package frc.robot;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,8 +23,11 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
@@ -86,15 +97,16 @@ public class RobotContainer {
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     joystick.a().whileTrue(new Aim(this));
     // TODO: Try this again, but this time...
-    // Create a funtion that creates the command currently created in 
-    // GoShoot.Initialize(), then use the function with DeferedCommand 
-    // in the putData below. 
+    // Create a funtion that creates the command currently created in
+    // GoShoot.Initialize(), then use the function with DeferedCommand
+    // in the putData below.
+    Set<Subsystem> set = new HashSet<Subsystem>();
+    set.add(drivetrain);
     SmartDashboard.putData("Run Diagnostic",
-        new GoShoot(this));
+        new DeferredCommand(() -> runDiagnosticTest(), set));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
-    
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
@@ -187,5 +199,19 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  public Command runDiagnosticTest() {
+    Pose2d currentPose = MMField.getBluePose(drivetrain.getState().Pose);
+    PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
+    List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
+        currentPose,
+        MMField.getBlueWooferApproachPose(),
+        MMField.getBlueWooferPose());
+    PathPlannerPath path = new PathPlannerPath(bezierPoints,
+        trajectoryConstraints,
+        new GoalEndState(0, Rotation2d.fromDegrees(180)));
+    path.preventFlipping = false;
+    return AutoBuilder.followPath(path);
   }
 }

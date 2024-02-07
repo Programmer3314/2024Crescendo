@@ -98,6 +98,7 @@ public class Shooter extends SubsystemBase {
 
   double index1InVel = 30;
   double index2InVel = -index1InVel;
+  int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
 
   // TODO Use waypoint Values for shooter index velocity (also change reverse)
   double index1OutVel = -30;
@@ -179,7 +180,7 @@ public class Shooter extends SubsystemBase {
       }
 
       @Override
-      public MMStateMachineState calcNextState() {
+      public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
         return Idle;
       };
     };
@@ -301,6 +302,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= shooterDelay) {
+          shotCounter++;
           return Idle;
         }
         return this;
@@ -584,6 +586,10 @@ public class Shooter extends SubsystemBase {
 
   public double getSpeakerTurnRate() {
     return speakerTurnRate;
+  }
+
+  public int getShotCounter() {
+    return getShotCounter();
   }
 
   public void runShooters(double leftMotorSpeed, double rightMotorSpeed) {

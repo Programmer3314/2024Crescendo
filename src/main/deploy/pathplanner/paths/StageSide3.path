@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.7729598316339494,
-        "y": 5.55593454044051
+        "x": 2.2704441805280005,
+        "y": 5.574556013976893
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7634382450232091,
-        "y": 5.086699820761289
+        "x": 1.5955808488193548,
+        "y": 5.537577201280529
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "stagenote2"
     },
     {
       "anchor": {
-        "x": 2.6556841685111943,
-        "y": 4.089988751406074
+        "x": 2.399870024965275,
+        "y": 6.702409801216
       },
       "prevControl": {
-        "x": 1.4682680793933018,
-        "y": 4.236583330309518
+        "x": 1.8082090218234494,
+        "y": 6.147727610770538
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,14 +39,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": -150.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "StageSideStart",
   "previewStartingState": {
     "rotation": 180.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
