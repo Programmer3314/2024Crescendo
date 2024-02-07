@@ -66,7 +66,9 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredIndexIn;
   boolean diagnosticDesiredIndexOut;
   boolean diagnosticDesiredShooterAngle;
-  boolean diagnosticDesiredShooterVel;
+  boolean diagnosticDesiredRightShooterVel;
+  boolean diagnosticDesiredLeftShooterVel;
+
 
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
@@ -150,7 +152,8 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putBoolean("diagnosticIndexIn", diagnosticDesiredIndexIn);
       SmartDashboard.putBoolean("diagnosticIndexOut", diagnosticDesiredIndexOut);
       SmartDashboard.putBoolean("diagnosticShooterAngle", diagnosticDesiredShooterAngle);
-      SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredShooterVel);
+      SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredRightShooterVel);
+      SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredLeftShooterVel);
     }
   }
 
@@ -520,7 +523,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterAngle) {
-          return DiagnosticShoot;
+          return DiagnosticLeftShoot;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -529,7 +532,8 @@ public class Shooter extends SubsystemBase {
 
       }
     };
-    MMStateMachineState DiagnosticShoot = new MMStateMachineState("DiagnosticShoot") {
+
+    MMStateMachineState DiagnosticLeftShoot = new MMStateMachineState("DiagnosticLeftShooter") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
@@ -537,15 +541,13 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(),
-            shooterVelocityMargin)// TODO use separate diagnostics for left & right motors
-            && isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(), shooterVelocityMargin);
+        diagnosticDesiredLeftShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(), shooterVelocityMargin);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterVel) {
-          return Idle;
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredLeftShooterVel) {
+          return DiagnosticRightShoot;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -554,6 +556,28 @@ public class Shooter extends SubsystemBase {
       }
     };
 
+    MMStateMachineState DiagnosticRightShoot = new MMStateMachineState("DiagnosticRightShooter") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredRightShooterVel = isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(), shooterVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= diagnosticRunTime && diagnosticDesiredRightShooterVel) {
+          return Idle;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
   }
 
   public double getLeftShooterVelocity() {
@@ -622,24 +646,6 @@ public class Shooter extends SubsystemBase {
     rightMotor.set(0);
   }
 
-  public void runIndexers(double index1Speed, double index2Speed) {
-    index1.setControl(index1VelVol.withVelocity(index1Speed));
-    index2.setControl(index2VelVol.withVelocity(index2Speed));
-  }
-
-  public void stopIndexers() {
-    index2.set(0);
-    index1.set(0);
-  }
-
-  public void stopIntake() {
-    intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
-  }
-
-  public void runIntakeOut() {
-    intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelOut));
-  }
-
   public void aimToSpeaker() {
     runLeftMotor(desiredWaypoint.getLeftVelocity());
     runRightMotor(desiredWaypoint.getRightVelocity());
@@ -653,6 +659,11 @@ public class Shooter extends SubsystemBase {
 
   public Shooter setIntakeFlag(boolean run) {
     runIntake = run;
+    return this;
+  }
+
+  public Shooter setReverseIntakeFlag(boolean run) {
+    runOutTake = run;
     return this;
   }
 
@@ -674,9 +685,12 @@ public class Shooter extends SubsystemBase {
     intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelIn));
   }
 
-  public Shooter setReverseIntakeFlag(boolean run) {
-    runOutTake = run;
-    return this;
+  public void runIntakeOut() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(intakeVelOut));
+  }
+
+  public void stopIntake() {
+    intakeBelt.setControl(intakeBeltVelVol.withVelocity(0));
   }
 
   public void setIntakeUp() {
@@ -685,12 +699,11 @@ public class Shooter extends SubsystemBase {
 
   public void setIntakeDown() {
     intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(1).withPosition(intakeDownPos));
-
   }
 
-  public void runIndexIn() {
-    index1.setControl(index1VelVol.withVelocity(index1InVel));
-    index2.setControl(index2VelVol.withVelocity(index2InVel));
+  public void runIndexers(double index1Speed, double index2Speed) {
+    index1.setControl(index1VelVol.withVelocity(index1Speed));
+    index2.setControl(index2VelVol.withVelocity(index2Speed));
   }
 
   public void runIndexShoot() {
@@ -698,9 +711,19 @@ public class Shooter extends SubsystemBase {
     index2.setControl(index1VelVol.withVelocity(desiredWaypoint.getRightVelocity()));
   }
 
+  public void runIndexIn() {
+    index1.setControl(index1VelVol.withVelocity(index1InVel));
+    index2.setControl(index2VelVol.withVelocity(index2InVel));
+  }
+
   public void runIndexOut() {
     index1.setControl(index1VelVol.withVelocity(index1OutVel));
     index2.setControl(index2VelVol.withVelocity(index2OutVel));
+  }
+
+  public void stopIndexers() {
+    index2.set(0);
+    index1.set(0);
   }
 
   public boolean readyToShoot() {
