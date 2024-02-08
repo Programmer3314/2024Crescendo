@@ -101,7 +101,7 @@ public class RobotContainer {
     set.add(drivetrain);
     SmartDashboard.putData("Run Diagnostic",
         new DeferredCommand(() -> runDiagnosticTest(), set));
-      joystick.x().onTrue(new DeferredCommand(() -> runDiagnosticTest(), set));
+    joystick.x().onTrue(new DeferredCommand(() -> runDiagnosticTest(), set));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
@@ -199,6 +199,9 @@ public class RobotContainer {
     return autoChooser.getSelected();
   }
 
+  // TODO: strip this down to use none of our code...
+  // hard code the poses, etc. 
+  // Michael Jansen says it is our code. Let's find out.
   public Command runDiagnosticTest() {
     Pose2d currentPose = MMField.getBluePose(drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
