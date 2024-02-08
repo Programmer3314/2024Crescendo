@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
+import frc.robot.commands.ChaseCone;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
@@ -96,14 +97,11 @@ public class RobotContainer {
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     joystick.a().whileTrue(new Aim(this));
-    // TODO: Try this again, but this time...
-    // Create a funtion that creates the command currently created in
-    // GoShoot.Initialize(), then use the function with DeferedCommand
-    // in the putData below.
     Set<Subsystem> set = new HashSet<Subsystem>();
     set.add(drivetrain);
     SmartDashboard.putData("Run Diagnostic",
         new DeferredCommand(() -> runDiagnosticTest(), set));
+      joystick.x().onTrue(new DeferredCommand(() -> runDiagnosticTest(), set));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
@@ -117,7 +115,7 @@ public class RobotContainer {
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
 
-    // joystick.a().whileTrue(new ChaseCone(this));
+    joystick.y().whileTrue(new ChaseCone(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
