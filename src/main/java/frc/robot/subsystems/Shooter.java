@@ -184,6 +184,12 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
+        if(!shooterBreakBeam.get()){
+          return Index;
+        }
+        if(!intakeBreakBeam.get()){
+          return DropIntake;
+        }
         return Idle;
       };
     };

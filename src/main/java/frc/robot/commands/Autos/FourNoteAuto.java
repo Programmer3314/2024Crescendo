@@ -23,20 +23,25 @@ public class FourNoteAuto extends MMDeferredCommand<SequentialCommandGroup> {
   public FourNoteAuto(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
+    
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     
   }
   @Override
   public void initialize() {
+    rc.drivetrain.seedFieldRelative(RobotContainer.startPoseChooser.getSelected());
     cmd = new SequentialCommandGroup();
     cmd.addCommands(new ShootAndWait(rc),
+    // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
     new FollowPathFile(rc, "Note1"),
     new Aim(rc),
     new AutoShoot(rc), 
+    // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
     new FollowPathFile(rc, "Note2"),
     new Aim(rc), 
     new AutoShoot(rc),
+    // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
     new FollowPathFile(rc, "Note3"),
      new Aim(rc),
      new AutoShoot(rc));

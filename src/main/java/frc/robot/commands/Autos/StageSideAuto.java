@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.subsystems.Navigation;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -24,14 +25,22 @@ public class StageSideAuto extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
+        new InstantCommand(()-> rc.drivetrain.seedFieldRelative(RobotContainer.startPoseChooser.getSelected())),
         new ShootAndWait(rc), // for shoot first before moving
         new ParallelCommandGroup(
           new FollowPathFile(rc, "StageSide1")
           // ,new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true))
         ),
         new ShootAndWait(rc),
-        new FollowPathFile(rc, "StageSide2"),
+        new ParallelCommandGroup(
+          new FollowPathFile(rc, "StageSide2")
+          // ,new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true))
+        ),
         new ShootAndWait(rc),
-        new FollowPathFile(rc, "StageSide3"));
+        new ParallelCommandGroup(
+          new FollowPathFile(rc, "StageSide3")
+          // ,new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true))
+        ),
+        new ShootAndWait(rc));
   }
 }

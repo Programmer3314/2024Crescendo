@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.MMUtilities.MMController;
@@ -36,7 +37,9 @@ import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
+import frc.robot.commands.Autos.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
+import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -48,7 +51,13 @@ public class RobotContainer {
   public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
-  private Pose2d[] notePoseList = { new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
+  private Pose2d[] startPoseList = {
+  new Pose2d(0.79,6.71, Rotation2d.fromDegrees(-120)),
+  new Pose2d(1.43, 5.5, Rotation2d.fromDegrees(180)),
+  new Pose2d(0.79,4.37,Rotation2d.fromDegrees(120))
+};
+  private Pose2d[] notePoseList = { 
+      new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
       new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(270)),
       new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
       new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
@@ -73,6 +82,7 @@ public class RobotContainer {
   public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
+  public static SendableChooser<Pose2d> startPoseChooser;
   public static SendableChooser<Pose2d> noteChooser0;
   public static SendableChooser<Pose2d> shootChooser0;
   public static SendableChooser<Pose2d> noteChooser1;
@@ -105,6 +115,7 @@ public class RobotContainer {
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
+    joystick.button(8).onTrue(new InstantCommand(()-> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
     // joystick.y().whileTrue(new ShootTheConeOut(this));
     // joystick.x().whileTrue(new GrabCone(this));
@@ -161,6 +172,8 @@ public class RobotContainer {
     autoChooser.addOption("none", Commands.none());
     autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
+    autoChooser.addOption("StageSideAuto", new StageSideAuto(this));
+    autoChooser.addOption("FourNoteAuto", new FourNoteAuto(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -175,6 +188,7 @@ public class RobotContainer {
     shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
+    startPoseChooser = fillStartPoseChooser("Pick Start Pose");
   }
 
   private SendableChooser<Pose2d> fillShootPoseChooser(String shootPoseName) {
@@ -184,6 +198,15 @@ public class RobotContainer {
     }
     SmartDashboard.putData(shootPoseName, shootChooser);
     return shootChooser;
+  }
+
+  private SendableChooser<Pose2d> fillStartPoseChooser(String startPoseName) {
+    SendableChooser<Pose2d> startChooser = new SendableChooser<Pose2d>();
+    for (int i = 0; i < startPoseList.length; i++) {
+      startChooser.addOption("Start: " + i, startPoseList[i]);
+    }
+    SmartDashboard.putData(startPoseName, startPoseChooser);
+    return startChooser;
   }
 
   private SendableChooser<Pose2d> fillNoteChooser(String noteChooserName) {
@@ -203,12 +226,11 @@ public class RobotContainer {
   // hard code the poses, etc. 
   // Michael Jansen says it is our code. Let's find out.
   public Command runDiagnosticTest() {
-    Pose2d currentPose = MMField.getBluePose(drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
-        currentPose,
-        MMField.getBlueWooferApproachPose(),
-        MMField.getBlueWooferPose());
+        new Pose2d(new Translation2d(1.8, 5.5),Rotation2d.fromDegrees(180)),
+        new Pose2d(new Translation2d(1.6, 5.5),Rotation2d.fromDegrees(180)),
+        new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
     PathPlannerPath path = new PathPlannerPath(bezierPoints,
         trajectoryConstraints,
         new GoalEndState(0, Rotation2d.fromDegrees(180)));
