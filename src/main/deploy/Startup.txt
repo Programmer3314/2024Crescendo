@@ -1,0 +1,32 @@
+Electrical Inventory:
+Battery
+Main Breaker
+PDB
+Rio 2.0 into fused port on PDB
+VRM into fused port on PDB
+Radio Power Module into fused port on PDB, Ethernet into switch
+Radio Ethernet into Radio Power Module
+Ethernet Switch (from test board) check current test board for power 
+Limelights (3) PDB port required
+6 CanCoders WAGO'd into single +/- into VRM 12v 500ma 
+Canivore USB'd into Rio, 12v into VRM 2A
+Pidgeion 2.0 in CanBus and power from VRM 12v as available
+Level Shifting board for sensors 
+I expect we'll need the power breakout power board.
+
+
+
+Phoenix X:
+ID & Firmware for all motors as required
+ID & Firmware for all CanCoders as required
+Zero Drivetrain CanCoders and record offsets (for software init)
+Zero Shooter Aim CanCoder and record rotor/cancoder values at extremes of travel
+Zero Intake lift CanCoder and record rotor/CanCoder values as extremes of travel
+Tune PIDs+ for Shooter Aim and Intake lift
+PIDs for shooter wheels.
+
+Test Diagnostics.
+
+
+
+
