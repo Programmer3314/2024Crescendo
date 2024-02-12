@@ -4,6 +4,7 @@
 
 package frc.robot.commands.Autos;
 
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
@@ -30,20 +31,20 @@ public class FourNoteAuto extends MMDeferredCommand<SequentialCommandGroup> {
   }
   @Override
   public void initialize() {
-    rc.drivetrain.seedFieldRelative(RobotContainer.startPoseChooser.getSelected());
-    cmd = new SequentialCommandGroup();
-    cmd.addCommands(new ShootAndWait(rc),
+    // rc.drivetrain.seedFieldRelative(RobotContainer.startPoseChooser.getSelected());
+    // cmd = new SequentialCommandGroup();
+    // cmd.addCommands(new ShootAndWait(rc),
     // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
-    new FollowPathFile(rc, "Note1"),
-    new Aim(rc),
-    new AutoShoot(rc), 
+    // new FollowPathFile(rc, "Note1"),
+    // new Aim(rc),
+    // new AutoShoot(rc), 
     // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
-    new FollowPathFile(rc, "Note2"),
-    new Aim(rc), 
-    new AutoShoot(rc),
+    // new FollowPathFile(rc, "Note2"),
+    // new Aim(rc), 
+    // new AutoShoot(rc),
     // new InstantCommand(rc::shooterSubsystem.setIntakeFlag(true)),
-    new FollowPathFile(rc, "Note3"),
-     new Aim(rc),
-     new AutoShoot(rc));
+    // new FollowPathFile(rc, "Note3"),
+    //  new Aim(rc),
+    //  new AutoShoot(rc));
   }
 }

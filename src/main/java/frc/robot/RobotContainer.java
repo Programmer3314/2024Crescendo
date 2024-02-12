@@ -45,6 +45,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
@@ -52,11 +53,11 @@ public class RobotContainer {
 
   public final Field2d field = new Field2d();
   private Pose2d[] startPoseList = {
-  new Pose2d(0.79,6.71, Rotation2d.fromDegrees(-120)),
-  new Pose2d(1.43, 5.5, Rotation2d.fromDegrees(180)),
-  new Pose2d(0.79,4.37,Rotation2d.fromDegrees(120))
-};
-  private Pose2d[] notePoseList = { 
+      new Pose2d(0.79, 6.71, Rotation2d.fromDegrees(-120)),
+      new Pose2d(1.43, 5.5, Rotation2d.fromDegrees(180)),
+      new Pose2d(0.79, 4.37, Rotation2d.fromDegrees(120))
+  };
+  private Pose2d[] notePoseList = {
       new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
       new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(270)),
       new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
@@ -76,7 +77,7 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
-  // public Shooter shooterSubsystem = new Shooter();
+  public Shooter shooterSubsystem = new Shooter(this);
 
   public Navigation navigation = new Navigation(this);
   public MMSignalLight signalLight = new MMSignalLight();
@@ -106,27 +107,25 @@ public class RobotContainer {
     // .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
-    joystick.a().whileTrue(new Aim(this));
-    Set<Subsystem> set = new HashSet<Subsystem>();
-    set.add(drivetrain);
-    SmartDashboard.putData("Run Diagnostic",
-        new DeferredCommand(() -> runDiagnosticTest(), set));
-    joystick.x().onTrue(new DeferredCommand(() -> runDiagnosticTest(), set));
+    // joystick.a().whileTrue(new Aim(this));
+    // joystick.x().onTrue(new
+    // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
+    // joystick.y().whileTrue(new ChaseCone(this));
     joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
-    joystick.button(8).onTrue(new InstantCommand(()-> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
+    joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
-    // joystick.y().whileTrue(new ShootTheConeOut(this));
-    // joystick.x().whileTrue(new GrabCone(this));
+    // Set<Subsystem> set = new HashSet<Subsystem>();
+    // set.add(drivetrain);
+    // joystick.x().onTrue(new DeferredCommand(() -> runDeferredTest(), set));
+    // SmartDashboard.putData("Run Deferred Test",
+    // new DeferredCommand(() -> runDeferredTest(), set));
 
-    // joystick.b().whileTrue(new GoShoot(this));
     // joystick.x().whileTrue(new PathFindTo(this,
     // MMField::getBlueWooferApproachPose));
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
-
-    joystick.y().whileTrue(new ChaseCone(this));
 
     // joystick.y().whileTrue(new InstantCommand(
     // () -> claw.armExtensionRot(30)));
@@ -188,7 +187,8 @@ public class RobotContainer {
     shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
-    startPoseChooser = fillStartPoseChooser("Pick Start Pose");
+    // TODO FIX THIS
+    // startPoseChooser = fillStartPoseChooser("Pick Start Pose");
   }
 
   private SendableChooser<Pose2d> fillShootPoseChooser(String shootPoseName) {
@@ -223,13 +223,13 @@ public class RobotContainer {
   }
 
   // TODO: strip this down to use none of our code...
-  // hard code the poses, etc. 
+  // hard code the poses, etc.
   // Michael Jansen says it is our code. Let's find out.
-  public Command runDiagnosticTest() {
+  public Command runDeferredTest() {
     PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
-        new Pose2d(new Translation2d(1.8, 5.5),Rotation2d.fromDegrees(180)),
-        new Pose2d(new Translation2d(1.6, 5.5),Rotation2d.fromDegrees(180)),
+        new Pose2d(new Translation2d(1.8, 5.5), Rotation2d.fromDegrees(180)),
+        new Pose2d(new Translation2d(1.6, 5.5), Rotation2d.fromDegrees(180)),
         new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
     PathPlannerPath path = new PathPlannerPath(bezierPoints,
         trajectoryConstraints,

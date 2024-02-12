@@ -115,7 +115,8 @@ public class Shooter extends SubsystemBase {
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
 
   /** Creates a new Shooter. */
-  public Shooter() {
+  public Shooter(RobotContainer rc) {
+    this.rc = rc;
     configShooterRotateCanCoder();
     configShooterRotateMotor();
     configIntakeRotateCanCoder();
@@ -134,7 +135,7 @@ public class Shooter extends SubsystemBase {
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
     targetAngleSpeaker = transformFromSpeaker.getAngle();
 
-    ssm.update();
+    // ssm.update();
 
     turnPidController.initialize(targetAngleSpeaker);
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());

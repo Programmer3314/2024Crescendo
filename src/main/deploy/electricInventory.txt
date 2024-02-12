@@ -1,0 +1,59 @@
+Electronic Inventory:
+
+ethernet switch
+vrm
+rio 
+radio 
+can coders 
+break beams
+break beam board
+falcons/talon
+lights
+
+-----what we have-----
+-PDH
+-Roborio
+-Pigeon
+-Canivore
+-Wagu tool for CanCoders
+-Cancoder(6)
+(hella motors)
+    - intakeBelt(9)
+    - intakeRotate(10)
+    - shootRotate(11)
+    - index1(12)
+    - index2(13)
+    -leftShooter
+  private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
+  private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
+  Elevator Motor(16)
+  Elevator belt Motor(17)
+  Climber(18)
+
+  CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
+  CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
+
+  DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
+  DigitalInput shooterBreakBeam = new DigitalInput(1);
+
+
+Shooter Rotate:
+  Rotor Position to 0 Cancoder:
+  35.905
+
+  Cancoder(0.076) to Rotor Position:
+  3.908
+
+  encoder/mechanism : rotor
+  .076 : 31.997
+
+Intake Rotate
+    Rotor Position to 0 Cancoder:
+    -9.237
+
+    Cancoder(.225) to Rotor Position:
+    0.087
+
+    encoder/mechanism : rotor
+    .225 : 9.324
+
