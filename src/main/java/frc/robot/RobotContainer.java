@@ -63,7 +63,8 @@ public class RobotContainer {
       new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
       new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
   };
-  private Pose2d[] shootPoseList = { new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
+  private Pose2d[] shootPoseList = {
+      new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
       MMField.getBlueWooferApproachPose(),
   };
 
@@ -200,6 +201,8 @@ public class RobotContainer {
     return shootChooser;
   }
 
+  // TODO: One of these things (choosers) is not like the others,
+  // one of these things just isn't the same... 
   private SendableChooser<Pose2d> fillStartPoseChooser(String startPoseName) {
     SendableChooser<Pose2d> startChooser = new SendableChooser<Pose2d>();
     for (int i = 0; i < startPoseList.length; i++) {
