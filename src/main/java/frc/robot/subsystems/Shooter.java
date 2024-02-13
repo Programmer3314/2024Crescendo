@@ -55,7 +55,7 @@ public class Shooter extends SubsystemBase {
   boolean runDiagnosticTest;
   double diagnosticRunTime = 2;
   double diagnosticTimeOut = 5;
-  double diagnosticShooterAngle = .02;
+  double diagnosticShooterAngle = .07;
   double diagnosticLeftMotorSpeed = 50;
   double diagnosticRightMotorSpeed = -diagnosticLeftMotorSpeed;;
 
@@ -68,7 +68,6 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredShooterAngle;
   boolean diagnosticDesiredRightShooterVel;
   boolean diagnosticDesiredLeftShooterVel;
-
 
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
@@ -92,8 +91,8 @@ public class Shooter extends SubsystemBase {
   DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
 
-  double intakeUpPos = .01;
-  double intakeDownPos = 0;
+  double intakeUpPos = .5;
+  double intakeDownPos = 0.07;
 
   double intakeVelIn = 100;
   double intakeVelOut = -intakeVelIn;
@@ -156,6 +155,8 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredRightShooterVel);
       SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredLeftShooterVel);
     }
+    SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
+    SmartDashboard.putBoolean("Intake Beam", intakeBreakBeam.get());
   }
 
   // (Proposed Outline)
@@ -185,10 +186,10 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
-        if(!shooterBreakBeam.get()){
+        if (!shooterBreakBeam.get()) {
           return Index;
         }
-        if(!intakeBreakBeam.get()){
+        if (!intakeBreakBeam.get()) {
           return DropIntake;
         }
         return Idle;
@@ -548,7 +549,8 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredLeftShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(), shooterVelocityMargin);
+        diagnosticDesiredLeftShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(),
+            shooterVelocityMargin);
       }
 
       @Override
@@ -571,7 +573,8 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredRightShooterVel = isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(), shooterVelocityMargin);
+        diagnosticDesiredRightShooterVel = isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(),
+            shooterVelocityMargin);
       }
 
       @Override
@@ -775,9 +778,9 @@ public class Shooter extends SubsystemBase {
   private void configIntakeRotateCanCoder() {
     CANcoderConfiguration canConfig = new CANcoderConfiguration();
     canConfig.MagnetSensor
-        .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
+        .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.390869140625); // TODO: Update with real values
+        .withMagnetOffset(-0.15); // TODO: Update with real values
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
@@ -786,7 +789,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.390869140625); // TODO: Update with real values
+        .withMagnetOffset(0.1904296875); // TODO: Update with real values
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
@@ -797,7 +800,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = (60.0 / 15.0) * 48.0; // TODO: Update with real values
+    double rotorToSensorRatio = 40; // TODO: Update with real values
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
@@ -805,18 +808,18 @@ public class Shooter extends SubsystemBase {
 
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
-        .withNeutralMode(NeutralModeValue.Brake);
+        .withNeutralMode(NeutralModeValue.Coast);
     cfg.MotionMagic
         .withMotionMagicCruiseVelocity(cruiseVelocity)
         .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
         .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
     cfg.Slot0
-        .withKS(1) // voltage to overcome static friction
-        .withKV(feedForwardVoltage)
+        .withKS(0) // voltage to overcome static friction
+        .withKV(0)
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(2)
+        .withKP(15)
         .withKI(0)
         .withKD(0);
     cfg.Feedback
@@ -852,7 +855,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = (60.0 / 15.0) * 48.0; // TODO: Update with real values
+    double rotorToSensorRatio = 421.05; // TODO: Update with real values
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
@@ -860,18 +863,18 @@ public class Shooter extends SubsystemBase {
 
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
-        .withNeutralMode(NeutralModeValue.Brake);
+        .withNeutralMode(NeutralModeValue.Coast);
     cfg.MotionMagic
         .withMotionMagicCruiseVelocity(cruiseVelocity)
         .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
         .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
     cfg.Slot0
-        .withKS(1) // voltage to overcome static friction
-        .withKV(feedForwardVoltage)
+        .withKS(0) // voltage to overcome static friction
+        .withKV(0)
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Arm_Cosine)
-        .withKP(2)
+        .withKP(15)
         .withKI(0)
         .withKD(0);
     cfg.Feedback

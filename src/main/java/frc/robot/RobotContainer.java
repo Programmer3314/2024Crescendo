@@ -81,7 +81,7 @@ public class RobotContainer {
   public Shooter shooterSubsystem = new Shooter(this);
 
   public Navigation navigation = new Navigation(this);
-  public MMSignalLight signalLight = new MMSignalLight();
+ // public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
   public static SendableChooser<Pose2d> startPoseChooser;
@@ -116,6 +116,10 @@ public class RobotContainer {
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
+    joystick.a().whileTrue(new InstantCommand(()->shooterSubsystem.setIntakeUp()));
+    joystick.b().whileTrue(new InstantCommand(()->shooterSubsystem.setIntakeDown()));
+    joystick.x().whileTrue(new InstantCommand(()->shooterSubsystem.setShooterPosition(0)));
+    joystick.y().whileTrue(new InstantCommand(()->shooterSubsystem.setShooterPosition(.07)));
 
     // Set<Subsystem> set = new HashSet<Subsystem>();
     // set.add(drivetrain);

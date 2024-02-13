@@ -32,7 +32,7 @@ public class Navigation extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (true) {
+    if (false) {
       var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
       Pose2d pose = rc.drivetrain.getState().Pose;
 
@@ -58,12 +58,12 @@ public class Navigation extends SubsystemBase {
     // leftConeX = llpython[1];
     // leftConeY = llpython[2];
     hasLeftConeTarget = false;
-    leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-left").targetingResults.targets_Detector;
-    if (leftLimelightDetector.length > 0) {
-      hasLeftConeTarget = true;
-      leftConeX = leftLimelightDetector[0].tx_pixels;
-      leftConeY = leftLimelightDetector[0].ty_pixels;
-    }
+  //  leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-left").targetingResults.targets_Detector;
+    // if (leftLimelightDetector.length > 0) {
+    //   hasLeftConeTarget = true;
+    //   leftConeX = leftLimelightDetector[0].tx_pixels;
+    //   leftConeY = leftLimelightDetector[0].ty_pixels;
+    // }
 
     SmartDashboard.putNumber("TX:", leftConeX);
     SmartDashboard.putNumber("TY", leftConeY);
