@@ -13,6 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
@@ -793,6 +794,9 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
+  // TODO: Recalc values once we are not wrapping the encoder.
+  // The "distance" between the top and bottom reading will be different
+
   private void configIntakeRotateMotor() {
     double cruiseVelocity = .5; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
@@ -800,6 +804,18 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
+    // TODO: will this do it? 
+    // There must be no "wrap around" in the encoder for the following lines to work!
+    // After reviewing this I believe that we do want feed forward and should probably drop 
+    // kP to start.
+    // Also I watched a video about control and it suggested making everything go the same way
+    // starting with making the motor go forward (+ for up), then making the sensor go +
+    double sensorLow = -0.7;
+    double sensorHigh = -.85;
+    double rotorLow = 35.9;
+    double rotorHigh = 3.2;
+    double calcRotorToSensor =(rotorHigh-rotorLow)/(sensorHigh-sensorLow);
+
     double rotorToSensorRatio = 40; // TODO: Update with real values
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
@@ -827,31 +843,22 @@ public class Shooter extends SubsystemBase {
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
-    // cfg.Slot1
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Elevator_Static)
-    // .withKP(96 * 2)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
-    // cfg.Slot2
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Arm_Cosine)
-    // .withKP(48)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
     MMConfigure.configureDevice(intakeRotateMotor, cfg);
   }
 
+  // TODO: Recalc values once we are not wrapping the encoder.
   private void configShooterRotateMotor() {
     double cruiseVelocity = .5; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
     double timeToReachMaxAcceleration = .2; // seconds
+
+    // TODO: will this do it? 
+    // There must be no "wrap around" in the encoder for the following lines to work!
+    double sensorLow = 0;
+    double sensorHigh = 0;
+    double rotorLow = 0;
+    double rotorHigh = 0;
+    double calcRotorToSensor =(rotorHigh-rotorLow)/(sensorHigh-sensorLow);
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
