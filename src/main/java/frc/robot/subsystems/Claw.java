@@ -24,6 +24,10 @@ import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMRollingAvg;
 
+
+// TODO: get rid of Claw
+
+
 public class Claw extends SubsystemBase {
 
     TalonFX clawMotor = new TalonFX(14, "CANIVORE");

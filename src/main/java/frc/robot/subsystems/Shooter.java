@@ -78,6 +78,7 @@ public class Shooter extends SubsystemBase {
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
 
+  // TODO: Calm down the shooter some. 
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, .45, 50, 60, 50));
 
@@ -102,6 +103,7 @@ public class Shooter extends SubsystemBase {
   double intakeVelIn = 20;
   double intakeVelOut = -intakeVelIn;
 
+  // TODO: Calm this down... It was originally 30% of intakeVelIn when it was 100 r/s
   double index1InVel = 30;
   double index2InVel = index1InVel;
   int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
@@ -235,6 +237,8 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
+        // TODO: Maybe don't run these during indexing. 
+        // The intake may do the whole thing. Try calming them down first (other todo...)
         runIndexIn();
         setAimFlag(true);
       }
@@ -281,6 +285,8 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
 
+      // TODO: Are we missing some stuff, like doing the things needed to shoot. 
+      // They are probably set already, but maybe we should make sure. 
       @Override
       public MMStateMachineState calcNextState() {
         if (readyToShoot() && runShoot) {
@@ -705,6 +711,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Shooter setAimFlag(boolean aim) {
+    // TODO: make the motors stop when runAim turns off. 
     runAim = aim;
     return this;
   }
@@ -966,6 +973,7 @@ public class Shooter extends SubsystemBase {
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
     
 
+    // TODO: set elevator motor to brake mode
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Coast)
