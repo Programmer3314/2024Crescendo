@@ -100,12 +100,12 @@ public class RobotContainer {
             .withVelocityY(joystick.getLeftXSmoothed())
             .withRotationalRate(joystick.getRightXSmoothed())));
 
-    // joystick.rightBumper().onTrue(new
-    // InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
-    // .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
-    // joystick.rightTrigger().onTrue(new
-    // InstantCommand(()->shooterSubsystem.setShootFlag(true)))
-    // .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
+    joystick.rightBumper().onTrue(new
+    InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
+    joystick.rightTrigger().onTrue(new
+    InstantCommand(()->shooterSubsystem.setShootFlag(true)))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     // joystick.a().whileTrue(new Aim(this));
@@ -116,10 +116,12 @@ public class RobotContainer {
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
-    joystick.a().whileTrue(new InstantCommand(()->shooterSubsystem.setIntakeUp()));
+    joystick.a().whileTrue(new InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     joystick.b().whileTrue(new InstantCommand(()->shooterSubsystem.setIntakeDown()));
-    joystick.x().whileTrue(new InstantCommand(()->shooterSubsystem.setShooterPosition(0)));
-    joystick.y().whileTrue(new InstantCommand(()->shooterSubsystem.setShooterPosition(.07)));
+    joystick.x().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
+    joystick.y().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(6)))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
+
 
     // Set<Subsystem> set = new HashSet<Subsystem>();
     // set.add(drivetrain);
