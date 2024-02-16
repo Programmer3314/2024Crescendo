@@ -46,7 +46,7 @@ public class Shooter extends SubsystemBase {
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
-  double shooterAngleMargin = .01;
+  double shooterAngleMargin = .1;
   double shooterVelocityMargin = 20;
   double rotationMargin = 2;
   // TODO: replace with real margins
@@ -78,9 +78,10 @@ public class Shooter extends SubsystemBase {
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
 
-  // TODO: Calm down the shooter some. 
+  
   MMFiringSolution firingSolution = new MMFiringSolution(
-      new MMWaypoint(1.3, .45, 50, 60, 50));
+      new MMWaypoint(1.3, .45, 35, 45, 40),
+      new MMWaypoint(3.55, .39, 40, 50, 45));
 
   private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
   private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -89,7 +90,7 @@ public class Shooter extends SubsystemBase {
   private TalonFX index2 = new TalonFX(13, "CANIVORE");
   private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
   private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
-  private TalonFX elevatorMotor = new TalonFX(16,"CANIVORE");
+  private TalonFX elevatorMotor = new TalonFX(16, "CANIVORE");
 
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
@@ -98,19 +99,18 @@ public class Shooter extends SubsystemBase {
   DigitalInput shooterBreakBeam = new DigitalInput(1);
 
   double intakeUpPos = .75;
-  double intakeDownPos = 0.07;
+  double intakeDownPos = 0.1;
 
   double intakeVelIn = 20;
   double intakeVelOut = -intakeVelIn;
 
-  // TODO: Calm this down... It was originally 30% of intakeVelIn when it was 100 r/s
-  double index1InVel = 30;
+  double index1InVel = 8;
   double index2InVel = index1InVel;
   int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
 
-  // TODO Use waypoint Values for shooter index velocity (also change reverse)
+  // TODO Use waypoint Values for shooter index velocity 
   double index1OutVel = -30;
-  double index2OutVel = 30;
+  double index2OutVel = index1OutVel;
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage elevatorMotorMotionMagicVoltage = new MotionMagicVoltage(0);
@@ -122,6 +122,7 @@ public class Shooter extends SubsystemBase {
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
   private VoltageOut elevatorvoVoltageOut = new VoltageOut(0);
+
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
     this.rc = rc;
@@ -130,6 +131,7 @@ public class Shooter extends SubsystemBase {
     configIntakeRotateCanCoder();
     configIntakeRotateMotor();
     configMotors();
+    configIndexMotors();
     configElevatorMotors();
     ssm.setInitial(ssm.Start);
     SmartDashboard.putData("Run Diagnostic",
@@ -151,9 +153,9 @@ public class Shooter extends SubsystemBase {
 
     if (runAim) {
       aimToSpeaker();
-    } 
+    }
     // else {
-    //   // stopShooterMotors();
+    // // stopShooterMotors();
     // }
     if (runDiagnosticTest) {
       SmartDashboard.putBoolean("diagnosticIntakeDown", diagnosticDesiredIntakeDown);
@@ -198,12 +200,13 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
-        // if (!shooterBreakBeam.get()) {
-        // return Index;
-        // }
-        // if (!intakeBreakBeam.get()) {
-        // return DropIntake;
-        // }TODO: Diagnostic 2/13 testing, uncomment l8r
+        if (!shooterBreakBeam.get()) {
+        return Index;
+        }
+        if (!intakeBreakBeam.get()) {
+        return DropIntake;
+        }
+        // TODO: Diagnostic 2/13 testing, uncomment l8r
         return Idle;
       };
     };
@@ -211,6 +214,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        setShootFlag(false);
         setIntakeUp();
         setAimFlag(false);
         stopIndexers();
@@ -222,7 +226,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (runIntake) {
-        return DropIntake;
+          return DropIntake;
         }
         // TODO: 2/13 diagnostic testing, uncomment l8r
         if (runDiagnosticTest) {
@@ -231,20 +235,22 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-    MMStateMachineState DropIntake = new MMStateMachineState("DropIntake") {
+    MMStateMachineState DropIntake = new MMStateMachineState("Intake") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
-        // TODO: Maybe don't run these during indexing. 
-        // The intake may do the whole thing. Try calming them down first (other todo...)
-        runIndexIn();
+        // TODO: Maybe don't run these during indexing.
+        // The intake may do the whole thing. Try calming them down first (other
+        // todo...)
+        // runIndexIn();
         setAimFlag(true);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+        SmartDashboard.getBoolean("Shooter Breakbeam", shooterBreakBeam.get());
         if (!shooterBreakBeam.get()) {
           return Index;
         }
@@ -285,8 +291,8 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
 
-      // TODO: Are we missing some stuff, like doing the things needed to shoot. 
-      // They are probably set already, but maybe we should make sure. 
+      // TODO: Are we missing some stuff, like doing the things needed to shoot.
+      // They are probably set already, but maybe we should make sure.
       @Override
       public MMStateMachineState calcNextState() {
         if (readyToShoot() && runShoot) {
@@ -300,6 +306,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
         runIndexShoot();
         setShootFlag(false);
       }
@@ -561,7 +568,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticLeftShoot = new MMStateMachineState("DiagnosticLeftShooter") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-          runLeftMotor(diagnosticLeftMotorSpeed);
+        runLeftMotor(diagnosticLeftMotorSpeed);
       }
 
       @Override
@@ -582,7 +589,7 @@ public class Shooter extends SubsystemBase {
       }
 
       @Override
-      public void transitionFrom(MMStateMachineState nextState){
+      public void transitionFrom(MMStateMachineState nextState) {
         stopLeftMotor();
       }
     };
@@ -611,7 +618,7 @@ public class Shooter extends SubsystemBase {
       }
 
       @Override
-      public void transitionFrom(MMStateMachineState nextState){
+      public void transitionFrom(MMStateMachineState nextState) {
         stopRightMotor();
       }
     };
@@ -711,7 +718,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public Shooter setAimFlag(boolean aim) {
-    // TODO: make the motors stop when runAim turns off. 
+    if(runAim && !aim){
+      stopShooterMotors();
+    }
     runAim = aim;
     return this;
   }
@@ -738,9 +747,7 @@ public class Shooter extends SubsystemBase {
 
   public void setIntakeDown() {
     intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeDownPos));
-    // TODO
-                                                                                                         // consider
-                                                                                                         // using slot 1
+    // TODO consider using slot 1
   }
 
   public void runIndexers(double index1Speed, double index2Speed) {
@@ -768,6 +775,27 @@ public class Shooter extends SubsystemBase {
     index1.set(0);
   }
 
+  public void stopMotors() {
+    // private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
+    // private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
+    // private TalonFX shooterRotateMotor = new TalonFX(11, "CANIVORE");
+    // private TalonFX index1 = new TalonFX(12, "CANIVORE");
+    // private TalonFX index2 = new TalonFX(13, "CANIVORE");
+    // private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
+    // private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
+    // private TalonFX elevatorMotor = new TalonFX(16,"CANIVORE");
+    VelocityVoltage vv = new VelocityVoltage(0);
+    intakeBeltMotor.setControl(vv);
+    intakeRotateMotor.setControl(vv);
+    shooterRotateMotor.setControl(vv);
+    index1.setControl(vv);
+    index2.setControl(vv);
+    leftMotor.setControl(vv);
+    rightMotor.setControl(vv);
+    elevatorMotor.setControl(vv);
+  }
+  
+
   public void setElevatorPosition(double position) {
     elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(position));
   }
@@ -777,6 +805,14 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean readyToShoot() {
+    SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
+    SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
+    SmartDashboard.putNumber("Shooter Rotate Motor Actual", shooterRotateMotor.getPosition().getValue());
+    SmartDashboard.putNumber("desired left motor", desiredWaypoint.getLeftVelocity());
+    SmartDashboard.putNumber("desired right motor", desiredWaypoint.getRightVelocity());
+    SmartDashboard.putNumber("desired rotate motor", desiredWaypoint.getAngle());
+    SmartDashboard.putNumber("desired Pose Something", Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()));
+
 
     return isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(), shooterVelocityMargin)
         // )Math.abs(leftMotor.getVelocity().getValue() -
@@ -810,15 +846,32 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(0);
     MMConfigure.configureDevice(leftMotor, genericConfig);
-    MMConfigure.configureDevice(index1, genericConfig);
 
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     MMConfigure.configureDevice(rightMotor, genericConfig);
-    MMConfigure.configureDevice(index2, genericConfig);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
   }
 
+  public void configIndexMotors() {
+    TalonFXConfiguration genericConfig = new TalonFXConfiguration();
+    genericConfig.Slot0
+        .withKS(.25)
+        .withKV(.12)
+        .withKA(.01)
+        .withKG(0)
+        .withKP(.125)
+        .withKG(0)
+        .withKI(0)
+        .withKD(0);
+    genericConfig.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
+
+    MMConfigure.configureDevice(index1, genericConfig);
+
+    genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
+    MMConfigure.configureDevice(index2, genericConfig);
+
+  }
 
   private void configIntakeRotateCanCoder() {
     CANcoderConfiguration canConfig = new CANcoderConfiguration();
@@ -838,8 +891,6 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
-  // TODO: Recalc values once we are not wrapping the encoder.
-  // The "distance" between the top and bottom reading will be different
 
   private void configIntakeRotateMotor() {
     double cruiseVelocity = 4; // Sensor revolutions/second
@@ -848,16 +899,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    // TODO: will this do it?
-    // There must be no "wrap around" in the encoder for the following lines to
-    // work!
-    // After reviewing this I believe that we do want feed forward and should
-    // probably drop
-    // kP to start.
-    // Also I watched a video about control and it suggested making everything go
-    // the same way
-    // starting with making the motor go forward (+ for up), then making the sensor
-    // go +
+   
     double sensorLow = 0.04;
     double sensorHigh = 0.84;
     double rotorLow = -9.8;
@@ -894,15 +936,12 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(intakeRotateMotor, cfg);
   }
 
-  // TODO: Recalc values once we are not wrapping the encoder.
+
   private void configShooterRotateMotor() {
     double cruiseVelocity = .25; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
     double timeToReachMaxAcceleration = .2; // seconds
 
-    // TODO: will this do it?
-    // There must be no "wrap around" in the encoder for the following lines to
-    // work!
     double sensorLow = 0.383;
     double sensorHigh = .455;
     double rotorLow = -34.7;
@@ -961,9 +1000,9 @@ public class Shooter extends SubsystemBase {
   }
 
   private void configElevatorMotors() {
-    double cruiseVelocity = 20; 
-    double timeToReachCruiseVelocity = .5; 
-    double timeToReachMaxAcceleration = .2; 
+    double cruiseVelocity = 20;
+    double timeToReachCruiseVelocity = .5;
+    double timeToReachMaxAcceleration = .2;
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
@@ -971,18 +1010,17 @@ public class Shooter extends SubsystemBase {
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
-    
 
-    // TODO: set elevator motor to brake mode
+    
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
-        .withNeutralMode(NeutralModeValue.Coast)
+        .withNeutralMode(NeutralModeValue.Brake)
         .withInverted(InvertedValue.CounterClockwise_Positive);
     cfg.MotionMagic
         .withMotionMagicCruiseVelocity(cruiseVelocity)
         .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
         .withMotionMagicJerk(cruiseVelocity / timeToReachCruiseVelocity / timeToReachMaxAcceleration);
-    cfg.Slot0        
+    cfg.Slot0
         .withKS(0) // voltage to overcome static friction
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
@@ -992,10 +1030,10 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(0);
     // cfg.Feedback
-    //     .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
-    //     .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-    //     .withSensorToMechanismRatio(1)
-    //     .withRotorToSensorRatio(rotorToSensorRatio);
+    // .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
+    // .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+    // .withSensorToMechanismRatio(1)
+    // .withRotorToSensorRatio(rotorToSensorRatio);
     // cfg.Slot1
     // .withKS(1) // voltage to overcome static friction
     // .withKV(0)
@@ -1016,4 +1054,5 @@ public class Shooter extends SubsystemBase {
     // .withKD(.25);// 2
     MMConfigure.configureDevice(elevatorMotor, cfg);
   }
+
 }

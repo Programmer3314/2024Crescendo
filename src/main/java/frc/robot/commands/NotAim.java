@@ -8,7 +8,6 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.enums.SignalSelection;
 
 /** Add your docs here. */
 public class NotAim extends Command {
@@ -26,32 +25,25 @@ public class NotAim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // rc.shooterSubsystem.setAimFlag(true);
+    rc.shooterSubsystem.setAimFlag(true);
     onTarget = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // if (rc.shooterSubsystem.readyToShoot()) {
-    //   RobotContainer.signalSelection = SignalSelection.Cone_Solid;
-    //   onTarget++;
-    // } else {
-    //   RobotContainer.signalSelection = SignalSelection.Cone_Off;
-    //   onTarget = 0;
-    // }
 
-    // rc.drivetrain.setControl(drive
-    //     .withVelocityX(rc.joystick.getLeftYSmoothed())
-    //     .withVelocityY(rc.joystick.getLeftXSmoothed())
-    //     .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
+
+    rc.drivetrain.setControl(drive
+        .withVelocityX(rc.joystick.getLeftYSmoothed())
+        .withVelocityY(rc.joystick.getLeftXSmoothed())
+        .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.signalSelection = SignalSelection.All_Off;
   }
 
   // Returns true when the command should end.

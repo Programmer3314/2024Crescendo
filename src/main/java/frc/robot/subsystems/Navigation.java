@@ -32,7 +32,7 @@ public class Navigation extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (false) {
+    if (true) {
       var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
       Pose2d pose = rc.drivetrain.getState().Pose;
 

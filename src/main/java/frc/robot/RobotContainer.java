@@ -40,10 +40,8 @@ import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
-import frc.robot.enums.SignalSelection;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.MMSignalLight;
 import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
 
@@ -81,7 +79,6 @@ public class RobotContainer {
   public Shooter shooterSubsystem = new Shooter(this);
 
   public Navigation navigation = new Navigation(this);
- // public MMSignalLight signalLight = new MMSignalLight();
 
   private final SendableChooser<Command> autoChooser;
   public static SendableChooser<Pose2d> startPoseChooser;
@@ -89,7 +86,6 @@ public class RobotContainer {
   public static SendableChooser<Pose2d> shootChooser0;
   public static SendableChooser<Pose2d> noteChooser1;
   public static SendableChooser<Pose2d> shootChooser1;
-  public static SignalSelection signalSelection = SignalSelection.All_Off;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {
@@ -108,7 +104,7 @@ public class RobotContainer {
     .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
-    // joystick.a().whileTrue(new Aim(this));
+     joystick.a().whileTrue(new Aim(this));
     // joystick.x().onTrue(new
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
@@ -116,8 +112,9 @@ public class RobotContainer {
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
-    joystick.a().whileTrue(new InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
-    joystick.b().whileTrue(new InstantCommand(()->shooterSubsystem.setIntakeDown()));
+    joystick.button(7).onTrue(new InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
+    joystick.b().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeDown()))
+    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeUp()));
     joystick.x().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
     joystick.y().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(6)))
     .onFalse(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
@@ -194,8 +191,8 @@ public class RobotContainer {
     shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
-    // TODO FIX THIS
-    // startPoseChooser = fillStartPoseChooser("Pick Start Pose");
+   
+    startPoseChooser = fillStartPoseChooser("Pick Start Pose");
   }
 
   private SendableChooser<Pose2d> fillShootPoseChooser(String shootPoseName) {
@@ -207,14 +204,13 @@ public class RobotContainer {
     return shootChooser;
   }
 
-  // TODO: One of these things (choosers) is not like the others,
-  // one of these things just isn't the same... 
+ 
   private SendableChooser<Pose2d> fillStartPoseChooser(String startPoseName) {
     SendableChooser<Pose2d> startChooser = new SendableChooser<Pose2d>();
     for (int i = 0; i < startPoseList.length; i++) {
       startChooser.addOption("Start: " + i, startPoseList[i]);
     }
-    SmartDashboard.putData(startPoseName, startPoseChooser);
+    SmartDashboard.putData(startPoseName, startChooser);
     return startChooser;
   }
 
@@ -231,7 +227,7 @@ public class RobotContainer {
     return autoChooser.getSelected();
   }
 
-  // TODO: strip this down to use none of our code...
+  // strip this down to use none of our code...
   // hard code the poses, etc.
   // Michael Jansen says it is our code. Let's find out.
   public Command runDeferredTest() {
