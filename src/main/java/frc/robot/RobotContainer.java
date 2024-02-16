@@ -96,15 +96,17 @@ public class RobotContainer {
             .withVelocityY(joystick.getLeftXSmoothed())
             .withRotationalRate(joystick.getRightXSmoothed())));
 
-    joystick.rightBumper().onTrue(new
-    InstantCommand(()->shooterSubsystem.setIntakeFlag(true)))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeFlag(false)));
-    joystick.rightTrigger().onTrue(new
-    InstantCommand(()->shooterSubsystem.setShootFlag(true)))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setShootFlag(false)));
-    // joystick.b().onTrue(new
+    // TODO: review the following two controls...
+    // This is why the buttons need to be held. I believe the idea was to allow the driver to change their mind.             
+    joystick.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
+
+    joystick.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
+
+        // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
-     joystick.a().whileTrue(new Aim(this));
+    joystick.a().whileTrue(new Aim(this));
     // joystick.x().onTrue(new
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
@@ -112,13 +114,12 @@ public class RobotContainer {
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
-    joystick.button(7).onTrue(new InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
-    joystick.b().onTrue(new InstantCommand(()->shooterSubsystem.setIntakeDown()))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setIntakeUp()));
-    joystick.x().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
-    joystick.y().onTrue(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(6)))
-    .onFalse(new InstantCommand(()->shooterSubsystem.setElevatorVoltage(0)));
-
+    joystick.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnostic(true)));
+    joystick.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
+    joystick.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorVoltage(0)));
+    joystick.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorVoltage(6)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setElevatorVoltage(0)));
 
     // Set<Subsystem> set = new HashSet<Subsystem>();
     // set.add(drivetrain);
@@ -191,7 +192,6 @@ public class RobotContainer {
     shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
 
-   
     startPoseChooser = fillStartPoseChooser("Pick Start Pose");
   }
 
@@ -204,7 +204,6 @@ public class RobotContainer {
     return shootChooser;
   }
 
- 
   private SendableChooser<Pose2d> fillStartPoseChooser(String startPoseName) {
     SendableChooser<Pose2d> startChooser = new SendableChooser<Pose2d>();
     for (int i = 0; i < startPoseList.length; i++) {

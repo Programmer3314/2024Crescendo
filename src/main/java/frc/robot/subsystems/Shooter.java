@@ -22,6 +22,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -78,7 +79,6 @@ public class Shooter extends SubsystemBase {
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
 
-  
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, .45, 35, 45, 40),
       new MMWaypoint(3.55, .39, 40, 50, 45));
@@ -108,13 +108,14 @@ public class Shooter extends SubsystemBase {
   double index2InVel = index1InVel;
   int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
 
-  // TODO Use waypoint Values for shooter index velocity 
+  // TODO Use waypoint Values for shooter index velocity
   double index1OutVel = -30;
   double index2OutVel = index1OutVel;
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage elevatorMotorMotionMagicVoltage = new MotionMagicVoltage(0);
-  private final PositionVoltage testShooterPositionVoltage = new PositionVoltage(0);
+  // private final PositionVoltage testShooterPositionVoltage = new
+  // PositionVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private VelocityVoltage index1VelVol = new VelocityVoltage(0);
   private VelocityVoltage index2VelVol = new VelocityVoltage(0);
@@ -201,12 +202,11 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
         if (!shooterBreakBeam.get()) {
-        return Index;
+          return Index;
         }
         if (!intakeBreakBeam.get()) {
-        return DropIntake;
+          return DropIntake;
         }
-        // TODO: Diagnostic 2/13 testing, uncomment l8r
         return Idle;
       };
     };
@@ -228,28 +228,26 @@ public class Shooter extends SubsystemBase {
         if (runIntake) {
           return DropIntake;
         }
-        // TODO: 2/13 diagnostic testing, uncomment l8r
         if (runDiagnosticTest) {
           return DiagnosticSetIntakeDown;
         }
         return this;
       }
     };
+
     MMStateMachineState DropIntake = new MMStateMachineState("Intake") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
-        // TODO: Maybe don't run these during indexing.
-        // The intake may do the whole thing. Try calming them down first (other
-        // todo...)
         // runIndexIn();
         setAimFlag(true);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+        // TODO: this appears to be (sort of) duplicate of line in Periodic
         SmartDashboard.getBoolean("Shooter Breakbeam", shooterBreakBeam.get());
         if (!shooterBreakBeam.get()) {
           return Index;
@@ -269,6 +267,7 @@ public class Shooter extends SubsystemBase {
         setIntakeUp();
       }
     };
+
     MMStateMachineState Index = new MMStateMachineState("Index") {
 
       @Override
@@ -322,8 +321,8 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-    MMStateMachineState ShootPauseBroken = new MMStateMachineState("ShootPauseBroken") {
 
+    MMStateMachineState ShootPauseBroken = new MMStateMachineState("ShootPauseBroken") {
       @Override
       public MMStateMachineState calcNextState() {
         if (shooterBreakBeam.get()) {
@@ -332,6 +331,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
+
     MMStateMachineState ShootPause = new MMStateMachineState("ShootPause") {
 
       @Override
@@ -718,7 +718,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Shooter setAimFlag(boolean aim) {
-    if(runAim && !aim){
+    if (runAim && !aim) {
       stopShooterMotors();
     }
     runAim = aim;
@@ -775,6 +775,7 @@ public class Shooter extends SubsystemBase {
     index1.set(0);
   }
 
+  // TODO: put back in without the Shooter Rotate motor
   public void stopMotors() {
     // private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
     // private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -794,7 +795,6 @@ public class Shooter extends SubsystemBase {
     rightMotor.setControl(vv);
     elevatorMotor.setControl(vv);
   }
-  
 
   public void setElevatorPosition(double position) {
     elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(position));
@@ -811,8 +811,20 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("desired left motor", desiredWaypoint.getLeftVelocity());
     SmartDashboard.putNumber("desired right motor", desiredWaypoint.getRightVelocity());
     SmartDashboard.putNumber("desired rotate motor", desiredWaypoint.getAngle());
-    SmartDashboard.putNumber("desired Pose Something", Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()));
+    SmartDashboard.putNumber("desired Pose Something",
+        Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()));
 
+    // TODO: instead of checking Robot angle...
+    // Try using the Pose and a transform to project your position forward by your
+    // distance to the target.
+    // If the resulting point (translation) is within the width of the speaker, bingo!
+    // Review the below code and clean it up to make it work.
+    // Don't get locked into the code below, but start by understanding it and
+    // making it work.
+    Pose2d a = currentPose; 
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+    boolean bingo = isInMargin(c.getY(), MMField.blueSpeakerPose.getTranslation().getY(), .5);
 
     return isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(), shooterVelocityMargin)
         // )Math.abs(leftMotor.getVelocity().getValue() -
@@ -891,7 +903,6 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
-
   private void configIntakeRotateMotor() {
     double cruiseVelocity = 4; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
@@ -899,7 +910,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-   
+
     double sensorLow = 0.04;
     double sensorHigh = 0.84;
     double rotorLow = -9.8;
@@ -935,7 +946,6 @@ public class Shooter extends SubsystemBase {
         .withRotorToSensorRatio(rotorToSensorRatio);
     MMConfigure.configureDevice(intakeRotateMotor, cfg);
   }
-
 
   private void configShooterRotateMotor() {
     double cruiseVelocity = .25; // Sensor revolutions/second
@@ -1011,7 +1021,6 @@ public class Shooter extends SubsystemBase {
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
 
-    
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake)
