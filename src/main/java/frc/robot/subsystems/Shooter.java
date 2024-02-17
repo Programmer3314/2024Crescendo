@@ -879,6 +879,11 @@ public class Shooter extends SubsystemBase {
     return ssm.currentState.getName();
   }
 
+  // TODO: Convert Shooter Motors (left & right) to MotionMagicVelocityVoltage.
+  // The motors spin up harshly (based on the sound they make).
+  // This will require additional configs (.MotionMagic)
+  // Split ConfigMotors 
+  // Change Shooter motor control requests to MotionMagicVelocityVoltage 
   public void configMotors() {
     TalonFXConfiguration genericConfig = new TalonFXConfiguration();
     genericConfig.Slot0
