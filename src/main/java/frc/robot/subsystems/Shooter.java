@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -19,14 +18,11 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,6 +40,8 @@ public class Shooter extends SubsystemBase {
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController();
   Rotation2d targetAngleSpeaker;
+  Rotation2d leftBoundaryAngleSpeaker;
+  Rotation2d rightBoundaryAngleSpeaker;
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
@@ -81,7 +79,9 @@ public class Shooter extends SubsystemBase {
 
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, .45, 35, 45, 40),
-      new MMWaypoint(3.55, .39, 40, 50, 45));
+      new MMWaypoint(2.12, .425, 37, 48, 42),
+      new MMWaypoint(3.55, .39, 40, 50, 45)
+      );
 
   private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
   private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -106,7 +106,11 @@ public class Shooter extends SubsystemBase {
 
   double index1InVel = 8;
   double index2InVel = index1InVel;
+
   int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
+  int indexCounter = 0;
+  int reverseCounter = 0;
+  int idleCounter = 0;
 
   // TODO Use waypoint Values for shooter index velocity
   double index1OutVel = -30;
@@ -146,6 +150,12 @@ public class Shooter extends SubsystemBase {
     currentPose = rc.drivetrain.getState().Pose;
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
     targetAngleSpeaker = transformFromSpeaker.getAngle();
+    Translation2d transformLeftBoundarySpeaker = MMField.currentLeftBoundaryPose().getTranslation()
+        .minus(currentPose.getTranslation());
+    leftBoundaryAngleSpeaker = transformLeftBoundarySpeaker.getAngle();
+    Translation2d transformRightBoundarySpeaker = MMField.currentRightBoundaryPose().getTranslation()
+        .minus(currentPose.getTranslation());
+    rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
 
     ssm.update();
 
@@ -221,6 +231,7 @@ public class Shooter extends SubsystemBase {
         stopShooterMotors();
         stopIntake();
         setRunDiagnostic(false);
+        idleCounter++;
       }
 
       @Override
@@ -274,10 +285,12 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         stopIndexers();
         setIntakeFlag(false);
+        indexCounter++;
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+
         if (runShoot) {
           return PrepareToShoot;
         }
@@ -348,6 +361,7 @@ public class Shooter extends SubsystemBase {
 
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
+
       }
 
       @Override
@@ -391,8 +405,10 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= outTakeDelay) {
+          reverseCounter++;
           return Idle;
         } else {
+
           return this;
         }
       }
@@ -657,7 +673,19 @@ public class Shooter extends SubsystemBase {
   }
 
   public int getShotCounter() {
-    return getShotCounter();
+    return shotCounter;
+  }
+
+  public int getIndexCounter() {
+    return indexCounter;
+  }
+
+  public int getReverseCounter() {
+    return reverseCounter;
+  }
+
+  public int getIdleCounter() {
+    return idleCounter;
   }
 
   public void runShooters(double leftMotorSpeed, double rightMotorSpeed) {
@@ -775,7 +803,7 @@ public class Shooter extends SubsystemBase {
     index1.set(0);
   }
 
-  // TODO: put back in without the Shooter Rotate motor
+  // TODO: put back in but set POWER to 0 not velocity... Let's talk.
   public void stopMotors() {
     // private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
     // private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -785,7 +813,7 @@ public class Shooter extends SubsystemBase {
     // private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
     // private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
     // private TalonFX elevatorMotor = new TalonFX(16,"CANIVORE");
-    VelocityVoltage vv = new VelocityVoltage(0);
+    VoltageOut vv = new VoltageOut(0);
     intakeBeltMotor.setControl(vv);
     intakeRotateMotor.setControl(vv);
     shooterRotateMotor.setControl(vv);
@@ -805,6 +833,16 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean readyToShoot() {
+    boolean leftShooterAtVelocity = isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(),
+        shooterVelocityMargin);
+    boolean rightShooterAtVelocity = isInMargin(rightMotor.getVelocity().getValue(), desiredWaypoint.getRightVelocity(),
+        shooterVelocityMargin);
+    boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(),
+        shooterAngleMargin);
+    boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
+        && rightBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()) ||
+        (rightBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
+            && leftBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()));
     SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
     SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
     SmartDashboard.putNumber("Shooter Rotate Motor Actual", shooterRotateMotor.getPosition().getValue());
@@ -813,29 +851,42 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("desired rotate motor", desiredWaypoint.getAngle());
     SmartDashboard.putNumber("desired Pose Something",
         Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()));
+    SmartDashboard.putBoolean("at velocity left", leftShooterAtVelocity);
+    SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
+    SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
+    SmartDashboard.putBoolean("at Boundary", atBoundary);
+    SmartDashboard.putNumber("angle left boundary", leftBoundaryAngleSpeaker.getDegrees());
+    SmartDashboard.putNumber("angle right boundary", rightBoundaryAngleSpeaker.getDegrees());
+    SmartDashboard.putNumber("angle Robot", currentPose.getRotation().getDegrees());
 
     // TODO: instead of checking Robot angle...
     // Try using the Pose and a transform to project your position forward by your
     // distance to the target.
-    // If the resulting point (translation) is within the width of the speaker, bingo!
+    // If the resulting point (translation) is within the width of the speaker,
+    // bingo!
     // Review the below code and clean it up to make it work.
     // Don't get locked into the code below, but start by understanding it and
     // making it work.
-    Pose2d a = currentPose; 
+    Pose2d a = currentPose;
     Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
-    boolean bingo = isInMargin(c.getY(), MMField.blueSpeakerPose.getTranslation().getY(), .5);
+    boolean bingo = isInMargin(c.getY(),
+        MMField.blueSpeakerPose.getTranslation().getY(), .3556);
 
-    return isInMargin(leftMotor.getVelocity().getValue(), desiredWaypoint.getLeftVelocity(), shooterVelocityMargin)
+    SmartDashboard.putBoolean("bingo", bingo);
+
+    return leftShooterAtVelocity
         // )Math.abs(leftMotor.getVelocity().getValue() -
         // desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
-        && isInMargin(rightMotor.getVelocity().getValue(), desiredWaypoint.getRightVelocity(), shooterVelocityMargin)
+        && rightShooterAtVelocity
         // && Math.abs(rightMotor.getVelocity().getValue() -
         // desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
-        && isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(), shooterAngleMargin)
+        && shooterAtAngle
         // && Math.abs(shooterRotateMotor.getPosition().getValue() -
         // desiredWaypoint.getAngle()) < shooterAngleMargin
-        && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()) <= rotationMargin;
+        // && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees())
+        // <= rotationMargin;
+        && bingo;
   }
 
   public boolean isInMargin(double value1, double value2, double margin) {
@@ -890,7 +941,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.15); // TODO: Update with real values
+        .withMagnetOffset(-0.15);
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
@@ -899,7 +950,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Signed_PlusMinusHalf)
         .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-        .withMagnetOffset(0.1904296875); // TODO: Update with real values
+        .withMagnetOffset(0.1904296875);
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
   }
 
@@ -917,7 +968,7 @@ public class Shooter extends SubsystemBase {
     double rotorHigh = -0.6;
     double calcRotorToSensor = (rotorHigh - rotorLow) / (sensorHigh - sensorLow);
 
-    double rotorToSensorRatio = calcRotorToSensor; // TODO: Update with real values
+    double rotorToSensorRatio = calcRotorToSensor;
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
@@ -960,7 +1011,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = calcRotorToSensor; // TODO: Update with real values
+    double rotorToSensorRatio = calcRotorToSensor;
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
@@ -1016,7 +1067,7 @@ public class Shooter extends SubsystemBase {
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
-    double rotorToSensorRatio = 1; // TODO: Update with real values
+    double rotorToSensorRatio = 1;
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
     double maxSensorVelocity = maxRotorVelocity / rotorToSensorRatio; // Max speed in sensor units/sec
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max

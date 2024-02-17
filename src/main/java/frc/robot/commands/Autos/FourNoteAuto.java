@@ -4,16 +4,9 @@
 
 package frc.robot.commands.Autos;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
-import frc.robot.commands.Aim;
-import frc.robot.commands.AutoShoot;
-import frc.robot.commands.FollowPathFile;
-import frc.robot.commands.PathFindTo;
-import frc.robot.commands.ShootAndWait;
-import frc.robot.subsystems.Shooter;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:

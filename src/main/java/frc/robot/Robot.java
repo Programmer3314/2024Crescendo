@@ -81,7 +81,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     // TODO: HIGH PRIORITY! Stop all motors. 
-   // m_robotContainer.shooterSubsystem.stopMotors();
+    m_robotContainer.shooterSubsystem.stopMotors();
     // Create a method to stop all of the motors. (use velocity request and set to 0)
     // maybe not the drivetrain... but everything else. 
     // Add the stop all motors method to Auto init as well. 

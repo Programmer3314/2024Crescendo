@@ -14,6 +14,8 @@ import frc.robot.Robot;
 
 /** Add your docs here. */
 public class MMField {
+ static Pose2d leftBoundarySpeaker = new Pose2d(0,5.5-.356,new Rotation2d());
+ static Pose2d rightBoundarySpeaker = new Pose2d(0,5.5+.356, new Rotation2d());
   public static Translation2d getBlueTranslation(Translation2d translation) {
     if (Robot.alliance.equals(DriverStation.Alliance.Red)) {
       return GeometryUtil.flipFieldPosition(translation);
@@ -50,6 +52,14 @@ public class MMField {
 
   public static Pose2d currentWooferPose() {
     return getBluePose(blueWooferPose);
+  }
+  public static Pose2d currentLeftBoundaryPose() {
+
+    return getBluePose(leftBoundarySpeaker);
+  }
+  public static Pose2d currentRightBoundaryPose() {
+
+    return getBluePose(rightBoundarySpeaker);
   }
 
   private static Pose2d blueWooferApproachPose = new Pose2d(1.6, 5.5, Rotation2d.fromDegrees(180));

@@ -4,13 +4,8 @@
 
 package frc.robot.commands.Autos;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
-import frc.robot.commands.FollowPathFile;
-import frc.robot.commands.ShootAndWait;
-import frc.robot.subsystems.Navigation;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
