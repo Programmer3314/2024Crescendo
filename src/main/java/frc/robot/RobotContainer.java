@@ -91,7 +91,8 @@ public class RobotContainer {
             .withRotationalRate(joystick.getRightXSmoothed())));
 
     // TODO: review the following two controls...
-    // This is why the buttons need to be held. I believe the idea was to allow the driver to change their mind.             
+    // This is why the buttons need to be held. 
+    // I believe the idea was to allow the driver to change their mind.             
     joystick.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
 

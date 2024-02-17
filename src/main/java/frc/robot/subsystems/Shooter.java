@@ -45,10 +45,11 @@ public class Shooter extends SubsystemBase {
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
+  // TODO: Review the followign margins
   double shooterAngleMargin = .1;
   double shooterVelocityMargin = 20;
   double rotationMargin = 2;
-  // TODO: replace with real margins
+
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
@@ -80,8 +81,7 @@ public class Shooter extends SubsystemBase {
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, .45, 35, 45, 40),
       new MMWaypoint(2.12, .425, 37, 48, 42),
-      new MMWaypoint(3.55, .39, 40, 50, 45)
-      );
+      new MMWaypoint(3.55, .39, 40, 50, 45));
 
   private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
   private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -95,7 +95,7 @@ public class Shooter extends SubsystemBase {
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
 
-  DigitalInput intakeBreakBeam = new DigitalInput(0);// TODO broken = false, solid = true
+  DigitalInput intakeBreakBeam = new DigitalInput(0);// NOTE: broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
 
   double intakeUpPos = .75;
@@ -107,12 +107,11 @@ public class Shooter extends SubsystemBase {
   double index1InVel = 8;
   double index2InVel = index1InVel;
 
-  int shotCounter = 0;// TODO create other counters for significant events(index, shoot, reverse)
+  int shotCounter = 0;
   int indexCounter = 0;
   int reverseCounter = 0;
   int idleCounter = 0;
 
-  // TODO Use waypoint Values for shooter index velocity
   double index1OutVel = -30;
   double index2OutVel = index1OutVel;
 
@@ -253,6 +252,8 @@ public class Shooter extends SubsystemBase {
         setIntakeDown();
         runIntakeIn();
         // runIndexIn();
+        // TODO: THINK ABOUT... 
+        // Should this actually turn on when the note hits the intake sensor?
         setAimFlag(true);
       }
 
@@ -303,7 +304,7 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
 
-      // TODO: Are we missing some stuff, like doing the things needed to shoot.
+      // TODO: HIGH PRIORITY We are missing some stuff, like doing the things needed to shoot.
       // They are probably set already, but maybe we should make sure.
       @Override
       public MMStateMachineState calcNextState() {
@@ -775,7 +776,6 @@ public class Shooter extends SubsystemBase {
 
   public void setIntakeDown() {
     intakeRotateMotor.setControl(intakeRotateMotionMagicVoltage.withSlot(0).withPosition(intakeDownPos));
-    // TODO consider using slot 1
   }
 
   public void runIndexers(double index1Speed, double index2Speed) {
@@ -803,16 +803,7 @@ public class Shooter extends SubsystemBase {
     index1.set(0);
   }
 
-  // TODO: put back in but set POWER to 0 not velocity... Let's talk.
   public void stopMotors() {
-    // private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
-    // private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
-    // private TalonFX shooterRotateMotor = new TalonFX(11, "CANIVORE");
-    // private TalonFX index1 = new TalonFX(12, "CANIVORE");
-    // private TalonFX index2 = new TalonFX(13, "CANIVORE");
-    // private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
-    // private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
-    // private TalonFX elevatorMotor = new TalonFX(16,"CANIVORE");
     VoltageOut vv = new VoltageOut(0);
     intakeBeltMotor.setControl(vv);
     intakeRotateMotor.setControl(vv);
@@ -859,7 +850,6 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("angle right boundary", rightBoundaryAngleSpeaker.getDegrees());
     SmartDashboard.putNumber("angle Robot", currentPose.getRotation().getDegrees());
 
-    // TODO: instead of checking Robot angle...
     // Try using the Pose and a transform to project your position forward by your
     // distance to the target.
     // If the resulting point (translation) is within the width of the speaker,
@@ -876,16 +866,8 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("bingo", bingo);
 
     return leftShooterAtVelocity
-        // )Math.abs(leftMotor.getVelocity().getValue() -
-        // desiredWaypoint.getLeftVelocity()) < shooterVelocityMargin
         && rightShooterAtVelocity
-        // && Math.abs(rightMotor.getVelocity().getValue() -
-        // desiredWaypoint.getRightVelocity()) < shooterVelocityMargin
         && shooterAtAngle
-        // && Math.abs(shooterRotateMotor.getPosition().getValue() -
-        // desiredWaypoint.getAngle()) < shooterAngleMargin
-        // && Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees())
-        // <= rotationMargin;
         && bingo;
   }
 
@@ -1039,24 +1021,6 @@ public class Shooter extends SubsystemBase {
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(1)
         .withRotorToSensorRatio(rotorToSensorRatio);
-    // cfg.Slot1
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Arm_Cosine)
-    // .withKP(96 * 2)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
-    // cfg.Slot2
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Arm_Cosine)
-    // .withKP(48)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
   }
 
@@ -1089,29 +1053,6 @@ public class Shooter extends SubsystemBase {
         .withKP(0)
         .withKI(0)
         .withKD(0);
-    // cfg.Feedback
-    // .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
-    // .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-    // .withSensorToMechanismRatio(1)
-    // .withRotorToSensorRatio(rotorToSensorRatio);
-    // cfg.Slot1
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Arm_Cosine)
-    // .withKP(96 * 2)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
-    // cfg.Slot2
-    // .withKS(1) // voltage to overcome static friction
-    // .withKV(0)
-    // .withKA(0) // "arbitrary" amount to provide crisp response
-    // .withKG(0) // gravity can be used for elevator or arm
-    // .withGravityType(GravityTypeValue.Arm_Cosine)
-    // .withKP(48)// 12
-    // .withKI(0)
-    // .withKD(.25);// 2
     MMConfigure.configureDevice(elevatorMotor, cfg);
   }
 

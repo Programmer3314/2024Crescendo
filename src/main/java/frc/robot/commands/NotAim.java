@@ -32,13 +32,10 @@ public class NotAim extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
-
     rc.drivetrain.setControl(drive
         .withVelocityX(rc.joystick.getLeftYSmoothed())
         .withVelocityY(rc.joystick.getLeftXSmoothed())
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
-
   }
 
   // Called once the command ends or is interrupted.

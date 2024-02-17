@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Navigation;
-import frc.robot.subsystems.Shooter;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -58,6 +57,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
+    m_robotContainer.shooterSubsystem.stopMotors();
     Navigation.visionUpdate = 0;
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -80,12 +80,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    // TODO: HIGH PRIORITY! Stop all motors. 
     m_robotContainer.shooterSubsystem.stopMotors();
-    // Create a method to stop all of the motors. (use velocity request and set to 0)
-    // maybe not the drivetrain... but everything else. 
-    // Add the stop all motors method to Auto init as well. 
-    // This method may need to call a stop all methods in each subsystems.
 
     // // Starts recording to data log
     DataLogManager.start();
@@ -107,6 +102,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    m_robotContainer.shooterSubsystem.stopMotors();
     
   }
 
