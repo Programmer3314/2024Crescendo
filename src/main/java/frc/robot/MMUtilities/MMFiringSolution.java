@@ -5,6 +5,9 @@
 package frc.robot.MMUtilities;
 
 public class MMFiringSolution {
+    double speakerHeight = 2.4;
+    double pivotHeight = .127;
+     
 
     private MMWaypoint[] waypoints;
 
@@ -40,6 +43,23 @@ public class MMFiringSolution {
         double desiredRightVelocity = (topRef.getRightVelocity() - bottomRef.getRightVelocity()) * scale
                 + bottomRef.getRightVelocity();
 
+                // double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance)/(2*Math.PI) + .26
+                // ;
+                // //34 degrees and .389 encoder value
+                // //.593 radians .095+ .294 
+                // //.455 encoder value and 58 degrees
+                // //.16 radians
+                // //.458 encoder value
+                // //.385 encoder value
+                // if(shootAngle > .458 ){
+                //     shootAngle = .458;
+
+                // }
+                // if(shootAngle < .385){
+                //     shootAngle = .385;
+                // }
+
+       // return new MMWaypoint(distance, shootAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
         return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
     }
 

@@ -24,8 +24,8 @@ public class ShootAndWait extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // startShootCounter = rc.shooterSubsystem.getShooterCounter()
-    // rc.shooterSubsystem.setShootFlag(true);
+    startShootCounter = rc.shooterSubsystem.getShotCounter();
+    rc.shooterSubsystem.setShootFlag(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -42,7 +42,7 @@ public class ShootAndWait extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // return rc.shooterSubsystem.getShooterCounter()>startShootCounter;
-    return false;
+     return rc.shooterSubsystem.getShotCounter()>startShootCounter;
+    //return false;
   }
 }

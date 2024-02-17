@@ -34,6 +34,7 @@ import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
+import frc.robot.commands.Autos.TwoShotAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Navigation;
@@ -98,6 +99,7 @@ public class RobotContainer {
 
     joystick.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
+    joystick.leftTrigger().whileTrue(new TwoShotAuto(this));
 
         // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
@@ -105,7 +107,7 @@ public class RobotContainer {
     // joystick.x().onTrue(new
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
-    joystick.leftTrigger().onTrue(new GoShoot(this));
+  //  joystick.leftTrigger().onTrue(new GoShoot(this));
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
@@ -169,6 +171,7 @@ public class RobotContainer {
     // autoChooser = AutoBuilder.buildAutoChooser();
     autoChooser = new SendableChooser<>();
     autoChooser.addOption("none", Commands.none());
+    autoChooser.addOption("TwoShotAuto", new TwoShotAuto(this));
     autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto", new StageSideAuto(this));

@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -46,9 +47,10 @@ public class Shooter extends SubsystemBase {
   Pose2d currentPose;
   double speakerTurnRate;
   // TODO: Review the followign margins
-  double shooterAngleMargin = .1;
-  double shooterVelocityMargin = 20;
-  double rotationMargin = 2;
+  double shooterAngleMargin = .005;
+  double shooterVelocityMargin = 5;
+  double intakeVelocityMargin = 20;
+  double intakeRotationMargin = .1;
 
   boolean runAim;
   boolean runIntake;
@@ -81,6 +83,7 @@ public class Shooter extends SubsystemBase {
   MMFiringSolution firingSolution = new MMFiringSolution(
       new MMWaypoint(1.3, .45, 35, 45, 40),
       new MMWaypoint(2.12, .425, 37, 48, 42),
+      new MMWaypoint(2.81, 0.394, 37, 48, 42),
       new MMWaypoint(3.55, .39, 40, 50, 45));
 
   private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
@@ -97,11 +100,13 @@ public class Shooter extends SubsystemBase {
 
   DigitalInput intakeBreakBeam = new DigitalInput(0);// NOTE: broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
+  
+  double intakeTop = .91;
 
-  double intakeUpPos = .75;
-  double intakeDownPos = 0.1;
+  double intakeUpPos = intakeTop - .02;
+  double intakeDownPos = intakeUpPos - .7;
 
-  double intakeVelIn = 20;
+  double intakeVelIn = 30;
   double intakeVelOut = -intakeVelIn;
 
   double index1InVel = 8;
@@ -117,12 +122,16 @@ public class Shooter extends SubsystemBase {
 
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage elevatorMotorMotionMagicVoltage = new MotionMagicVoltage(0);
+
+  
   // private final PositionVoltage testShooterPositionVoltage = new
   // PositionVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private VelocityVoltage index1VelVol = new VelocityVoltage(0);
   private VelocityVoltage index2VelVol = new VelocityVoltage(0);
   private VelocityVoltage leftVelVol = new VelocityVoltage(0);
+  private MotionMagicVelocityVoltage leftMMVelVol = new MotionMagicVelocityVoltage(0);
+  private MotionMagicVelocityVoltage rightMMVelVol = new MotionMagicVelocityVoltage(0);
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
   private VoltageOut elevatorvoVoltageOut = new VoltageOut(0);
@@ -134,7 +143,8 @@ public class Shooter extends SubsystemBase {
     configShooterRotateMotor();
     configIntakeRotateCanCoder();
     configIntakeRotateMotor();
-    configMotors();
+    configIntakeBeltMotor();
+    configShooterMotors();
     configIndexMotors();
     configElevatorMotors();
     ssm.setInitial(ssm.Start);
@@ -209,7 +219,7 @@ public class Shooter extends SubsystemBase {
       }
 
       @Override
-      public MMStateMachineState calcNextState() {// TODO create sequence that decides which state to go to
+      public MMStateMachineState calcNextState() {
         if (!shooterBreakBeam.get()) {
           return Index;
         }
@@ -252,15 +262,33 @@ public class Shooter extends SubsystemBase {
         setIntakeDown();
         runIntakeIn();
         // runIndexIn();
-        // TODO: THINK ABOUT... 
-        // Should this actually turn on when the note hits the intake sensor?
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        // if (!shooterBreakBeam.get()) {
+        //   return Index;
+        // }
+        if (!intakeBreakBeam.get()) {
+          return intakeBroken;
+        }
+        if (abortIntake) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+      MMStateMachineState intakeBroken = new MMStateMachineState("Intake Broken") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setIntakeDown();
+        runIntakeIn();
         setAimFlag(true);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        // TODO: this appears to be (sort of) duplicate of line in Periodic
-        SmartDashboard.getBoolean("Shooter Breakbeam", shooterBreakBeam.get());
         if (!shooterBreakBeam.get()) {
           return Index;
         }
@@ -286,6 +314,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         stopIndexers();
         setIntakeFlag(false);
+        setAimFlag(true);
         indexCounter++;
       }
 
@@ -304,8 +333,6 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
 
-      // TODO: HIGH PRIORITY We are missing some stuff, like doing the things needed to shoot.
-      // They are probably set already, but maybe we should make sure.
       @Override
       public MMStateMachineState calcNextState() {
         if (readyToShoot() && runShoot) {
@@ -422,7 +449,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeDown = isInMargin(intakeDownPos, getIntakePos(), rotationMargin);
+        diagnosticDesiredIntakeDown = isInMargin(intakeDownPos, getIntakePos(), intakeRotationMargin);
       }
 
       @Override
@@ -446,7 +473,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, getIntakeVel(), shooterVelocityMargin);
+        diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, getIntakeVel(), intakeVelocityMargin);
       }
 
       @Override
@@ -469,7 +496,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeOut = isInMargin(intakeVelOut, getIntakeVel(), shooterVelocityMargin);
+        diagnosticDesiredIntakeOut = isInMargin(intakeVelOut, getIntakeVel(), intakeVelocityMargin);
       }
 
       @Override
@@ -494,7 +521,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeUp = isInMargin(intakeUpPos, getIntakePos(), rotationMargin);
+        diagnosticDesiredIntakeUp = isInMargin(intakeUpPos, getIntakePos(), intakeRotationMargin);
       }
 
       @Override
@@ -638,6 +665,7 @@ public class Shooter extends SubsystemBase {
       public void transitionFrom(MMStateMachineState nextState) {
         stopRightMotor();
       }
+    
     };
   }
 
@@ -690,16 +718,16 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runShooters(double leftMotorSpeed, double rightMotorSpeed) {
-    leftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
-    rightMotor.setControl(rightVelVol.withVelocity(rightMotorSpeed));
+    runLeftMotor(leftMotorSpeed);
+    runRightMotor(rightMotorSpeed);
   }
 
   public void runLeftMotor(double leftMotorSpeed) {
-    leftMotor.setControl(leftVelVol.withVelocity(leftMotorSpeed));
+    leftMotor.setControl(leftMMVelVol.withVelocity(leftMotorSpeed));
   }
 
   public void runRightMotor(double rightMotorSpeed) {
-    rightMotor.setControl(rightVelVol.withVelocity(rightMotorSpeed));
+    rightMotor.setControl(rightMMVelVol.withVelocity(rightMotorSpeed));
   }
 
   public void setShooterPosition(double position) {
@@ -879,12 +907,8 @@ public class Shooter extends SubsystemBase {
     return ssm.currentState.getName();
   }
 
-  // TODO: Convert Shooter Motors (left & right) to MotionMagicVelocityVoltage.
-  // The motors spin up harshly (based on the sound they make).
-  // This will require additional configs (.MotionMagic)
-  // Split ConfigMotors 
-  // Change Shooter motor control requests to MotionMagicVelocityVoltage 
-  public void configMotors() {
+ 
+  public void configIntakeBeltMotor() {
     TalonFXConfiguration genericConfig = new TalonFXConfiguration();
     genericConfig.Slot0
         .withKS(.25)
@@ -892,14 +916,33 @@ public class Shooter extends SubsystemBase {
         .withKA(.01)
         .withKG(0)
         .withKP(.125)
-        .withKG(0)
         .withKI(0)
         .withKD(0);
+    //MMConfigure.configureDevice(leftMotor, genericConfig);
+
+    genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
+   // MMConfigure.configureDevice(rightMotor, genericConfig);
+    MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
+
+  }
+  public void configShooterMotors() {
+    TalonFXConfiguration genericConfig = new TalonFXConfiguration();
+    genericConfig.Slot0
+        .withKS(.25)
+        .withKV(.12)
+        .withKA(.01)
+        .withKG(0)
+        .withKP(.125)
+        .withKI(0)
+        .withKD(0);
+        genericConfig.MotionMagic
+        .withMotionMagicAcceleration(100/.5)
+        .withMotionMagicJerk((100/.5)/.1);
     MMConfigure.configureDevice(leftMotor, genericConfig);
 
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     MMConfigure.configureDevice(rightMotor, genericConfig);
-    MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
+   // MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
   }
 
@@ -928,7 +971,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.15);
+        .withMagnetOffset(-0.4);
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
