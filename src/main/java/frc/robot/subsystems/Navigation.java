@@ -22,30 +22,35 @@ public class Navigation extends SubsystemBase {
   private double leftConeY;
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightName = "limelight-right";
+  private double llrHeartBeat = 0;
 
   /** Creates a new Navigation. */
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
-    LimelightHelpers.setPipelineIndex("limelight-left",1);
+    LimelightHelpers.setPipelineIndex("limelight-left", 1);
   }
 
   @Override
   public void periodic() {
+    Pose2d pose = rc.drivetrain.getState().Pose;
     if (true) {
       var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
-      Pose2d pose = rc.drivetrain.getState().Pose;
+      SmartDashboard.putNumber("LLR Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
 
+      if (lastResult.timestamp_LIMELIGHT_publish != llrHeartBeat) {
+        llrHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
-      if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
-        Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-        SmartDashboard.putString("llPose", llPose.toString());
-        double margin = pose.minus(llPose).getTranslation().getNorm();
-        if (visionUpdate < 50 
-        || margin < .25
-        || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
-          rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
-          visionUpdate++;
+        if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
+          Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+          SmartDashboard.putString("llPose", llPose.toString());
+          double margin = pose.minus(llPose).getTranslation().getNorm();
+          if (visionUpdate < 50
+              || margin < .25
+              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
+            visionUpdate++;
+          }
         }
       }
 
@@ -58,11 +63,12 @@ public class Navigation extends SubsystemBase {
     // leftConeX = llpython[1];
     // leftConeY = llpython[2];
     hasLeftConeTarget = false;
-  //  leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-left").targetingResults.targets_Detector;
+    // leftLimelightDetector =
+    // LimelightHelpers.getLatestResults("limelight-left").targetingResults.targets_Detector;
     // if (leftLimelightDetector.length > 0) {
-    //   hasLeftConeTarget = true;
-    //   leftConeX = leftLimelightDetector[0].tx_pixels;
-    //   leftConeY = leftLimelightDetector[0].ty_pixels;
+    // hasLeftConeTarget = true;
+    // leftConeX = leftLimelightDetector[0].tx_pixels;
+    // leftConeY = leftLimelightDetector[0].ty_pixels;
     // }
 
     SmartDashboard.putNumber("TX:", leftConeX);
@@ -96,5 +102,4 @@ public class Navigation extends SubsystemBase {
     return distance;
   }
 
-  
 }

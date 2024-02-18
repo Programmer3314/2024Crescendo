@@ -301,6 +301,9 @@ public class LimelightHelpers {
         @JsonProperty("t6c_rs")
         public double[] camerapose_robotspace;
 
+        @JsonProperty("hb")
+        public long hb;
+
         public Pose3d getBotPose3d() {
             return toPose3D(botpose);
         }

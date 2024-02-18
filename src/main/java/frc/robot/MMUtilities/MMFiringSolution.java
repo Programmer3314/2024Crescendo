@@ -4,10 +4,12 @@
 
 package frc.robot.MMUtilities;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class MMFiringSolution {
-    double speakerHeight = 2.4;
-    double pivotHeight = .127;
-     
+    double speakerHeight = Units.inchesToMeters(83);
+    double pivotHeight = Units.inchesToMeters(5);
 
     private MMWaypoint[] waypoints;
 
@@ -15,16 +17,17 @@ public class MMFiringSolution {
         this.waypoints = waypoints;
     }
 
-    // make Waypoint and MMFiringSolution use 
-    // Angle, Left & Right velocities, and Index Speed. 
+    // make Waypoint and MMFiringSolution use
+    // Angle, Left & Right velocities, and Index Speed.
     public MMWaypoint calcSolution(double distance) {
+        MMWaypoint res = null;
         MMWaypoint bottomRef = null;
         MMWaypoint topRef = null;
         if (distance <= waypoints[0].getDistance()) {
-            return waypoints[0];
+            res = waypoints[0];
         }
         if (distance >= waypoints[waypoints.length - 1].getDistance()) {
-            return waypoints[waypoints.length - 1];
+            res = waypoints[waypoints.length - 1];
         }
         for (int i = 1; i < waypoints.length; i++) {// find the reference waypoints
             if (distance < waypoints[i].getDistance()) {
@@ -43,24 +46,34 @@ public class MMFiringSolution {
         double desiredRightVelocity = (topRef.getRightVelocity() - bottomRef.getRightVelocity()) * scale
                 + bottomRef.getRightVelocity();
 
-                // double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance)/(2*Math.PI) + .26
-                // ;
-                // //34 degrees and .389 encoder value
-                // //.593 radians .095+ .294 
-                // //.455 encoder value and 58 degrees
-                // //.16 radians
-                // //.458 encoder value
-                // //.385 encoder value
-                // if(shootAngle > .458 ){
-                //     shootAngle = .458;
+        res = new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
 
-                // }
-                // if(shootAngle < .385){
-                //     shootAngle = .385;
-                // }
+        // Alternate angle calc...
+        // 34 degrees and .389 encoder value
+        // .593 radians .095+ .294
+        // .455 encoder value and 58 degrees
+        // .16 radians
+        // .458 encoder value
+        // .385 encoder value
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .294;
+        if (shootAngle > .458) {
+            shootAngle = .458;
 
-       // return new MMWaypoint(distance, shootAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
-        return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
+        }
+        if (shootAngle < .385) {
+            shootAngle = .385;
+        }
+
+        SmartDashboard.putNumber("fsRise", (speakerHeight - pivotHeight));
+        SmartDashboard.putNumber("fsRun", distance);
+        SmartDashboard.putNumber("fsAtan2", Math.atan2((speakerHeight - pivotHeight), distance));
+        SmartDashboard.putNumber("fsDistance", distance);
+        SmartDashboard.putNumber("fsShootAngle", shootAngle);
+        SmartDashboard.putNumber("fsDesiredAngle", desiredAngle);
+
+        return new MMWaypoint(res.getDistance(), shootAngle, res.getLeftVelocity(), res.getRightVelocity(), res.getVelocity());
+        // return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity,
+        // desiredRightVelocity, desiredVelocity);
     }
 
 }

@@ -749,8 +749,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void aimToSpeaker() {
-    runLeftMotor(desiredWaypoint.getLeftVelocity());
-    runRightMotor(desiredWaypoint.getRightVelocity());
+    //runLeftMotor(desiredWaypoint.getLeftVelocity());
+    //runRightMotor(desiredWaypoint.getRightVelocity());
     setShooterPosition(desiredWaypoint.getAngle());
   }
 
