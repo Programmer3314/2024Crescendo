@@ -1107,6 +1107,8 @@ public class Shooter extends SubsystemBase {
     // making it work.
 
 
+    // TODO: TRY 360 NO-Scope again, but reverse b and d... 
+    // a.plus(b).plus(d), this should be our real position, modified by our velocity, modified by the vector to the speaker.
     // double shotTime = 5;
     // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
     // Pose2d a = currentPose;
