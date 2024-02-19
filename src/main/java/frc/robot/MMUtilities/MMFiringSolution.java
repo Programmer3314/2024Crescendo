@@ -6,22 +6,26 @@ package frc.robot.MMUtilities;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotContainer;
 
 public class MMFiringSolution {
+    RobotContainer rc;
     double speakerHeight = Units.inchesToMeters(83);
     double pivotHeight = Units.inchesToMeters(5);
 
     private MMWaypoint[] waypoints;
 
-    public MMFiringSolution(MMWaypoint... waypoints) {
+    public MMFiringSolution(RobotContainer rc, MMWaypoint... waypoints) {
+        this.rc = rc;
         this.waypoints = waypoints;
     }
 
     // make Waypoint and MMFiringSolution use
     // Angle, Left & Right velocities, and Index Speed.
 
-    // TODO: review the use of the res variable. 
+    // TODO: review the use of the res variable.
     public MMWaypoint calcSolution(double distance) {
+
         MMWaypoint res = null;
         MMWaypoint bottomRef = null;
         MMWaypoint topRef = null;
@@ -58,12 +62,13 @@ public class MMFiringSolution {
         // .16 radians
         // .458 encoder value
         // .385 encoder value
-        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .294;
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .31;// +.294
+        SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
         if (shootAngle > .458) {
             shootAngle = .458;
         }
-        if (shootAngle < .385) {
-            shootAngle = .385;
+        if (shootAngle < .382) {
+            shootAngle = .382;
         }
         SmartDashboard.putNumber("fsRise", (speakerHeight - pivotHeight));
         SmartDashboard.putNumber("fsRun", distance);
@@ -71,6 +76,7 @@ public class MMFiringSolution {
         SmartDashboard.putNumber("fsDistance", distance);
         SmartDashboard.putNumber("fsShootAngle", shootAngle);
         SmartDashboard.putNumber("fsDesiredAngle", res.getAngle());
+        SmartDashboard.putNumber("fsEncoderValue", rc.shooterSubsystem.getShooterAngle());
 
         return new MMWaypoint(distance, shootAngle, res.getLeftVelocity(), res.getRightVelocity(),
                 res.getVelocity());

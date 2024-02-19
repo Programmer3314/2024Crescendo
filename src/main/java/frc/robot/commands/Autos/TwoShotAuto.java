@@ -18,40 +18,43 @@ import frc.robot.commands.ShootAndWait;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class TwoShotAuto extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
+
   /** Creates a new TwoShotAuto. */
   public TwoShotAuto(RobotContainer rc) {
-    this.rc=rc;
+    this.rc = rc;
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    
-    
-  }
-    @Override
-    public void initialize(){
-      cmd = new SequentialCommandGroup();
-      cmd.addCommands(
-        new StandardAutoInit(rc, MMField.currentWooferPose())
-        .setPipeLine(0, 1),
-      //turn on shoot flag
-     new InstantCommand(()-> rc.shooterSubsystem.setShootFlag(true)),
-      
-      // turn on intake flag
-      new InstantCommand(()-> rc.shooterSubsystem.setIntakeFlag(true)),
-      //drive back 1.09 meters
-     // new DriveForwardDist(rc, 1.09, -.5),
-     new FollowPathFile(rc, "BackUp"),
-      //shoot then intake
-      new ShootAndWait(rc),
-      new InstantCommand(()-> rc.shooterSubsystem.setIntakeFlag(true)),
-      new FollowPathFile(rc, "TwoBall-2"),
-      new ShootAndWait(rc),
-      new InstantCommand(()-> rc.shooterSubsystem.setIntakeFlag(true)),
-      new FollowPathFile(rc, "TwoBall-3"),
-      new ShootAndWait(rc)
 
- 
-      );
+  }
+
+  @Override
+  public void initialize() {
+    cmd = new SequentialCommandGroup();
+    cmd.addCommands(
+        new StandardAutoInit(rc, MMField.currentWooferPose())
+            .setPipeLine(0, 1),
+        // turn on shoot flag
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+
+        // turn on intake flag
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        // drive back 1.09 meters
+        // new DriveForwardDist(rc, 1.09, -.5),
+        new FollowPathFile(rc, "BackUp"),
+        // shoot then intake
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "TwoBall-2"),
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "TwoBall-3"),
+        new ShootAndWait(rc)
+
+    );
     cmd.initialize();
   }
 }

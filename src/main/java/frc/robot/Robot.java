@@ -19,6 +19,7 @@ public class Robot extends TimedRobot {
 
   public static DriverStation.Alliance alliance;
 
+
   @Override
   public void robotInit() {
 
@@ -58,6 +59,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
 
     m_robotContainer.shooterSubsystem.stopMotors();
+    m_robotContainer.shooterSubsystem.resetStateMachine();
     Navigation.visionUpdate = 0;
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -103,12 +105,12 @@ public class Robot extends TimedRobot {
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
     m_robotContainer.shooterSubsystem.stopMotors();
-    
+
   }
 
   @Override
   public void testPeriodic() {
-    
+
   }
 
   @Override

@@ -23,7 +23,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.datalog.BooleanLogEntry;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,8 +48,15 @@ import frc.robot.MMUtilities.MMWaypoint;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
+
+  StringLogEntry leadActualPosition;
+  StringLogEntry leadGuessPosition;
+  DoubleLogEntry leadXVelocity;
+  DoubleLogEntry leadYVelocity;
+  DoubleLogEntry leadARotation;
+
   private ShooterStateMachine ssm = new ShooterStateMachine();
-  private MMTurnPIDController turnPidController = new MMTurnPIDController();
+  private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
   Rotation2d targetAngleSpeaker;
   Rotation2d leftBoundaryAngleSpeaker;
   Rotation2d rightBoundaryAngleSpeaker;
@@ -47,18 +64,26 @@ public class Shooter extends SubsystemBase {
   Pose2d currentPose;
   double speakerTurnRate;
   // TODO: Review the followign margins
-  double shooterAngleMargin = .005;
+  double shooterAngleMargin = .0015;
   double shooterVelocityMargin = 5;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .1;
 
+  int abortIntakeCounter;
+
   boolean runAim;
   boolean runIntake;
   boolean abortIntake;
+  boolean runElevatorIndex;
+  boolean runElevatorShot;
   boolean runShoot;
   boolean runOutTake;
   double shooterDelay = .125;
   double outTakeDelay = .125;
+
+  double shotStartTime;
+  double shotEndTime;
+  double shotTotalTime;
 
   boolean runDiagnosticTest;
   double diagnosticRunTime = 3;
@@ -77,14 +102,13 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredRightShooterVel;
   boolean diagnosticDesiredLeftShooterVel;
 
+  double elevatorHomingVelocity = -20;
+  boolean hasHomedElevator;
+
   public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
 
-  MMFiringSolution firingSolution = new MMFiringSolution(
-      new MMWaypoint(1.3, .45, 35, 45, 40),
-      new MMWaypoint(2.12, .425, 37, 48, 42),
-      new MMWaypoint(2.81, 0.394, 37, 48, 42),
-      new MMWaypoint(3.55, .39, 40, 50, 45));
+  MMFiringSolution firingSolution;
 
   private TalonFX intakeBeltMotor = new TalonFX(9, "CANIVORE");
   private TalonFX intakeRotateMotor = new TalonFX(10, "CANIVORE");
@@ -94,20 +118,28 @@ public class Shooter extends SubsystemBase {
   private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
   private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
   private TalonFX elevatorMotor = new TalonFX(16, "CANIVORE");
+  private TalonFX elevatorBelt = new TalonFX(17, "CANIVORE");
 
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
 
   DigitalInput intakeBreakBeam = new DigitalInput(0);// NOTE: broken = false, solid = true
   DigitalInput shooterBreakBeam = new DigitalInput(1);
-  
+  DigitalInput elevatorHomeSensor = new DigitalInput(3);
+  DigitalInput elevatorBreakBeam = new DigitalInput(4);
+
   double intakeTop = .91;
 
+  double elevatorInPerRev = 5.125 / 30;
+
   double intakeUpPos = intakeTop - .02;
-  double intakeDownPos = intakeUpPos - .7;
+  double intakeDownPos = .12;
 
   double intakeVelIn = 30;
   double intakeVelOut = -intakeVelIn;
+
+  double elevatorDownPosition = 33;
+  double elevatorUpPosition = 63;
 
   double index1InVel = 8;
   double index2InVel = index1InVel;
@@ -123,7 +155,6 @@ public class Shooter extends SubsystemBase {
   private final MotionMagicVoltage shooterRotateMotionMagicVoltage = new MotionMagicVoltage(0);
   private final MotionMagicVoltage elevatorMotorMotionMagicVoltage = new MotionMagicVoltage(0);
 
-  
   // private final PositionVoltage testShooterPositionVoltage = new
   // PositionVoltage(0);
   private final MotionMagicVoltage intakeRotateMotionMagicVoltage = new MotionMagicVoltage(0);
@@ -135,10 +166,28 @@ public class Shooter extends SubsystemBase {
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
   private VoltageOut elevatorvoVoltageOut = new VoltageOut(0);
+  private VelocityVoltage elevatorVelVol = new VelocityVoltage(0);
+
+  StructPublisher<Pose2d> currentPosePublisher = NetworkTableInstance.getDefault()
+      // some code to get the pose
+      // out displaying on advantagescope.
+      // It's pretty laggy but it works.
+      // Should be helpful for getting the
+      // lead out code sorted and for after
+      // matches.
+      .getStructTopic("currentPose", Pose2d.struct).publish();
+  StructPublisher<Pose2d> leadGuessPosePublisher = NetworkTableInstance.getDefault()
+      .getStructTopic("leadGuessPose", Pose2d.struct).publish();
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
     this.rc = rc;
+    firingSolution = new MMFiringSolution(
+        rc,
+        new MMWaypoint(1.3, .45, 35, 45, 40),
+        new MMWaypoint(2.12, .425, 40, 50, 45),
+        new MMWaypoint(2.81, 0.394, 40, 50, 45),
+        new MMWaypoint(3.55, .39, 40, 50, 45));
     configShooterRotateCanCoder();
     configShooterRotateMotor();
     configIntakeRotateCanCoder();
@@ -150,10 +199,45 @@ public class Shooter extends SubsystemBase {
     ssm.setInitial(ssm.Start);
     SmartDashboard.putData("Run Diagnostic",
         new InstantCommand(() -> this.setRunDiagnostic(true)));
+
+    DataLog log = DataLogManager.getLog();
+    leadActualPosition = new StringLogEntry(log, "/my/lead/actualPosition");
+    leadXVelocity = new DoubleLogEntry(log, "/my/lead/xVelocity");
+    leadYVelocity = new DoubleLogEntry(log, "/my/lead/yVelocity");
+    leadARotation = new DoubleLogEntry(log, "/my/lead/aRotation");
+    leadGuessPosition = new StringLogEntry(log, "/my/lead/actualPosition");
   }
+
+  // prereq: flag to check elevatorIndex / elevatorDeliver, both triggered on
+  // button press
+  // --Indexed
+  // DONE IF: elevatorIndexFlag-> ElevatorToElevatorIndex
+  // ElevatorToElevatorIndex{
+  // 1) Move elevator to home position
+  // 2) Run index reverse(slow)
+  // 3)Run intake reverse(slow)
+  // 4) Run elevator belt(slow)
+  // DONE IF: beam is broken && elevatorDeliver -> MoveElevatorToPosition
+  // DONE IF: intake flag--> ElevatorToIndex
+  // }
+  // ElevatorToIndex{
+  // Run Elevator belt(slow)
+  // Run intake in
+  // }
+  // MoveElevatorToPosition{Run elevator up until we reach the position}
+  // PrepareToDeliver{
+  // 1) Run elevator belt up (slow)
+  // DONE IF: beam is not broken -> Deliver
+  // }
+  // Deliver{
+  // 1) Run elevator belt out until we reach a certain number of revolutions
+  // }
+  //
+  //
 
   @Override
   public void periodic() {
+
     calcFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
@@ -166,6 +250,20 @@ public class Shooter extends SubsystemBase {
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
 
+    if (intakeRotateMotor.getSupplyCurrent().getValue() > 4) {
+      // abortIntake = true;
+      abortIntakeCounter++;
+    }
+
+    // if (!hasHomedElevator) {TODO: Uncomment
+    // runElevatorToHome();
+    // if (elevatorHomeSensor.get()) {
+    // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+    // elevatorMotor.setPosition(0);
+    // hasHomedElevator = true;
+    // }
+    // }
+
     ssm.update();
 
     turnPidController.initialize(targetAngleSpeaker);
@@ -174,6 +272,7 @@ public class Shooter extends SubsystemBase {
     if (runAim) {
       aimToSpeaker();
     }
+
     // else {
     // // stopShooterMotors();
     // }
@@ -191,6 +290,9 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
     SmartDashboard.putBoolean("Intake Beam", intakeBreakBeam.get());
     SmartDashboard.putString("State Machine State", currentStateName());
+    SmartDashboard.putBoolean("AbortIntakeFlag", abortIntake);
+    SmartDashboard.putNumber("AbortIntakeCounter", abortIntakeCounter);
+    SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
   }
 
   // (Proposed Outline)
@@ -210,13 +312,10 @@ public class Shooter extends SubsystemBase {
   // desired angle, would also continue targeting like aim.
   // Shoot- Would(in transition to) shoot the note based on the waypoint, by just
   // running the feeder wheels
+
   public class ShooterStateMachine extends MMStateMachine {
 
     MMStateMachineState Start = new MMStateMachineState("Start") {
-
-      @Override
-      public void transitionFrom(MMStateMachineState nextState) {
-      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -240,7 +339,10 @@ public class Shooter extends SubsystemBase {
         stopShooterMotors();
         stopIntake();
         setRunDiagnostic(false);
+        abortIntake = false;
+        // abortIntakeCounter=0;
         idleCounter++;
+
       }
 
       @Override
@@ -267,18 +369,18 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         // if (!shooterBreakBeam.get()) {
-        //   return Index;
+        // return Index;
         // }
+        if (abortIntakeCounter > 1) {
+          return IntakeStallPause;
+        }
         if (!intakeBreakBeam.get()) {
           return intakeBroken;
-        }
-        if (abortIntake) {
-          return Idle;
         }
         return this;
       }
     };
-      MMStateMachineState intakeBroken = new MMStateMachineState("Intake Broken") {
+    MMStateMachineState intakeBroken = new MMStateMachineState("Intake Broken") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -320,7 +422,9 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-
+        // if (runElevatorIndex) {
+        // return ElevatorIndex;
+        // }
         if (runShoot) {
           return PrepareToShoot;
         }
@@ -342,6 +446,82 @@ public class Shooter extends SubsystemBase {
       }
     };
 
+    MMStateMachineState ElevatorIndex = new MMStateMachineState("ElevatorIndex") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBeltUpFast();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!elevatorBreakBeam.get()) {
+          return ElevatorWaitForAction;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ElevatorWaitForAction = new MMStateMachineState("ElevatorWaitForAction") {
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (runElevatorShot) {
+          return SetElevatorHeight;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState SetElevatorHeight = new MMStateMachineState("SetElevatorHeight") {
+      // Pass through state, just to
+      // set position, it'll take
+      // too long to move the
+      // elevator and wait before
+      // sending the note up. Maybe that'll change later with a tuned elevator
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorUp();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return ElevatorPassNoteAbove;
+      }
+    };
+
+    MMStateMachineState ElevatorPassNoteAbove = new MMStateMachineState("ElevatorPassNoteAbove") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBeltUpSlow();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (elevatorBreakBeam.get()) {
+          return ElevatorShoot;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBeltShoot();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (elevatorBreakBeam.get()) {
+          return ElevatorShoot;
+        }
+        return this;
+      }
+    };
+
     MMStateMachineState Shoot = new MMStateMachineState("Shoot") {
 
       @Override
@@ -349,6 +529,7 @@ public class Shooter extends SubsystemBase {
         runIntakeIn();
         runIndexShoot();
         setShootFlag(false);
+        setShotStartTime();
       }
 
       @Override
@@ -374,6 +555,13 @@ public class Shooter extends SubsystemBase {
     };
 
     MMStateMachineState ShootPause = new MMStateMachineState("ShootPause") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        shotEndTime = Timer.getFPGATimestamp();
+        shotTotalTime = shotEndTime - shotStartTime;
+        // totaltime=.1
+      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -665,7 +853,33 @@ public class Shooter extends SubsystemBase {
       public void transitionFrom(MMStateMachineState nextState) {
         stopRightMotor();
       }
-    
+
+    };
+
+    MMStateMachineState IntakeStallPause = new MMStateMachineState("IntakeStallPause") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIntake();
+        setIntakeUp();
+        // rc.joystick.setRumble
+      }
+
+      @Override
+      public void doState() {
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= .5) {
+          return Idle;
+        }
+        return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nextState) {
+        abortIntakeCounter = 0;
+      }
     };
   }
 
@@ -749,8 +963,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void aimToSpeaker() {
-    //runLeftMotor(desiredWaypoint.getLeftVelocity());
-    //runRightMotor(desiredWaypoint.getRightVelocity());
+    runLeftMotor(desiredWaypoint.getLeftVelocity());
+    runRightMotor(desiredWaypoint.getRightVelocity());
     setShooterPosition(desiredWaypoint.getAngle());
   }
 
@@ -779,6 +993,11 @@ public class Shooter extends SubsystemBase {
       stopShooterMotors();
     }
     runAim = aim;
+    return this;
+  }
+
+  public Shooter setElevatorIndexFlag(boolean index) {
+    runElevatorIndex = index;
     return this;
   }
 
@@ -843,12 +1062,13 @@ public class Shooter extends SubsystemBase {
     elevatorMotor.setControl(vv);
   }
 
-  public void setElevatorPosition(double position) {
-    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(position));
+  public void resetStateMachine() {
+    ssm.setInitial(ssm.Start);
   }
 
-  public void setElevatorVoltage(double voltage) {
-    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(voltage));
+  public void setShotStartTime() {
+    shotStartTime = Timer.getFPGATimestamp();
+
   }
 
   public boolean readyToShoot() {
@@ -885,11 +1105,34 @@ public class Shooter extends SubsystemBase {
     // Review the below code and clean it up to make it work.
     // Don't get locked into the code below, but start by understanding it and
     // making it work.
+
+
+    // double shotTime = 5;
+    // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
+    // Pose2d a = currentPose;
+    // Transform2d d = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    // Transform2d b = new Transform2d(new Translation2d(chassisSpeeds.vxMetersPerSecond * shotTime,
+    //     chassisSpeeds.vyMetersPerSecond * shotTime),
+    //     new Rotation2d(chassisSpeeds.omegaRadiansPerSecond * shotTime));
+    // Translation2d c = MMField.getBlueTranslation(a.plus(d).plus(b).getTranslation());
+
+    // leadGuessPosePublisher.set(a.plus(b));
+    // currentPosePublisher.set(a);
+
+    // leadActualPosition.append(a.toString());
+    // leadXVelocity.append(chassisSpeeds.vxMetersPerSecond);
+    // leadYVelocity.append(chassisSpeeds.vyMetersPerSecond);
+    // leadARotation.append(chassisSpeeds.omegaRadiansPerSecond);
+    // leadGuessPosition.append(a.plus(b).toString());
+
     Pose2d a = currentPose;
-    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Transform2d b = new Transform2d(new
+    Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+
     boolean bingo = isInMargin(c.getY(),
-        MMField.blueSpeakerPose.getTranslation().getY(), .3556);
+        MMField.blueSpeakerPose.getTranslation().getY(), .3556)
+        && isInMargin(targetAngleSpeaker.getDegrees(), currentPose.getRotation().getDegrees(), 40);
 
     SmartDashboard.putBoolean("bingo", bingo);
 
@@ -907,7 +1150,6 @@ public class Shooter extends SubsystemBase {
     return ssm.currentState.getName();
   }
 
- 
   public void configIntakeBeltMotor() {
     TalonFXConfiguration genericConfig = new TalonFXConfiguration();
     genericConfig.Slot0
@@ -918,13 +1160,14 @@ public class Shooter extends SubsystemBase {
         .withKP(.125)
         .withKI(0)
         .withKD(0);
-    //MMConfigure.configureDevice(leftMotor, genericConfig);
+    // MMConfigure.configureDevice(leftMotor, genericConfig);
 
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
-   // MMConfigure.configureDevice(rightMotor, genericConfig);
+    // MMConfigure.configureDevice(rightMotor, genericConfig);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
   }
+
   public void configShooterMotors() {
     TalonFXConfiguration genericConfig = new TalonFXConfiguration();
     genericConfig.Slot0
@@ -935,14 +1178,14 @@ public class Shooter extends SubsystemBase {
         .withKP(.125)
         .withKI(0)
         .withKD(0);
-        genericConfig.MotionMagic
-        .withMotionMagicAcceleration(100/.5)
-        .withMotionMagicJerk((100/.5)/.1);
+    genericConfig.MotionMagic
+        .withMotionMagicAcceleration(100 / 1)
+        .withMotionMagicJerk((100 / 1) / .2);
     MMConfigure.configureDevice(leftMotor, genericConfig);
 
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     MMConfigure.configureDevice(rightMotor, genericConfig);
-   // MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
+    // MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
   }
 
@@ -1005,6 +1248,7 @@ public class Shooter extends SubsystemBase {
                                                                                                 // Sensor Velocity
 
     TalonFXConfiguration cfg = new TalonFXConfiguration();
+    cfg.CurrentLimits.SupplyCurrentLimit = 4;
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
     cfg.MotionMagic
@@ -1050,7 +1294,8 @@ public class Shooter extends SubsystemBase {
     TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.MotorOutput
         .withNeutralMode(NeutralModeValue.Coast)
-        .withInverted(InvertedValue.Clockwise_Positive);
+        .withInverted(InvertedValue.Clockwise_Positive)
+        .withDutyCycleNeutralDeadband(.05);
     cfg.MotionMagic
         .withMotionMagicCruiseVelocity(cruiseVelocity)
         .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
@@ -1059,9 +1304,9 @@ public class Shooter extends SubsystemBase {
         .withKS(0) // voltage to overcome static friction
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(1) // gravity can be used for elevator or arm
+        .withKG(.5) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(300)
+        .withKP(320)
         .withKI(0)
         .withKD(3);
     cfg.Feedback
@@ -1098,10 +1343,49 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(0)
+        .withKP(.1)
         .withKI(0)
         .withKD(0);
     MMConfigure.configureDevice(elevatorMotor, cfg);
   }
 
+  public void setElevatorUp() {
+    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorUpPosition));
+  }
+
+  public void setElevatorDown() {
+    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorDownPosition));
+  }
+
+  public void runElevatorToHome() {
+    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(-.5));
+  }
+
+  public void runElevatorBeltUpFast() {
+    elevatorMotor.setControl(elevatorVelVol.withVelocity(20));
+  }
+
+  public void runElevatorBeltDownFast() {
+    elevatorMotor.setControl(elevatorVelVol.withVelocity(-20));
+  }
+
+  public void runElevatorBeltUpSlow() {
+    elevatorMotor.setControl(elevatorVelVol.withVelocity(10));
+  }
+
+  public void runElevatorBeltDownSlow() {
+    elevatorMotor.setControl(elevatorVelVol.withVelocity(-10));
+  }
+
+  public void runElevatorBeltShoot() {
+    elevatorMotor.setControl(elevatorVelVol.withVelocity(-60));
+  }
+
+  public void stopElevator() {
+    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+  }
+
+  public void stopElevatorBelt() {
+    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+  }
 }
