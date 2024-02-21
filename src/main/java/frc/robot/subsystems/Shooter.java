@@ -123,17 +123,17 @@ public class Shooter extends SubsystemBase {
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
 
-  DigitalInput intakeBreakBeam = new DigitalInput(0);// NOTE: broken = false, solid = true
-  DigitalInput shooterBreakBeam = new DigitalInput(1);
-  DigitalInput elevatorHomeSensor = new DigitalInput(3);
+  DigitalInput intakeBreakBeam = new DigitalInput(3);// NOTE: broken = false, solid = true
+  DigitalInput shooterBreakBeam = new DigitalInput(2);
+  DigitalInput elevatorHomeSensor = new DigitalInput(1);
   DigitalInput elevatorBreakBeam = new DigitalInput(4);
 
-  double intakeTop = .91;
+  double intakeTop = .924;
 
   double elevatorInPerRev = 5.125 / 30;
 
   double intakeUpPos = intakeTop - .02;
-  double intakeDownPos = .12;
+  double intakeDownPos = intakeTop - .80;
 
   double intakeVelIn = 30;
   double intakeVelOut = -intakeVelIn;
@@ -661,7 +661,11 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, getIntakeVel(), intakeVelocityMargin);
+        double actualvel = getIntakeVel();
+        diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, actualvel, intakeVelocityMargin);
+        SmartDashboard.putBoolean("intIn", diagnosticDesiredIntakeIn);
+        SmartDashboard.putNumber("intDesired",intakeVelIn);
+        SmartDashboard.putNumber("intActual",actualvel);
       }
 
       @Override
@@ -900,7 +904,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getIntakeVel() {
-    return intakeRotateMotor.getVelocity().getValue();
+    return intakeBeltMotor.getVelocity().getValue();
   }
 
   public double getIndex1Vel() {
@@ -1216,7 +1220,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.4);
+        .withMagnetOffset(-0.5);
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
