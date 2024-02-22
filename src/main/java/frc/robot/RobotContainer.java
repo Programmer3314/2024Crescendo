@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
-import frc.robot.commands.GoShoot;
 import frc.robot.commands.GrabCone;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
@@ -61,11 +60,12 @@ public class RobotContainer {
       MMField.getBlueWooferApproachPose(),
   };
 
-  public MMController joystick = new MMController(0)
+  public MMController driverController = new MMController(0)
       .setDeadzone(.1 / 2)
       .setScaleXLeft(-MaxSpeed)
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
+
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -87,42 +87,54 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(() -> drive
-            .withVelocityX(joystick.getLeftYSmoothed())
-            .withVelocityY(joystick.getLeftXSmoothed())
-            .withRotationalRate(joystick.getRightXSmoothed())));
+            .withVelocityX(driverController.getLeftYSmoothed())
+            .withVelocityY(driverController.getLeftXSmoothed())
+            .withRotationalRate(driverController.getRightXSmoothed())));
+
+    //TODO: Low Priority Driver Controller Layout--operator role needed?
+    //Needs:
+    //-Shoot : RT
+    //-Eject
+    //-Intake
+    //-Aim
+    //-Reset State Machine
+    //-Reset Position
+    //-Aim
+    //-Climb / StopClimb
+    //-RequestAmp(shoot/ eject are the same thing)
 
     // TODO: review the following two controls...
     // This is why the buttons need to be held.
     // I believe the idea was to allow the driver to change their mind.
-    joystick.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
+    driverController.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
 
-    joystick.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
+    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
-    joystick.leftTrigger().whileTrue(new TwoShotAuto(this));
+    driverController.leftTrigger().whileTrue(new TwoShotAuto(this));
 
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
-    joystick.a().whileTrue(new Aim(this));
+    driverController.a().whileTrue(new Aim(this));
 
     // joystick.x().onTrue(new
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
     // joystick.leftTrigger().onTrue(new GoShoot(this));
 
-    // TODO: These two resets seem to reset in opposite directions. 
+    // TODO: These two resets seem to reset in opposite directions.
     // Remember last year having to turn around to reset...
-    joystick.leftBumper().onTrue(
+    driverController.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
-    joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
+    driverController.button(8)
+        .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
-    
-    joystick.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnostic(true)));
-    joystick.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
+    driverController.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
+    driverController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
-    joystick.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
-    joystick.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-    joystick.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
+    driverController.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
+    driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
+    driverController.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
 
     // Set<Subsystem> set = new HashSet<Subsystem>();
     // set.add(drivetrain);

@@ -33,8 +33,8 @@ public class NotAim extends Command {
   @Override
   public void execute() {
     rc.drivetrain.setControl(drive
-        .withVelocityX(rc.joystick.getLeftYSmoothed())
-        .withVelocityY(rc.joystick.getLeftXSmoothed())
+        .withVelocityX(rc.driverController.getLeftYSmoothed())
+        .withVelocityY(rc.driverController.getLeftXSmoothed())
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
   }
 

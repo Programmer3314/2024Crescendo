@@ -7,7 +7,6 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,12 +25,12 @@ public class Navigation extends SubsystemBase {
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightName = "limelight-right";
   private double llrHeartBeat = 0;
-  private ArrayList<Double> xVelocity = new ArrayList<Double>();
-  private ArrayList<Double> yVelocity = new ArrayList<Double>();
-  private ArrayList<Double> angVelocity = new ArrayList<Double>();
+  // private ArrayList<Double> xVelocity = new ArrayList<Double>();
+  // private ArrayList<Double> yVelocity = new ArrayList<Double>();
+  // private ArrayList<Double> angVelocity = new ArrayList<Double>();
   public static Pose2d predictedPose;
-  private int predictionCycles;
-  double timeToShoot = .1;
+  // private int predictionCycles;
+  // double timeToShoot = .1;
   private Pose2d currentPose;
 
   /** Creates a new Navigation. */

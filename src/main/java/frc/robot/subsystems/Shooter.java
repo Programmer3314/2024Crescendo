@@ -23,14 +23,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.util.datalog.BooleanLogEntry;
-import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
-import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
@@ -49,12 +44,6 @@ import frc.robot.MMUtilities.MMWaypoint;
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
 
-  StringLogEntry leadActualPosition;
-  StringLogEntry leadGuessPosition;
-  DoubleLogEntry leadXVelocity;
-  DoubleLogEntry leadYVelocity;
-  DoubleLogEntry leadARotation;
-
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
   Rotation2d targetAngleSpeaker;
@@ -63,6 +52,7 @@ public class Shooter extends SubsystemBase {
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
+
   // TODO: Review the followign margins
   double shooterAngleMargin = .0015;
   double shooterVelocityMargin = 5;
@@ -200,7 +190,7 @@ public class Shooter extends SubsystemBase {
     configElevatorMotors();
     ssm.setInitial(ssm.Start);
     SmartDashboard.putData("Run Diagnostic",
-        new InstantCommand(() -> this.setRunDiagnostic(true)));
+        new InstantCommand(() -> this.setRunDiagnosticFlag(true)));
 
     SmartDashboard.putData("Run Belt Up Fast",
         new InstantCommand(() -> this.runElevatorBeltUpFast()));
@@ -210,13 +200,6 @@ public class Shooter extends SubsystemBase {
         new InstantCommand(() -> this.runElevatorBeltDownFast()));
     SmartDashboard.putData("Run Belt Down Slow",
         new InstantCommand(() -> this.runElevatorBeltDownSlow()));
-
-    DataLog log = DataLogManager.getLog();
-    leadActualPosition = new StringLogEntry(log, "/my/lead/actualPosition");
-    leadXVelocity = new DoubleLogEntry(log, "/my/lead/xVelocity");
-    leadYVelocity = new DoubleLogEntry(log, "/my/lead/yVelocity");
-    leadARotation = new DoubleLogEntry(log, "/my/lead/aRotation");
-    leadGuessPosition = new StringLogEntry(log, "/my/lead/actualPosition");
   }
 
   // prereq: flag to check elevatorIndex / elevatorDeliver, both triggered on
@@ -316,24 +299,6 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
   }
 
-  // (Proposed Outline)
-  // States:
-  // Start; Travel; Extend; Load Note; Reverse; Aim; Spin Up; Shoot
-  // Start-Same
-  // Travel- Shooter would be down, shooter & feeder wheels would not be moving
-  // Extended- Mostly for testing, for any reason we may need it up
-  // Load Note- Move the note into a good position for the feeder wheels from the
-  // intake
-  // Reverse- Test sequence, outtake(something is stuck), just spin the shooter
-  // and feeder wheels back
-  // Aim - Targeting on the fly, based on the passed in waypoint, wherever we are
-  // on the field, the shooter would target the goal.(Only adjusting angle, not
-  // moving shooters/feeders)
-  // Spin up- For getting ready to shoot, would spin up the shoot motors to
-  // desired angle, would also continue targeting like aim.
-  // Shoot- Would(in transition to) shoot the note based on the waypoint, by just
-  // running the feeder wheels
-
   public class ShooterStateMachine extends MMStateMachine {
 
     MMStateMachineState Start = new MMStateMachineState("Start") {
@@ -364,12 +329,12 @@ public class Shooter extends SubsystemBase {
         stopIndexers();
         stopShooterMotors();
         stopIntake();
-        setRunDiagnostic(false);
+        setRunDiagnosticFlag(false);
 
         setShootFlag(false);
         setAimFlag(false);
         // TODO make setter and method for flags
-        abortIntake = false;
+        setAbortIntakeFlag(false);
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -528,6 +493,7 @@ public class Shooter extends SubsystemBase {
         }
         if (runIntake) {
           return ElevatorDownAbort;
+
         }
         return this;
       }
@@ -580,7 +546,6 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-
     MMStateMachineState ElevatorDownAbort = new MMStateMachineState("ElevatorDownAbort") {
 
       @Override
@@ -1090,6 +1055,11 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setAbortIntakeFlag(boolean isAborted) {
+    abortIntake = isAborted;
+    return this;
+  }
+
   public Shooter setAimFlag(boolean aim) {
     if (runAim && !aim) {
       stopShooterMotors();
@@ -1103,8 +1073,37 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
-  public void setRunDiagnostic(boolean isTrue) {
-    runDiagnosticTest = isTrue;
+  public Shooter setRunDiagnosticFlag(boolean runTest) {
+    runDiagnosticTest = runTest;
+    return this;
+  }
+
+  public boolean getIntakeFlag() {
+    return runIntake;
+  }
+
+  public boolean getReverseIntakeFlag() {
+    return runOutTake;
+  }
+
+  public boolean getShootFlag() {
+    return runShoot;
+  }
+
+  public boolean getAbortIntakeFlag() {
+    return abortIntake;
+  }
+
+  public boolean getAimFlag() {
+    return runAim;
+  }
+
+  public boolean getElevatorIndexFlag() {
+    return runElevatorIndex;
+  }
+
+  public boolean getRunDiagnosticFlag(boolean runTest) {
+    return runDiagnosticTest;
   }
 
   public void runIntakeIn() {
@@ -1209,9 +1208,9 @@ public class Shooter extends SubsystemBase {
     // Don't get locked into the code below, but start by understanding it and
     // making it work.
 
-
-    // TODO: TRY 360 NO-Scope again, but reverse b and d... 
-    // a.plus(b).plus(d), this should be our real position, modified by our velocity, modified by the vector to the speaker.
+    // TODO: TRY 360 NO-Scope again, but reverse b and d...
+    // a.plus(b).plus(d), this should be our real position, modified by our
+    // velocity, modified by the vector to the speaker.
     // double shotTime = 5;
     // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
     // Pose2d a = currentPose;
@@ -1502,5 +1501,14 @@ public class Shooter extends SubsystemBase {
 
   public void stopElevatorBelt() {
     elevatorBelt.setControl(elevatorvoVoltageOut.withOutput(0));
+  }
+
+  public void diagnosticUpdate() {
+    // TODO: What do we want on our logs?
+    // -All the Counters
+    // -All the Flags
+    // -State
+    // -Robot Position(with cool animation thing)
+    // -Motor Positions/Velocity
   }
 }
