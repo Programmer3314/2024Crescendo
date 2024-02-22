@@ -68,6 +68,7 @@ public class Shooter extends SubsystemBase {
   double shooterVelocityMargin = 5;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .1;
+  double elevatorPositionMargin = 1;
 
   int abortIntakeCounter;
 
@@ -75,7 +76,6 @@ public class Shooter extends SubsystemBase {
   boolean runIntake;
   boolean abortIntake;
   boolean runElevatorIndex;
-  boolean runElevatorShot;
   boolean runShoot;
   boolean runOutTake;
   double shooterDelay = .125;
@@ -123,23 +123,25 @@ public class Shooter extends SubsystemBase {
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
 
-  DigitalInput intakeBreakBeam = new DigitalInput(3);// NOTE: broken = false, solid = true
-  DigitalInput shooterBreakBeam = new DigitalInput(2);
-  DigitalInput elevatorHomeSensor = new DigitalInput(1);
-  DigitalInput elevatorBreakBeam = new DigitalInput(4);
+  DigitalInput intakeBreakBeam = new DigitalInput(2);// NOTE: broken = false, solid = true
+  DigitalInput shooterBreakBeam = new DigitalInput(1);
+  DigitalInput elevatorHomeSensor = new DigitalInput(0);
+  DigitalInput elevatorBreakBeam = new DigitalInput(3);
 
   double intakeTop = .924;
 
   double elevatorInPerRev = 5.125 / 30;
 
   double intakeUpPos = intakeTop - .02;
-  double intakeDownPos = intakeTop - .80;
+  double intakeDownPos = intakeTop - .78;
 
   double intakeVelIn = 30;
-  double intakeVelOut = -intakeVelIn;
+  double intakeVelOut = -20;
 
-  double elevatorDownPosition = 33;
-  double elevatorUpPosition = 63;
+  double elevatorDownPosition = .1;
+  double elevatorUpPosition = 47.2;
+
+  double ampUpPosition = 37.2;
 
   double index1InVel = 8;
   double index2InVel = index1InVel;
@@ -200,6 +202,15 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putData("Run Diagnostic",
         new InstantCommand(() -> this.setRunDiagnostic(true)));
 
+    SmartDashboard.putData("Run Belt Up Fast",
+        new InstantCommand(() -> this.runElevatorBeltUpFast()));
+    SmartDashboard.putData("Run Belt Up Slow",
+        new InstantCommand(() -> this.runElevatorBeltUpSlow()));
+    SmartDashboard.putData("Run Belt Down Fast",
+        new InstantCommand(() -> this.runElevatorBeltDownFast()));
+    SmartDashboard.putData("Run Belt Down Slow",
+        new InstantCommand(() -> this.runElevatorBeltDownSlow()));
+
     DataLog log = DataLogManager.getLog();
     leadActualPosition = new StringLogEntry(log, "/my/lead/actualPosition");
     leadXVelocity = new DoubleLogEntry(log, "/my/lead/xVelocity");
@@ -237,11 +248,20 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
+
+    // rc.navigation.updatePredictedPosition(chassisSpeeds.vxMetersPerSecond,
+    // chassisSpeeds.vyMetersPerSecond,
+    // chassisSpeeds.omegaRadiansPerSecond);
 
     calcFiringSolution();
+    // calcPredictedFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
+
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
+
+    // predictedTargetAngleSpeaker =
     targetAngleSpeaker = transformFromSpeaker.getAngle();
     Translation2d transformLeftBoundarySpeaker = MMField.currentLeftBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
@@ -288,11 +308,12 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredLeftShooterVel);
     }
     SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
-    SmartDashboard.putBoolean("Intake Beam", intakeBreakBeam.get());
+    SmartDashboard.putBoolean(" Not Move Intake Beam", intakeBreakBeam.get());
     SmartDashboard.putString("State Machine State", currentStateName());
     SmartDashboard.putBoolean("AbortIntakeFlag", abortIntake);
     SmartDashboard.putNumber("AbortIntakeCounter", abortIntakeCounter);
     SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
+    SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
   }
 
   // (Proposed Outline)
@@ -327,22 +348,30 @@ public class Shooter extends SubsystemBase {
         }
         return Idle;
       };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+        // setIntakeFlag(false);
+        // setShootFlag(false);
+        // setAimFlag(false);
+      }
     };
 
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        setShootFlag(false);
         setIntakeUp();
-        setAimFlag(false);
         stopIndexers();
         stopShooterMotors();
         stopIntake();
         setRunDiagnostic(false);
+
+        setShootFlag(false);
+        setAimFlag(false);
+        // TODO make setter and method for flags
         abortIntake = false;
         // abortIntakeCounter=0;
         idleCounter++;
-
       }
 
       @Override
@@ -405,7 +434,6 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState nexState) {
-        stopIntake();
         setIntakeUp();
       }
     };
@@ -414,17 +442,19 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        stopIntake();
         stopIndexers();
         setIntakeFlag(false);
         setAimFlag(true);
+        stopElevatorBelt();
         indexCounter++;
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        // if (runElevatorIndex) {
-        // return ElevatorIndex;
-        // }
+        if (runElevatorIndex) {
+          return ElevatorDown;
+        }
         if (runShoot) {
           return PrepareToShoot;
         }
@@ -446,11 +476,31 @@ public class Shooter extends SubsystemBase {
       }
     };
 
+    MMStateMachineState ElevatorDown = new MMStateMachineState("ElevatorDown") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorDown();
+        setAimFlag(false);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition, elevatorPositionMargin)) {
+          return ElevatorIndex;
+        }
+        return this;
+      }
+    };
+
     MMStateMachineState ElevatorIndex = new MMStateMachineState("ElevatorIndex") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runElevatorBeltUpFast();
+        runIntakeOut();
+        runIndexOut();
+        stopShooterMotors();
       }
 
       @Override
@@ -464,20 +514,26 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState ElevatorWaitForAction = new MMStateMachineState("ElevatorWaitForAction") {
       @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorIndexFlag(false);
+        stopElevatorBelt();
+        stopIndexers();
+        stopIntake();
+      }
+
+      @Override
       public MMStateMachineState calcNextState() {
-        if (runElevatorShot) {
+        if (runShoot) {
           return SetElevatorHeight;
+        }
+        if (runIntake) {
+          return ElevatorDownAbort;
         }
         return this;
       }
     };
 
     MMStateMachineState SetElevatorHeight = new MMStateMachineState("SetElevatorHeight") {
-      // Pass through state, just to
-      // set position, it'll take
-      // too long to move the
-      // elevator and wait before
-      // sending the note up. Maybe that'll change later with a tuned elevator
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -486,7 +542,10 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        return ElevatorPassNoteAbove;
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorUpPosition, elevatorPositionMargin)) {
+          return ElevatorPassNoteAbove;
+        }
+        return this;
       }
     };
 
@@ -515,8 +574,41 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (elevatorBreakBeam.get()) {
-          return ElevatorShoot;
+        if (timeInState >= .5) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ElevatorDownAbort = new MMStateMachineState("ElevatorDownAbort") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorDown();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition, elevatorPositionMargin)) {
+          return ElevatorDownToIndex;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ElevatorDownToIndex = new MMStateMachineState("ElevatorDownToIndex") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBeltDownFast();
+        runIntakeIn();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return Index;
         }
         return this;
       }
@@ -633,6 +725,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
+        setAimFlag(false);
       }
 
       @Override
@@ -664,8 +757,8 @@ public class Shooter extends SubsystemBase {
         double actualvel = getIntakeVel();
         diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, actualvel, intakeVelocityMargin);
         SmartDashboard.putBoolean("intIn", diagnosticDesiredIntakeIn);
-        SmartDashboard.putNumber("intDesired",intakeVelIn);
-        SmartDashboard.putNumber("intActual",actualvel);
+        SmartDashboard.putNumber("intDesired", intakeVelIn);
+        SmartDashboard.putNumber("intActual", actualvel);
       }
 
       @Override
@@ -977,6 +1070,11 @@ public class Shooter extends SubsystemBase {
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
+  // public void calcPredictedFiringSolution() {
+  // distanceToSpeaker = rc.navigation.getPredictedDistanceToSpeaker();
+  // desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+  // }
+
   public Shooter setIntakeFlag(boolean run) {
     runIntake = run;
     return this;
@@ -1086,6 +1184,7 @@ public class Shooter extends SubsystemBase {
         && rightBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()) ||
         (rightBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
             && leftBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()));
+
     SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
     SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
     SmartDashboard.putNumber("Shooter Rotate Motor Actual", shooterRotateMotor.getPosition().getValue());
@@ -1110,33 +1209,41 @@ public class Shooter extends SubsystemBase {
     // Don't get locked into the code below, but start by understanding it and
     // making it work.
 
-
-    // double shotTime = 5;
+    // double shotTime = .2;
     // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
     // Pose2d a = currentPose;
-    // Transform2d d = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
-    // Transform2d b = new Transform2d(new Translation2d(chassisSpeeds.vxMetersPerSecond * shotTime,
-    //     chassisSpeeds.vyMetersPerSecond * shotTime),
-    //     new Rotation2d(chassisSpeeds.omegaRadiansPerSecond * shotTime));
-    // Translation2d c = MMField.getBlueTranslation(a.plus(d).plus(b).getTranslation());
+    // Transform2d inTargetTransform = new Transform2d(new
+    // Translation2d(rc.navigation.getDistanceToSpeaker(), 0),
+    // new Rotation2d());
+    // Transform2d predictedTransform = new Transform2d(new
+    // Translation2d(chassisSpeeds.vxMetersPerSecond * shotTime,
+    // chassisSpeeds.vyMetersPerSecond * shotTime),
+    // new Rotation2d(chassisSpeeds.omegaRadiansPerSecond * shotTime));
+    // Translation2d c =
+    // MMField.getBlueTranslation(a.plus(predictedTransform).plus(inTargetTransform).getTranslation());
 
-    // leadGuessPosePublisher.set(a.plus(b));
+    // leadGuessPosePublisher.set(a.plus(predictedTransform));
     // currentPosePublisher.set(a);
 
     // leadActualPosition.append(a.toString());
     // leadXVelocity.append(chassisSpeeds.vxMetersPerSecond);
     // leadYVelocity.append(chassisSpeeds.vyMetersPerSecond);
     // leadARotation.append(chassisSpeeds.omegaRadiansPerSecond);
-    // leadGuessPosition.append(a.plus(b).toString());
+    // leadGuessPosition.append(a.plus(predictedTransform).toString());
 
     Pose2d a = currentPose;
-    Transform2d b = new Transform2d(new
-    Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
 
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3556)
-        && isInMargin(targetAngleSpeaker.getDegrees(), currentPose.getRotation().getDegrees(), 40);
+        && isInMargin(targetAngleSpeaker.getDegrees(),
+            currentPose.getRotation().getDegrees(), 40);
+
+    // boolean bingo = isInMargin(c.getY(),
+    // MMField.blueSpeakerPose.getTranslation().getY(), .3556)
+    // && isInMargin(targetAngleSpeaker.getDegrees(),
+    // Navigation.predictedPose.getRotation().getDegrees(), 40);
 
     SmartDashboard.putBoolean("bingo", bingo);
 
@@ -1166,6 +1273,7 @@ public class Shooter extends SubsystemBase {
         .withKD(0);
     // MMConfigure.configureDevice(leftMotor, genericConfig);
 
+    MMConfigure.configureDevice(elevatorBelt, genericConfig);
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     // MMConfigure.configureDevice(rightMotor, genericConfig);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
@@ -1347,7 +1455,7 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(.1)
+        .withKP(.4)
         .withKI(0)
         .withKD(0);
     MMConfigure.configureDevice(elevatorMotor, cfg);
@@ -1366,23 +1474,23 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBeltUpFast() {
-    elevatorMotor.setControl(elevatorVelVol.withVelocity(20));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(intakeVelOut));
   }
 
   public void runElevatorBeltDownFast() {
-    elevatorMotor.setControl(elevatorVelVol.withVelocity(-20));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(intakeVelIn));
   }
 
   public void runElevatorBeltUpSlow() {
-    elevatorMotor.setControl(elevatorVelVol.withVelocity(10));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(10));
   }
 
   public void runElevatorBeltDownSlow() {
-    elevatorMotor.setControl(elevatorVelVol.withVelocity(-10));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(-10));
   }
 
   public void runElevatorBeltShoot() {
-    elevatorMotor.setControl(elevatorVelVol.withVelocity(-60));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(-60));
   }
 
   public void stopElevator() {
@@ -1390,6 +1498,6 @@ public class Shooter extends SubsystemBase {
   }
 
   public void stopElevatorBelt() {
-    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+    elevatorBelt.setControl(elevatorvoVoltageOut.withOutput(0));
   }
 }

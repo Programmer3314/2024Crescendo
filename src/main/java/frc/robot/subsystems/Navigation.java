@@ -4,7 +4,10 @@
 
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,6 +26,13 @@ public class Navigation extends SubsystemBase {
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightName = "limelight-right";
   private double llrHeartBeat = 0;
+  private ArrayList<Double> xVelocity = new ArrayList<Double>();
+  private ArrayList<Double> yVelocity = new ArrayList<Double>();
+  private ArrayList<Double> angVelocity = new ArrayList<Double>();
+  public static Pose2d predictedPose;
+  private int predictionCycles;
+  double timeToShoot = .1;
+  private Pose2d currentPose;
 
   /** Creates a new Navigation. */
   public Navigation(RobotContainer rc) {
@@ -34,6 +44,7 @@ public class Navigation extends SubsystemBase {
   @Override
   public void periodic() {
     Pose2d pose = rc.drivetrain.getState().Pose;
+    currentPose = pose;
     if (true) {
       var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
       SmartDashboard.putNumber("LLR Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
@@ -102,4 +113,50 @@ public class Navigation extends SubsystemBase {
     return distance;
   }
 
+  // public double getPredictedDistanceToSpeaker() {
+  //   Pose2d currentPose = predictedPose;
+  //   Translation2d target = MMField.currentSpeakerPose().getTranslation();
+  //   double distance = currentPose.getTranslation().minus(target).getNorm();
+  //   return distance;
+  // }
+
+  // public void updatePredictedPosition(double x, double y, double r) {
+  //   xVelocity.add(x);
+  //   yVelocity.add(y);
+  //   angVelocity.add(r);
+  //   limitArrayLists();
+  //   syncPredictedPosition();
+  // }
+
+  // public void syncPredictedPosition() {
+  //   double xVelocitySum = 0;
+  //   double yVelocitySum = 0;
+  //   double angVelocitySum = 0;
+  //   for (int i = 0; i < xVelocity.size(); i++) {
+  //     xVelocitySum += xVelocity.get(i);
+  //   }
+  //   for (int i = 0; i < yVelocity.size(); i++) {
+  //     yVelocitySum += yVelocity.get(i);
+  //   }
+  //   for (int i = 0; i < angVelocity.size(); i++) {
+  //     angVelocitySum += angVelocity.get(i);
+  //   }
+  //   double averageX = xVelocitySum / xVelocity.size();
+  //   double averageY = yVelocitySum / yVelocity.size();
+  //   double averageAng = angVelocitySum / angVelocity.size();
+
+  //   predictedPose = currentPose.plus(new Transform2d())
+  // }
+
+  // public void limitArrayLists() {
+  //   if (xVelocity.size() > predictionCycles) {
+  //     xVelocity.remove(xVelocity.size() - 1);
+  //   }
+  //   if (yVelocity.size() > predictionCycles) {
+  //     yVelocity.remove(yVelocity.size() - 1);
+  //   }
+  //   if (angVelocity.size() > predictionCycles) {
+  //     angVelocity.remove(angVelocity.size() - 1);
+  //   }
+  // }
 }

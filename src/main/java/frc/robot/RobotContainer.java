@@ -115,8 +115,8 @@ public class RobotContainer {
     joystick.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnostic(true)));
     joystick.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
-    joystick.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorDown()));
     joystick.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
+    joystick.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     joystick.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
 
     // Set<Subsystem> set = new HashSet<Subsystem>();

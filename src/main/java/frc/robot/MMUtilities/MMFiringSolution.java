@@ -67,8 +67,8 @@ public class MMFiringSolution {
         if (shootAngle > .458) {
             shootAngle = .458;
         }
-        if (shootAngle < .382) {
-            shootAngle = .382;
+        if (shootAngle < .38) {
+            shootAngle = .38;
         }
         SmartDashboard.putNumber("fsRise", (speakerHeight - pivotHeight));
         SmartDashboard.putNumber("fsRun", distance);
