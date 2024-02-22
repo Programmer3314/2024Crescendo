@@ -109,9 +109,14 @@ public class RobotContainer {
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
     // joystick.leftTrigger().onTrue(new GoShoot(this));
+
+    // TODO: These two resets seem to reset in opposite directions. 
+    // Remember last year having to turn around to reset...
     joystick.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     joystick.button(8).onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
+
+    
     joystick.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnostic(true)));
     joystick.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
