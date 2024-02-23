@@ -48,6 +48,58 @@ public class Climber extends SubsystemBase {
 
   }
 
+  
+
+  private class ClimbStateMachine extends MMStateMachine {
+
+    MMStateMachineState Start = new MMStateMachineState("Start") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+    MMStateMachineState Idle = new MMStateMachineState("Idle") {
+
+
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+    MMStateMachineState Align = new MMStateMachineState("Align") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+    MMStateMachineState Climb = new MMStateMachineState("Climb") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+  }
+
   public void configCanCoders() {
     CANcoderConfiguration rightCanConfig = new CANcoderConfiguration();
     rightCanConfig.MagnetSensor
@@ -110,53 +162,5 @@ public class Climber extends SubsystemBase {
     // .withRotorToSensorRatio(rotorToSensorRatio);
 
     MMConfigure.configureDevice(climbMotor, climbConfig);
-  }
-
-  private class ClimbStateMachine extends MMStateMachine {
-
-    MMStateMachineState Start = new MMStateMachineState("Start") {
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        return this;
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-    MMStateMachineState Idle = new MMStateMachineState("Idle") {
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        return this;
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-    MMStateMachineState Align = new MMStateMachineState("Align") {
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        return this;
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-    MMStateMachineState Climb = new MMStateMachineState("Climb") {
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        return this;
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
   }
 }
