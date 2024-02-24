@@ -43,6 +43,8 @@ public class Climber extends SubsystemBase {
     climbMotor = new TalonFX(18, "CANIVORE");
 
     // TODO: configs...
+    configClimbMotor();
+    configCanCoders();
   }
 
   @Override
@@ -105,34 +107,33 @@ public class Climber extends SubsystemBase {
     CANcoderConfiguration rightCanConfig = new CANcoderConfiguration();
     rightCanConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
-        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)// one of them s
-        .withMagnetOffset(0);
+        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)// one of them s
+        .withMagnetOffset(-0.7);
 
     CANcoderConfiguration leftCanConfig = new CANcoderConfiguration();
     leftCanConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
-        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(0);
+        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
+        .withMagnetOffset(-0.14);
     MMConfigure.configureDevice(leftCanCoder, leftCanConfig);
     MMConfigure.configureDevice(rightCanCoder, rightCanConfig);
   }
 
   public void configClimbMotor() {
 
-    // TODO: HIGH PRIORITY This motor can't be PID controlled due to Ratchet = It can't reverse.
-    // TODO: Very Low Current limit. This motor can only go "forward", we need to get control of which whay that is.
-    double cruiseVelocity = 4; // Sensor revolutions/second
+    
+    double cruiseVelocity = 10; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
     double timeToReachMaxAcceleration = .2; // seconds
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
 
-    double sensorLow = 0.04;
-    double sensorHigh = 0.84;
-    double rotorLow = -9.8;
-    double rotorHigh = -0.6;
-    double calcRotorToSensor = (rotorHigh - rotorLow) / (sensorHigh - sensorLow);
+    // double sensorLow = 0.04;
+    // double sensorHigh = 0.84;
+    // double rotorLow = -9.8;
+    // double rotorHigh = -0.6;
+    double calcRotorToSensor = 1; // (rotorHigh - rotorLow) / (sensorHigh - sensorLow);
 
     double rotorToSensorRatio = calcRotorToSensor;
     double maxRotorVelocity = 100.0; // Max speed for Falcon500 100 rev/sec
@@ -141,9 +142,9 @@ public class Climber extends SubsystemBase {
                                                                                                 // Sensor Velocity
     TalonFXConfiguration climbConfig = new TalonFXConfiguration();
     
-    climbConfig.CurrentLimits.SupplyCurrentLimit = 4;
+    //climbConfig.CurrentLimits.SupplyCurrentLimit = 40;
     climbConfig.MotorOutput
-        .withNeutralMode(NeutralModeValue.Coast);
+        .withNeutralMode(NeutralModeValue.Brake);
     climbConfig.MotionMagic
         .withMotionMagicCruiseVelocity(cruiseVelocity)
         .withMotionMagicAcceleration(cruiseVelocity / timeToReachCruiseVelocity)
@@ -154,16 +155,9 @@ public class Climber extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(16)
+        .withKP(.12)
         .withKI(0)
         .withKD(0);
-    // climbConfig.Feedback-- maybe this is a good opportunity to use a synced
-    // encoder as
-    // opposed to the fused.
-    // .withFeedbackRemoteSensorID(intakeRotateCanCoder.getDeviceID())
-    // .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
-    // .withSensorToMechanismRatio(1)
-    // .withRotorToSensorRatio(rotorToSensorRatio);
 
     MMConfigure.configureDevice(climbMotor, climbConfig);
   }

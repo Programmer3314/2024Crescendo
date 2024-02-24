@@ -27,7 +27,10 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
-import frc.robot.commands.GrabCone;
+import frc.robot.commands.AimToWall;
+import frc.robot.commands.ChaseAndIntake;
+import frc.robot.commands.ChaseNote;
+import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.FourNoteAuto;
@@ -35,6 +38,7 @@ import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.TwoShotAuto;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
@@ -74,6 +78,7 @@ public class RobotContainer {
   public Shooter shooterSubsystem = new Shooter(this);
 
   public Navigation navigation = new Navigation(this);
+  public Climber climber = new Climber(this);
 
   private final SendableChooser<Command> autoChooser;
   public static SendableChooser<Pose2d> startPoseChooser;
@@ -111,16 +116,18 @@ public class RobotContainer {
 
     driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
-    driverController.leftTrigger().whileTrue(new TwoShotAuto(this));
-
     // joystick.b().onTrue(new
     // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     driverController.a().whileTrue(new Aim(this));
+    driverController.b().whileTrue(new ChaseAndIntake(this));
 
     // joystick.x().onTrue(new
     // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
     // joystick.y().whileTrue(new ChaseCone(this));
-    // joystick.leftTrigger().onTrue(new GoShoot(this));
+
+    //driverController.leftTrigger().onTrue(new GoShoot(this));
+
+    driverController.leftTrigger().whileTrue(new InstantCommand(()-> shooterSubsystem.runElevatorBeltUpSlow()));
 
     // TODO: These two resets seem to reset in opposite directions.
     // Remember last year having to turn around to reset...
@@ -130,11 +137,12 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
     driverController.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-    driverController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
-        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
+    // driverController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
+    //     .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
     driverController.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
+    driverController.povUp().whileTrue(new AimToWall(this));
 
     // Set<Subsystem> set = new HashSet<Subsystem>();
     // set.add(drivetrain);
@@ -183,7 +191,7 @@ public class RobotContainer {
     //
     // Register named commands
     NamedCommands.registerCommand("dropCone", new ShootTheConeOut(this));
-    NamedCommands.registerCommand("grabCone", new GrabCone(this));
+
     // Set Up Autochooser
     // Default auto will be `Commands.none()`
     // autoChooser = AutoBuilder.buildAutoChooser();

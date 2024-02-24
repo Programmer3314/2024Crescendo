@@ -1,0 +1,24 @@
+DRIVER CONTROLLER
+    Left Stick: Drive Manual
+    Right Stick; Rotate Manual
+    LB: Reset Forward
+    LT: Go Shoot
+    RB: Note Intake
+    RT: Shoot
+    A: Aim
+    B: Chase Note
+    Y: 
+    X: Send to Elevator
+    Down Dpad: Reset State Machine
+
+OPP CONTROLLER
+    A: Simple Climb
+    B: Trap Climb
+    X:
+    Y:
+    RB:
+    RT:
+    LB:
+    LT:
+    7: 
+    8: Start Diagnostic

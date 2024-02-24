@@ -4,38 +4,43 @@
 
 package frc.robot.commands;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
-public class GrabCone extends Command {
+public class AimToWall extends Command {
   RobotContainer rc;
 
-  public GrabCone(RobotContainer rc) {
+  SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
+  public AimToWall(RobotContainer rc) {
     this.rc = rc;
+    addRequirements(rc.drivetrain);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // rc.claw.In();
-    // rc.claw.closeClaw();
+    rc.shooterSubsystem.setAimWallFlag(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    rc.drivetrain.setControl(drive
+        .withVelocityX(rc.driverController.getLeftYSmoothed())
+        .withVelocityY(rc.driverController.getLeftXSmoothed())
+        .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    // rc.claw.Stop();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // return rc.claw.isBroken();
     return false;
   }
 }

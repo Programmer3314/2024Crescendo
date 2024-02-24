@@ -23,7 +23,6 @@ public class MMFiringSolution {
     // make Waypoint and MMFiringSolution use
     // Angle, Left & Right velocities, and Index Speed.
 
-    // TODO: review the use of the res variable.
     public MMWaypoint calcSolution(double distance) {
 
         MMWaypoint res = null;

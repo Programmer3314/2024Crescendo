@@ -7,7 +7,7 @@ package frc.robot.commands.Autos;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMField;
-import frc.robot.commands.ChaseCone;
+import frc.robot.commands.ChaseNote;
 import frc.robot.commands.DriveForwardDist;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.NotAim;
@@ -28,7 +28,7 @@ public class AutoSamplerShootSmove extends SequentialCommandGroup {
             .setPipeLine(0, 1),
         new FollowPathFile(rc, "Exit"),
         // new FollowPathFile(rc, rc.navigation::autoLeftOrRight),
-        new ChaseCone(rc),
+        new ChaseNote(rc),
         new DriveForwardDist(rc, 0.41, 1)
             .setRobotStop(false),
         new DriveForwardDist(rc, 0.2, .5),

@@ -11,18 +11,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMPIDController;
 
-public class ChaseCone extends Command {
+public class ChaseNote extends Command {
   RobotContainer rc;
   MMPIDController rotationPIDController;
   MMPIDController yPIDController;
   // double targetX = 233;
   // double targetY = 308;
-  double targetX = 262;
-  double targetY = 415;
+  double targetX = 300;
+  double targetY = 391;
 
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
-  public ChaseCone(RobotContainer rc) {
+  public ChaseNote(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
   }
@@ -30,7 +30,8 @@ public class ChaseCone extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rotationPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);
+    rc.shooterSubsystem.setIntakeFlag(true);
+    rotationPIDController = new MMPIDController(1.0 / 150, 0, 0, 3.0 / 2.0, 10, false);
     rotationPIDController.initialize(targetX);
     yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);
     yPIDController.initialize(targetY);
@@ -40,8 +41,8 @@ public class ChaseCone extends Command {
   @Override
   public void execute() {
 
-    double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftConeX());
-    double driveYVelocity = yPIDController.execute(rc.navigation.getLeftConeY());
+    double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftNoteX());
+    double driveYVelocity = -yPIDController.execute(rc.navigation.getLeftNoteY());
 
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
     rc.drivetrain.setControl(drive
@@ -58,8 +59,8 @@ public class ChaseCone extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return (Math.abs(rc.navigation.getLeftConeY() - targetY) < 5
-        && Math.abs(rc.navigation.getLeftConeX() - targetX) < 5);
+    return (Math.abs(rc.navigation.getLeftNoteY() - targetY) < 15
+        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15);
     // || !rc.navigation.hasLeftConeTarget();
   }
 }

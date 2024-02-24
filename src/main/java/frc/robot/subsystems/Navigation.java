@@ -19,9 +19,9 @@ import frc.robot.MMUtilities.MMField;
 public class Navigation extends SubsystemBase {
   RobotContainer rc;
   public static int visionUpdate = 0;
-  private boolean hasLeftConeTarget;
-  private double leftConeX;
-  private double leftConeY;
+  private boolean hasLeftNoteTarget;
+  private double leftNoteX;
+  private double leftNoteY;
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
@@ -41,6 +41,7 @@ public class Navigation extends SubsystemBase {
     SmartDashboard.putData("FieldX", rc.field);
     LimelightHelpers.setPipelineIndex("limelight-bd", 0);
     LimelightHelpers.setPipelineIndex("limelight-backup", 0);
+    LimelightHelpers.setPipelineIndex("limelight-front", 0);
   }
 
   @Override
@@ -67,9 +68,6 @@ public class Navigation extends SubsystemBase {
           }
         }
       }
-
-      rc.field.setRobotPose(pose);
-      SmartDashboard.putString("MMpose", pose.toString());
     }
 
     if (true) {
@@ -91,42 +89,41 @@ public class Navigation extends SubsystemBase {
           }
         }
       }
-
-      rc.field.setRobotPose(pose);
-      SmartDashboard.putString("MMpose", pose.toString());
     }
 
-    // var llpython = LimelightHelpers.getPythonScriptData("limelight-left");
-    // hasLeftConeTarget = llpython[0] > .5;
-    // leftConeX = llpython[1];
-    // leftConeY = llpython[2];
-    hasLeftConeTarget = false;
-    // leftLimelightDetector =
-    // LimelightHelpers.getLatestResults("limelight-left").targetingResults.targets_Detector;
-    // if (leftLimelightDetector.length > 0) {
-    // hasLeftConeTarget = true;
-    // leftConeX = leftLimelightDetector[0].tx_pixels;
-    // leftConeY = leftLimelightDetector[0].ty_pixels;
-    // }
+    rc.field.setRobotPose(pose);
+    SmartDashboard.putString("MMpose", pose.toString());
 
-    SmartDashboard.putNumber("TX:", leftConeX);
-    SmartDashboard.putNumber("TY", leftConeY);
+    // var llpython = LimelightHelpers.getPythonScriptData("limelight-bd");
+    // hasLeftNoteTarget = llpython[0] > .5;
+    // leftNoteX = llpython[1];
+    // leftNoteY = llpython[2];
+    hasLeftNoteTarget = false;
+    leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
+    if (leftLimelightDetector.length > 0) {
+      hasLeftNoteTarget = true;
+      leftNoteX = leftLimelightDetector[0].tx_pixels;
+      leftNoteY = leftLimelightDetector[0].ty_pixels;
+    }
+
+    SmartDashboard.putNumber("TX:", leftNoteX);
+    SmartDashboard.putNumber("TY", leftNoteY);
   }
 
-  public double getLeftConeX() {
-    return leftConeX;
+  public double getLeftNoteX() {
+    return leftNoteX;
   }
 
-  public double getLeftConeY() {
-    return leftConeY;
+  public double getLeftNoteY() {
+    return leftNoteY;
   }
 
-  public boolean hasLeftConeTarget() {
-    return hasLeftConeTarget;
+  public boolean hasLeftNoteTarget() {
+    return hasLeftNoteTarget;
   }
 
   public String autoLeftOrRight() {
-    if (leftConeX > 300) {
+    if (leftNoteX > 300) {
       return "NoteRight";
     } else {
       return "NoteStraight";

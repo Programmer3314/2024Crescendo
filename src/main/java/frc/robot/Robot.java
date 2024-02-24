@@ -21,8 +21,8 @@ public class Robot extends TimedRobot {
 
   // TODO: GLOBAL TODOs...
   // TODO: Control Documentation
-  // TODO: Add Elevator Up/Down, Belt Up/Down to diagnostics
-  // TODO: Tune up Elevator (speed up)
+  // TODO: Add Elevator Up/Down, Belt Up/Down to diagnostics (needs testing)
+  // TODO: Tune up Elevator (speed up) (done)
   // TODO: Chase with Intake (controler button)
   // TODO: Shoot button to throw not shoot. (controller button)
   // TODO: Climb only (controller button)
@@ -32,7 +32,8 @@ public class Robot extends TimedRobot {
   // TODO: Mustang Auto
   // TODO: Cleanup unused SHuffleboard output, remove unused fields from screen, title screens.
   // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom draw and get rid of all useless stuff.
-  
+  // TODO: Spares
+  // TODO: Run Belt In DropIntake
 
 
   @Override
