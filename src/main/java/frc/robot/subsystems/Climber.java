@@ -35,8 +35,8 @@ public class Climber extends SubsystemBase {
 
     pigeon = new Pigeon2(1, "CANIVORE");
 
-    leftCanCoder = new CANcoder(1, "CANIVORE");
-    rightCanCoder = new CANcoder(2, "CANIVORE");
+    leftCanCoder = new CANcoder(7, "CANIVORE");
+    rightCanCoder = new CANcoder(8, "CANIVORE");
 
     climbMotor = new TalonFX(18, "CANIVORE");
   }

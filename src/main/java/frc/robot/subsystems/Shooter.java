@@ -330,6 +330,8 @@ public class Shooter extends SubsystemBase {
         stopShooterMotors();
         stopIntake();
         setRunDiagnosticFlag(false);
+        stopElevatorBelt();
+        stopElevator();
 
         setShootFlag(false);
         setAimFlag(false);

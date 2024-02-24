@@ -23,8 +23,10 @@ public class Navigation extends SubsystemBase {
   private double leftConeX;
   private double leftConeY;
   private LimelightTarget_Detector[] leftLimelightDetector;
-  private String limelightName = "limelight-right";
-  private double llrHeartBeat = 0;
+  private String limelightFrontName = "limelight-front";
+  private String limelightBackUpName = "limelight-backup";
+
+  private double llHeartBeat = 0;
   // private ArrayList<Double> xVelocity = new ArrayList<Double>();
   // private ArrayList<Double> yVelocity = new ArrayList<Double>();
   // private ArrayList<Double> angVelocity = new ArrayList<Double>();
@@ -37,19 +39,45 @@ public class Navigation extends SubsystemBase {
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
-    LimelightHelpers.setPipelineIndex("limelight-left", 1);
+    LimelightHelpers.setPipelineIndex("limelight-bd", 0);
+    LimelightHelpers.setPipelineIndex("limelight-backup", 0);
   }
 
   @Override
   public void periodic() {
     Pose2d pose = rc.drivetrain.getState().Pose;
     currentPose = pose;
-    if (true) {
-      var lastResult = LimelightHelpers.getLatestResults(limelightName).targetingResults;
-      SmartDashboard.putNumber("LLR Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
 
-      if (lastResult.timestamp_LIMELIGHT_publish != llrHeartBeat) {
-        llrHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+    if (true) {
+      var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
+      SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
+
+      if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
+        llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+
+        if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
+          Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+          SmartDashboard.putString("llPose", llPose.toString());
+          double margin = pose.minus(llPose).getTranslation().getNorm();
+          if (visionUpdate < 50
+              || margin < .25
+              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
+            visionUpdate++;
+          }
+        }
+      }
+
+      rc.field.setRobotPose(pose);
+      SmartDashboard.putString("MMpose", pose.toString());
+    }
+
+    if (true) {
+      var lastResult = LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
+      SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
+
+      if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
+        llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
         if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
@@ -113,49 +141,49 @@ public class Navigation extends SubsystemBase {
   }
 
   // public double getPredictedDistanceToSpeaker() {
-  //   Pose2d currentPose = predictedPose;
-  //   Translation2d target = MMField.currentSpeakerPose().getTranslation();
-  //   double distance = currentPose.getTranslation().minus(target).getNorm();
-  //   return distance;
+  // Pose2d currentPose = predictedPose;
+  // Translation2d target = MMField.currentSpeakerPose().getTranslation();
+  // double distance = currentPose.getTranslation().minus(target).getNorm();
+  // return distance;
   // }
 
   // public void updatePredictedPosition(double x, double y, double r) {
-  //   xVelocity.add(x);
-  //   yVelocity.add(y);
-  //   angVelocity.add(r);
-  //   limitArrayLists();
-  //   syncPredictedPosition();
+  // xVelocity.add(x);
+  // yVelocity.add(y);
+  // angVelocity.add(r);
+  // limitArrayLists();
+  // syncPredictedPosition();
   // }
 
   // public void syncPredictedPosition() {
-  //   double xVelocitySum = 0;
-  //   double yVelocitySum = 0;
-  //   double angVelocitySum = 0;
-  //   for (int i = 0; i < xVelocity.size(); i++) {
-  //     xVelocitySum += xVelocity.get(i);
-  //   }
-  //   for (int i = 0; i < yVelocity.size(); i++) {
-  //     yVelocitySum += yVelocity.get(i);
-  //   }
-  //   for (int i = 0; i < angVelocity.size(); i++) {
-  //     angVelocitySum += angVelocity.get(i);
-  //   }
-  //   double averageX = xVelocitySum / xVelocity.size();
-  //   double averageY = yVelocitySum / yVelocity.size();
-  //   double averageAng = angVelocitySum / angVelocity.size();
+  // double xVelocitySum = 0;
+  // double yVelocitySum = 0;
+  // double angVelocitySum = 0;
+  // for (int i = 0; i < xVelocity.size(); i++) {
+  // xVelocitySum += xVelocity.get(i);
+  // }
+  // for (int i = 0; i < yVelocity.size(); i++) {
+  // yVelocitySum += yVelocity.get(i);
+  // }
+  // for (int i = 0; i < angVelocity.size(); i++) {
+  // angVelocitySum += angVelocity.get(i);
+  // }
+  // double averageX = xVelocitySum / xVelocity.size();
+  // double averageY = yVelocitySum / yVelocity.size();
+  // double averageAng = angVelocitySum / angVelocity.size();
 
-  //   predictedPose = currentPose.plus(new Transform2d())
+  // predictedPose = currentPose.plus(new Transform2d())
   // }
 
   // public void limitArrayLists() {
-  //   if (xVelocity.size() > predictionCycles) {
-  //     xVelocity.remove(xVelocity.size() - 1);
-  //   }
-  //   if (yVelocity.size() > predictionCycles) {
-  //     yVelocity.remove(yVelocity.size() - 1);
-  //   }
-  //   if (angVelocity.size() > predictionCycles) {
-  //     angVelocity.remove(angVelocity.size() - 1);
-  //   }
+  // if (xVelocity.size() > predictionCycles) {
+  // xVelocity.remove(xVelocity.size() - 1);
+  // }
+  // if (yVelocity.size() > predictionCycles) {
+  // yVelocity.remove(yVelocity.size() - 1);
+  // }
+  // if (angVelocity.size() > predictionCycles) {
+  // angVelocity.remove(angVelocity.size() - 1);
+  // }
   // }
 }
