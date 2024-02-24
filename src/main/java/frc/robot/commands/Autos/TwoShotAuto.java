@@ -30,6 +30,7 @@ public class TwoShotAuto extends MMDeferredCommand<SequentialCommandGroup> {
   @Override
   public void initialize() {
     cmd = new SequentialCommandGroup();
+    // TODO: HIGH PRIORITY Fix Pipelines
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 1),

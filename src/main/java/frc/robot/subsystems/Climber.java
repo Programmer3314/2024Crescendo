@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -33,12 +34,15 @@ public class Climber extends SubsystemBase {
   public Climber(RobotContainer rc) {
     this.rc = rc;
 
+    // TODO: Access the pidgeon via rc.drivetrain.getpidgeon()
     pigeon = new Pigeon2(1, "CANIVORE");
 
     leftCanCoder = new CANcoder(7, "CANIVORE");
     rightCanCoder = new CANcoder(8, "CANIVORE");
 
     climbMotor = new TalonFX(18, "CANIVORE");
+
+    // TODO: configs...
   }
 
   @Override
@@ -47,8 +51,6 @@ public class Climber extends SubsystemBase {
     // configCanCoders()
 
   }
-
-  
 
   private class ClimbStateMachine extends MMStateMachine {
 
@@ -63,10 +65,9 @@ public class Climber extends SubsystemBase {
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
+
+
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
-
-
-
       @Override
       public MMStateMachineState calcNextState() {
         return this;
@@ -76,8 +77,8 @@ public class Climber extends SubsystemBase {
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
+
     MMStateMachineState Align = new MMStateMachineState("Align") {
-
       @Override
       public MMStateMachineState calcNextState() {
         return this;
@@ -87,8 +88,8 @@ public class Climber extends SubsystemBase {
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
-    MMStateMachineState Climb = new MMStateMachineState("Climb") {
 
+    MMStateMachineState Climb = new MMStateMachineState("Climb") {
       @Override
       public MMStateMachineState calcNextState() {
         return this;
@@ -118,6 +119,8 @@ public class Climber extends SubsystemBase {
 
   public void configClimbMotor() {
 
+    // TODO: HIGH PRIORITY This motor can't be PID controlled due to Ratchet = It can't reverse.
+    // TODO: Very Low Current limit. This motor can only go "forward", we need to get control of which whay that is.
     double cruiseVelocity = 4; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
     double timeToReachMaxAcceleration = .2; // seconds
@@ -137,6 +140,7 @@ public class Climber extends SubsystemBase {
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
     TalonFXConfiguration climbConfig = new TalonFXConfiguration();
+    
     climbConfig.CurrentLimits.SupplyCurrentLimit = 4;
     climbConfig.MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);

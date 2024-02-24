@@ -19,7 +19,18 @@ public class Robot extends TimedRobot {
 
   public static DriverStation.Alliance alliance;
 
-
+  // TODO: GLOBAL TODOs...
+  // TODO: Control Documentation
+  // TODO: Add Elevator Up/Down, Belt Up/Down to diagnostics
+  // TODO: Tune up Elevator (speed up)
+  // TODO: Chase with Intake (controler button)
+  // TODO: Shoot button to throw not shoot. (controller button)
+  // TODO: Climb only (controller button)
+  // TODO: Climb with Trap - on hold (controller button)
+  // TODO: Clean up test autos vs. competition autos.
+  // TODO: top 3 Autos for competition
+  // TODO: Mustang Auto
+  
   @Override
   public void robotInit() {
 

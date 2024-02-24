@@ -15,6 +15,7 @@ public class StandardAutoInit extends Command {
   int pipeLineFront = 0;
   int pipeLineLeft = 1;
 
+  // TODO: HIGH PRIORITY Upgrade to 3 cameras and Fix names. 
   public StandardAutoInit(RobotContainer rc, Pose2d initialPose) {
     this.rc = rc;
     this.initialPose = initialPose;
