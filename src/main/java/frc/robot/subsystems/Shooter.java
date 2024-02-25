@@ -137,6 +137,8 @@ public class Shooter extends SubsystemBase {
   double intakeVelIn = 30;
   double intakeVelOut = -20;
 
+  // TODO: make 3 positions for the elevator down, amp, trap...
+  // and use trap in the trap routine. 
   double elevatorDownPosition = .1;
   double elevatorUpPosition = 65.0;//47.2; 
 
@@ -267,7 +269,8 @@ public class Shooter extends SubsystemBase {
       abortIntakeCounter++;
     }
 
-    // if (!hasHomedElevator) {TODO: Uncomment
+    // TODO: Test this...
+    // if (!hasHomedElevator) {
     // runElevatorToHome();
     // if (elevatorHomeSensor.get()) {
     // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
@@ -278,15 +281,16 @@ public class Shooter extends SubsystemBase {
 
     ssm.update();
 
+    // TODO: Check this for Red. 
     turnPidController.initialize(targetAngleSpeaker);
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
 
+    // TODO: This might not work for red. We may need to 
     turnWallPidController.initialize(180);
     WallTurnRate = turnWallPidController.execute(currentPose.getRotation());
     if (runWallAim) {
       aimToWall();
     }
-
     else if (runAim) {
       aimToSpeaker();
     }
@@ -527,7 +531,6 @@ public class Shooter extends SubsystemBase {
         }
         if (runIntake) {
           return ElevatorDownAbort;
-
         }
         return this;
       }
@@ -564,8 +567,6 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-
-
 
     MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {
 
@@ -1480,7 +1481,8 @@ public class Shooter extends SubsystemBase {
         .withKG(0)
         .withKI(0)
         .withKD(0);
-    genericConfig.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
+    genericConfig.MotorOutput
+        .withNeutralMode(NeutralModeValue.Brake);
 
     MMConfigure.configureDevice(index1, genericConfig);
 
