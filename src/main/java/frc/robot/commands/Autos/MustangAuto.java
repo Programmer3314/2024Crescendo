@@ -21,7 +21,7 @@ public class MustangAuto extends MMDeferredCommand<SequentialCommandGroup> {
   public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(new StandardAutoInit(rc, MMField.currentWooferPose())
-        .setPipeLine(0, 1));
+        .setPipeLine(0, 0, 0));
     cmd.addCommands(new DriveForwardDist(rc, 0.34, -0.5));
     if (RobotContainer.noteChooser0.getSelected() != null) {
       cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser0.getSelected(),

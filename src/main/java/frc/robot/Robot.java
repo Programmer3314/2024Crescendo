@@ -30,10 +30,11 @@ public class Robot extends TimedRobot {
   // TODO: Clean up test autos vs. competition autos.
   // TODO: top 3 Autos for competition
   // TODO: Mustang Auto
-  // TODO: Cleanup unused SHuffleboard output, remove unused fields from screen, title screens.
+  // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen, title screens.
   // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom draw and get rid of all useless stuff.
   // TODO: Spares
-  // TODO: Run Belt In DropIntake
+  // TODO: Check Run Belt In DropIntake
+  // TODO: Check Shooter consitancy we may have found a dead zone
 
 
   @Override

@@ -70,6 +70,12 @@ public class RobotContainer {
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
 
+  public MMController oppController = new MMController(1)
+      .setDeadzone(.1 / 2)
+      .setScaleXLeft(-MaxSpeed)
+      .setScaleYLeft(-MaxSpeed)
+      .setScaleXRight(-MaxAngularRate);
+
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -108,26 +114,13 @@ public class RobotContainer {
     //-Climb / StopClimb
     //-RequestAmp(shoot/ eject are the same thing)
 
-    // TODO: review the following two controls...
-    // This is why the buttons need to be held.
-    // I believe the idea was to allow the driver to change their mind.
     driverController.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
-
     driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
-    // joystick.b().onTrue(new
-    // InstantCommand(()->shooterSubsystem.setReverseIntakeFlag(true)));
     driverController.a().whileTrue(new Aim(this));
     driverController.b().whileTrue(new ChaseAndIntake(this));
-
-    // joystick.x().onTrue(new
-    // InstantCommand(()->shooterSubsystem.setRunDiagnostic(true)));
-    // joystick.y().whileTrue(new ChaseCone(this));
-
-    //driverController.leftTrigger().onTrue(new GoShoot(this));
-
-    driverController.leftTrigger().whileTrue(new InstantCommand(()-> shooterSubsystem.runElevatorBeltUpSlow()));
+    driverController.leftTrigger().onTrue(new GoShoot(this));
 
     // TODO: These two resets seem to reset in opposite directions.
     // Remember last year having to turn around to reset...
@@ -136,44 +129,22 @@ public class RobotContainer {
     driverController.button(8)
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
-    driverController.button(7).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-    // driverController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeDown()))
-    //     .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeUp()));
     driverController.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
     driverController.povUp().whileTrue(new AimToWall(this));
 
-    // Set<Subsystem> set = new HashSet<Subsystem>();
-    // set.add(drivetrain);
-    // joystick.x().onTrue(new DeferredCommand(() -> runDeferredTest(), set));
-    // SmartDashboard.putData("Run Deferred Test",
-    // new DeferredCommand(() -> runDeferredTest(), set));
-
+    // driverController.leftTrigger().whileTrue(new InstantCommand(()-> shooterSubsystem.runElevatorBeltUpSlow()));
     // joystick.x().whileTrue(new PathFindTo(this,
     // MMField::getBlueWooferApproachPose));
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
 
-    // joystick.y().whileTrue(new InstantCommand(
-    // () -> claw.armExtensionRot(30)));
-    // joystick.x().whileTrue(new InstantCommand(
-    // () -> claw.armExtensionRot(0)));
+    oppController.a().onTrue(new InstantCommand(() -> climber.setClimbFlag(true)));
+    oppController.a().onTrue(new InstantCommand(() -> climber.setTrapFlag(true)));
+    oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
 
-    // joystick.a().whileTrue(new InstantCommand(() -> claw.armRotationRot(0)));
-    // joystick.b().whileTrue(new InstantCommand(() -> claw.armRotationRot(-0.2)));
-    // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    // joystick.b().whileTrue(drivetrain
-    // .applyRequest(() -> point.withModuleDirection(new
-    // Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
-    // reset the field-centric heading on left bumper press
-
-    // joystick.rightBumper().onTrue(new InstantCommand(
-    // () -> claw.openClaw()));
-    // joystick.rightTrigger().onTrue(new InstantCommand(
-    // () -> claw.closeClaw()));
-    // joystick.leftTrigger().whileTrue(new ChaseCone(this));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -28,6 +29,16 @@ public class Climber extends SubsystemBase {
   CANcoder rightCanCoder;
   Pigeon2 pigeon;
   TalonFX climbMotor;
+
+  private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
+  double climbDownPosition;
+  double climbUpPosition;
+
+  double climbPositionMargin = 0;
+
+  boolean runClimb;
+  boolean runTrap;
+
   // Should the pigeon be owned in the navigation or here
   // it's only used in climber(for now), so this makes sense(for now)
 
@@ -60,7 +71,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        return this;
+        return Idle;
       };
 
       @Override
@@ -68,10 +79,22 @@ public class Climber extends SubsystemBase {
       }
     };
 
-
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setClimbFlag(false);
+        setTrapFlag(false);
+        setClimbDown();
+      }
+
+      @Override
       public MMStateMachineState calcNextState() {
+        if (runClimb) {
+          return Align;
+        }
+        if(runTrap){
+          return Align;
+        }
         return this;
       };
 
@@ -82,17 +105,30 @@ public class Climber extends SubsystemBase {
 
     MMStateMachineState Align = new MMStateMachineState("Align") {
       @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // align rotation and put climbers up
+      }
+
+      @Override
       public MMStateMachineState calcNextState() {
+
         return this;
       };
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
+        //Drive forward into chain or seprate state for drive into the chain
       }
     };
 
     MMStateMachineState Climb = new MMStateMachineState("Climb") {
       @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        //set climber down once we are in position/hit the chain
+        //Check if the elevator must go up to climb not trap
+      }
+
+      @Override
       public MMStateMachineState calcNextState() {
         return this;
       };
@@ -101,6 +137,41 @@ public class Climber extends SubsystemBase {
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
+
+    MMStateMachineState trapClimb = new MMStateMachineState("Trap Climb") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        //set climber down once we are in position/hit the chain
+        //After some amount of rotations: set elevator to trap position 
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+  }
+
+  public void setClimbDown() {
+    climbMotor.setControl(climbMotionMagicVoltage.withSlot(0).withPosition(climbDownPosition));
+  }
+
+  public void setClimbUp() {
+    climbMotor.setControl(climbMotionMagicVoltage.withSlot(0).withPosition(climbUpPosition));
+  }
+
+  public Climber setClimbFlag(boolean run) {
+    runClimb = run;
+    return this;
+  }
+
+  public Climber setTrapFlag(boolean run) {
+    runTrap = run;
+    return this;
   }
 
   public void configCanCoders() {
@@ -121,7 +192,6 @@ public class Climber extends SubsystemBase {
 
   public void configClimbMotor() {
 
-    
     double cruiseVelocity = 10; // Sensor revolutions/second
     double timeToReachCruiseVelocity = .4; // seconds
     double timeToReachMaxAcceleration = .2; // seconds
@@ -141,8 +211,8 @@ public class Climber extends SubsystemBase {
     double feedForwardVoltage = (maxSupplyVoltage - staticFrictionVoltage) / maxSensorVelocity; // Full Voltage/Max
                                                                                                 // Sensor Velocity
     TalonFXConfiguration climbConfig = new TalonFXConfiguration();
-    
-    //climbConfig.CurrentLimits.SupplyCurrentLimit = 40;
+
+    // climbConfig.CurrentLimits.SupplyCurrentLimit = 40;
     climbConfig.MotorOutput
         .withNeutralMode(NeutralModeValue.Brake);
     climbConfig.MotionMagic

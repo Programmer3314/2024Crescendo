@@ -13,25 +13,27 @@ public class StandardAutoInit extends Command {
   RobotContainer rc;
   Pose2d initialPose;
   int pipeLineFront = 0;
-  int pipeLineLeft = 1;
+  int pipeLinebd = 0;
+  int pipeLineBackUp = 0;
 
-  // TODO: HIGH PRIORITY Upgrade to 3 cameras and Fix names. 
   public StandardAutoInit(RobotContainer rc, Pose2d initialPose) {
     this.rc = rc;
     this.initialPose = initialPose;
   }
 
-  public StandardAutoInit setPipeLine(int pipeLineFront, int pipeLineLeft) {
+  public StandardAutoInit setPipeLine(int pipeLineFront, int pipeLineBackUp, int pipeLinebd) {
     this.pipeLineFront = pipeLineFront;
-    this.pipeLineLeft = pipeLineLeft;
+    this.pipeLinebd = pipeLinebd;
+    this.pipeLineBackUp = pipeLineBackUp;
     return this;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    LimelightHelpers.setPipelineIndex("limelight-left", pipeLineLeft);
     LimelightHelpers.setPipelineIndex("limelight-front", pipeLineFront);
+    LimelightHelpers.setPipelineIndex("limelight-bd", pipeLinebd);
+    LimelightHelpers.setPipelineIndex("limelight-backup", pipeLineBackUp);
     rc.drivetrain.seedFieldRelative(initialPose);
   }
 

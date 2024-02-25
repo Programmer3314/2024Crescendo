@@ -33,7 +33,7 @@ public class TwoShotAuto extends MMDeferredCommand<SequentialCommandGroup> {
     // TODO: HIGH PRIORITY Fix Pipelines
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
-            .setPipeLine(0, 1),
+            .setPipeLine(0, 0, 0),
         // turn on shoot flag
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),

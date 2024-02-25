@@ -218,7 +218,7 @@ public class Shooter extends SubsystemBase {
   // ElevatorToElevatorIndex{
   // 1) Move elevator to home position
   // 2) Run index reverse(slow)
-  // 3)Run intake reverse(slow)
+  // 3) Run intake reverse(slow)
   // 4) Run elevator belt(slow)
   // DONE IF: beam is broken && elevatorDeliver -> MoveElevatorToPosition
   // DONE IF: intake flag--> ElevatorToIndex
@@ -350,7 +350,6 @@ public class Shooter extends SubsystemBase {
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
-        // TODO make setter and method for flags
         setAbortIntakeFlag(false);
         // abortIntakeCounter=0;
         idleCounter++;
@@ -368,13 +367,12 @@ public class Shooter extends SubsystemBase {
       }
     };
 
-    MMStateMachineState DropIntake = new MMStateMachineState("Intake") {
+    MMStateMachineState DropIntake = new MMStateMachineState("Drop Intake") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
-        // runIndexIn();
       }
 
       @Override
@@ -391,6 +389,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
+    
     MMStateMachineState intakeBroken = new MMStateMachineState("Intake Broken") {
 
       @Override

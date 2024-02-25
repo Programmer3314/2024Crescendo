@@ -25,7 +25,7 @@ public class AutoSamplerShootSmove extends SequentialCommandGroup {
         // new FindShoot(rc),
         // new NotAim(rc));
         new StandardAutoInit(rc, MMField.getBlueWooferPose())
-            .setPipeLine(0, 1),
+            .setPipeLine(0, 0, 0),
         new FollowPathFile(rc, "Exit"),
         // new FollowPathFile(rc, rc.navigation::autoLeftOrRight),
         new ChaseNote(rc),
