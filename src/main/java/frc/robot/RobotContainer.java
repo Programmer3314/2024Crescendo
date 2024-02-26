@@ -56,17 +56,22 @@ public class RobotContainer {
       new Pose2d(1.43, 5.5, Rotation2d.fromDegrees(180)),
       new Pose2d(0.79, 4.37, Rotation2d.fromDegrees(120))
   };
+
+  // TODO: Replace with Live Auto Notes
   private Pose2d[] notePoseList = {
       new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
       new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(270)),
       new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
       new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
   };
+
+  // TOOD: Replace with Live Shoot positions (3 woofer locations, and  left & right wing locations)
   private Pose2d[] shootPoseList = {
       new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
       MMField.getBlueWooferApproachPose(),
   };
 
+  // Controllers
   public MMController driverController = new MMController(0)
       .setDeadzone(.1 / 2)
       .setScaleXLeft(-MaxSpeed)
@@ -84,8 +89,9 @@ public class RobotContainer {
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   Telemetry logger = new Telemetry(MaxSpeed);
-  public Shooter shooterSubsystem = new Shooter(this);
 
+  // Subsystems
+  public Shooter shooterSubsystem = new Shooter(this);
   public Navigation navigation = new Navigation(this);
   public Climber climber = new Climber(this);
 
@@ -125,8 +131,6 @@ public class RobotContainer {
     driverController.b().whileTrue(new ChaseAndIntake(this));
     driverController.leftTrigger().onTrue(new GoShoot(this));
 
-    // TODO: These two resets seem to reset in opposite directions.
-    // Remember last year having to turn around to reset...
     driverController.leftBumper().onTrue(
         new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     driverController.button(8)

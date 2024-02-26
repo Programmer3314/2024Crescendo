@@ -7,10 +7,10 @@ DRIVER CONTROLLER
     RT: Shoot
     A: Aim
     B: Chase Note
-    Y: 
+    Y: Go Amp
     X: Send to Elevator
     Down Dpad: Reset State Machine
-
+    Up Dpad: Aim to Wall
 OPP CONTROLLER
     A: Simple Climb
     B: Trap Climb

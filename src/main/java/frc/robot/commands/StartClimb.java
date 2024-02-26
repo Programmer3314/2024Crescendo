@@ -18,8 +18,8 @@ public class StartClimb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rc.climber.setClimbFlag(true);
     idleCounter = rc.climber.getIdleCounter();
+    rc.climber.setClimbFlag(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -29,6 +29,7 @@ public class StartClimb extends Command {
   }
 
   // Called once the command ends or is interrupted.
+  // TODO: If Interupted, set on AbortClimb flag. 
   @Override
   public void end(boolean interrupted) {}
 
