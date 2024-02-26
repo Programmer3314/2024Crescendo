@@ -30,6 +30,9 @@ import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseNote;
+import frc.robot.commands.FullClimb;
+import frc.robot.commands.GoAmp;
+import frc.robot.commands.StartClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
@@ -129,7 +132,7 @@ public class RobotContainer {
     driverController.button(8)
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
-    driverController.y().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorUp()));
+    driverController.y().whileTrue(new GoAmp(this));
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
     driverController.povUp().whileTrue(new AimToWall(this));
@@ -140,11 +143,11 @@ public class RobotContainer {
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
 
-    oppController.a().onTrue(new InstantCommand(() -> climber.setClimbFlag(true)));
-    oppController.a().onTrue(new InstantCommand(() -> climber.setTrapFlag(true)));
+    oppController.a().onTrue(new StartClimb(this));
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-
-
+    oppController.povUp().whileTrue(new FullClimb(this,MMField.getBlueStageFieldPose()));
+    oppController.povLeft().whileTrue(new FullClimb(this,MMField.getBlueStageLeftPose()));
+    oppController.povRight().whileTrue(new FullClimb(this,MMField.getBlueStageRightPose()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

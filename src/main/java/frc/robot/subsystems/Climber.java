@@ -7,20 +7,24 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
+import frc.robot.subsystems.Shooter.ShooterStateMachine;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
@@ -29,22 +33,32 @@ public class Climber extends SubsystemBase {
   CANcoder rightCanCoder;
   Pigeon2 pigeon;
   TalonFX climbMotor;
+   private ClimbStateMachine csm = new ClimbStateMachine();
+  SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
   private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
-  double climbDownPosition;
-  double climbUpPosition;
-
+  double climbDownPosition = 0.05;
+  double climbUpPosition = .28;
+  double climbEngaged = .27;
+  double climbSlowPos = .15;
+  double elevatorSafety = .20;
   double climbPositionMargin = 0;
+
+  int idleCounter = 0;
 
   boolean runClimb;
   boolean runTrap;
+
+  MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
+  MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
 
   // Should the pigeon be owned in the navigation or here
   // it's only used in climber(for now), so this makes sense(for now)
 
   public Climber(RobotContainer rc) {
     this.rc = rc;
-
+    csm = new ClimbStateMachine();
+    csm.setInitial(csm.Start);
     // TODO: Access the pidgeon via rc.drivetrain.getpidgeon()
     pigeon = new Pigeon2(1, "CANIVORE");
 
@@ -60,7 +74,9 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-
+    csm.update();
+    SmartDashboard.putString("ClimbState", csm.currentState.getName());
+    SmartDashboard.putNumber("Idle Counter", idleCounter);
     // configCanCoders()
 
   }
@@ -84,16 +100,16 @@ public class Climber extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setClimbFlag(false);
         setTrapFlag(false);
-        setClimbDown();
+        idleCounter++;
       }
 
       @Override
       public MMStateMachineState calcNextState() {
         if (runClimb) {
-          return Align;
+          return ClawsUp;
         }
         if(runTrap){
-          return Align;
+          return ClawsUp;
         }
         return this;
       };
@@ -103,33 +119,74 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState Align = new MMStateMachineState("Align") {
+ MMStateMachineState ClawsUp = new MMStateMachineState("ClawsUp"){
+
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // align rotation and put climbers up
+        runClimbSlow();
+        //
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-
+        if(leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition 
+        && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
+        ){
+          return Engage;
+        }
         return this;
+      
       };
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
-        //Drive forward into chain or seprate state for drive into the chain
+       setClimbPos();
+      }
+    };
+
+    MMStateMachineState Engage = new MMStateMachineState("Engage"){
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        rc.drivetrain.setControl(drive
+        .withVelocityX(-.25)
+        .withVelocityY(0)
+        .withRotationalRate(0));
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if(leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged 
+        || rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+        ){
+          return Climb;
+        }
+        return this;
+      
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+        rc.drivetrain.setControl(drive
+        .withVelocityX(0)
+        .withVelocityY(0)
+        .withRotationalRate(0));
       }
     };
 
     MMStateMachineState Climb = new MMStateMachineState("Climb") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        //set climber down once we are in position/hit the chain
-        //Check if the elevator must go up to climb not trap
+        runClimbSlow();
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+        if(leftCanCoder.getAbsolutePosition().getValue() <= elevatorSafety 
+        || rightCanCoder.getAbsolutePosition().getValue() <= elevatorSafety
+        ){
+          return RaiseElevator;
+        }
         return this;
       };
 
@@ -138,15 +195,21 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState trapClimb = new MMStateMachineState("Trap Climb") {
+
+    MMStateMachineState RaiseElevator = new MMStateMachineState("Raise Elevator ") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        //set climber down once we are in position/hit the chain
-        //After some amount of rotations: set elevator to trap position 
+        rc.shooterSubsystem.setElevatorUpTrap();
+        runClimbFast();
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+        if(leftCanCoder.getAbsolutePosition().getValue() <= climbSlowPos 
+        || rightCanCoder.getAbsolutePosition().getValue() <= climbSlowPos
+        ){
+          return SlowDown;
+        }
         return this;
       };
 
@@ -154,14 +217,100 @@ public class Climber extends SubsystemBase {
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
+
+    MMStateMachineState SlowDown = new MMStateMachineState("SlowDown"){
+       @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        rc.shooterSubsystem.setElevatorUpTrap();
+        runClimbSlow();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if(leftCanCoder.getAbsolutePosition().getValue() <= climbDownPosition 
+        || rightCanCoder.getAbsolutePosition().getValue() <= climbDownPosition
+        ){
+          return CheckElevator;
+        }
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+        setClimbPos();
+      }
+    };
+    MMStateMachineState CheckElevator = new MMStateMachineState("Check Elevator") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (rc.shooterSubsystem.isInMargin(
+        rc.shooterSubsystem.getElevatorPosition(), 
+        rc.shooterSubsystem.elevatorTrapPosition, 
+        rc.shooterSubsystem.elevatorPositionMargin)){
+          return ElevatorPassNoteAbove;
+        }
+        return this;
+      };
+      
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+
+    MMStateMachineState ElevatorPassNoteAbove = new MMStateMachineState("ElevatorPassNoteAbove") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        rc.shooterSubsystem.runElevatorBeltUpSlow();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (rc.shooterSubsystem.elevatorBreakBeam.get()) {
+          return ElevatorShoot;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        rc.shooterSubsystem.runElevatorBeltShoot();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (timeInState >= .5) {
+          return Idle;
+        }
+        return this;
+      }
+      @Override
+      public void transitionFrom(MMStateMachineState nextState){
+        rc.shooterSubsystem.stopElevatorBelt();
+      }
+    };
+
   }
 
-  public void setClimbDown() {
-    climbMotor.setControl(climbMotionMagicVoltage.withSlot(0).withPosition(climbDownPosition));
+  public void runClimbNeg() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(-20));
   }
 
-  public void setClimbUp() {
-    climbMotor.setControl(climbMotionMagicVoltage.withSlot(0).withPosition(climbUpPosition));
+  public void runClimbSlow() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(20));
+  }
+  public void runClimbFast(){
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(40));
+  }
+  public void stopClimb() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(0));
   }
 
   public Climber setClimbFlag(boolean run) {
@@ -169,11 +318,18 @@ public class Climber extends SubsystemBase {
     return this;
   }
 
+  public void setClimbPos(){
+    climbMotor.setControl(climbMagicVol.withPosition(climbMotor.getPosition().getValue()));
+  }
+
   public Climber setTrapFlag(boolean run) {
     runTrap = run;
     return this;
   }
 
+  public int getIdleCounter(){
+    return idleCounter;
+  }
   public void configCanCoders() {
     CANcoderConfiguration rightCanConfig = new CANcoderConfiguration();
     rightCanConfig.MagnetSensor
@@ -193,8 +349,8 @@ public class Climber extends SubsystemBase {
   public void configClimbMotor() {
 
     double cruiseVelocity = 10; // Sensor revolutions/second
-    double timeToReachCruiseVelocity = .4; // seconds
-    double timeToReachMaxAcceleration = .2; // seconds
+    double timeToReachCruiseVelocity = .125; // seconds
+    double timeToReachMaxAcceleration = .05; // seconds
 
     double maxSupplyVoltage = 12; // Max supply
     double staticFrictionVoltage = 1; //
@@ -225,7 +381,7 @@ public class Climber extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(0) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(.12)
+        .withKP(.3)
         .withKI(0)
         .withKD(0);
 

@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -131,14 +133,15 @@ public class Shooter extends SubsystemBase {
 
   double elevatorInPerRev = 5.125 / 30;
 
-  double intakeUpPos = intakeTop - .02;
+  double intakeUpPos = intakeTop - .005;
   double intakeDownPos = intakeTop - .78;
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
 
   double elevatorDownPosition = .1;
-  double elevatorUpPosition = 65.0;//47.2; 
+  double elevatorAmpPosition = 47.2;
+  double elevatorTrapPosition = 65.0;
 
   double ampUpPosition = 37.2;
 
@@ -196,9 +199,9 @@ public class Shooter extends SubsystemBase {
     configIntakeBeltMotor();
     configShooterMotors();
     configIndexMotors();
-    configElevatorMotors();
+    configElevatorMotor();
     ssm.setInitial(ssm.Start);
-    
+
     SmartDashboard.putData("Run Diagnostic",
         new InstantCommand(() -> this.setRunDiagnosticFlag(true)));
     SmartDashboard.putData("Run Belt Up Fast",
@@ -210,33 +213,6 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putData("Run Belt Down Slow",
         new InstantCommand(() -> this.runElevatorBeltDownSlow()));
   }
-
-  // prereq: flag to check elevatorIndex / elevatorDeliver, both triggered on
-  // button press
-  // --Indexed
-  // DONE IF: elevatorIndexFlag-> ElevatorToElevatorIndex
-  // ElevatorToElevatorIndex{
-  // 1) Move elevator to home position
-  // 2) Run index reverse(slow)
-  // 3) Run intake reverse(slow)
-  // 4) Run elevator belt(slow)
-  // DONE IF: beam is broken && elevatorDeliver -> MoveElevatorToPosition
-  // DONE IF: intake flag--> ElevatorToIndex
-  // }
-  // ElevatorToIndex{
-  // Run Elevator belt(slow)
-  // Run intake in
-  // }
-  // MoveElevatorToPosition{Run elevator up until we reach the position}
-  // PrepareToDeliver{
-  // 1) Run elevator belt up (slow)
-  // DONE IF: beam is not broken -> Deliver
-  // }
-  // Deliver{
-  // 1) Run elevator belt out until we reach a certain number of revolutions
-  // }
-  //
-  //
 
   @Override
   public void periodic() {
@@ -267,14 +243,16 @@ public class Shooter extends SubsystemBase {
       abortIntakeCounter++;
     }
 
-    // if (!hasHomedElevator) {TODO: Uncomment
-    // runElevatorToHome();
-    // if (elevatorHomeSensor.get()) {
-    // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
-    // elevatorMotor.setPosition(0);
-    // hasHomedElevator = true;
-    // }
-    // }
+    SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
+    //  if (!hasHomedElevator) {
+    //   runElevatorToHome();
+    //  }
+    //   if (!elevatorHomeSensor.get()) {
+    //     // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+    //     elevatorMotor.setPosition(0);
+    //     hasHomedElevator = true;
+    //   }
+    //}
 
     ssm.update();
 
@@ -325,6 +303,9 @@ public class Shooter extends SubsystemBase {
         }
         if (!intakeBreakBeam.get()) {
           return DropIntake;
+        }
+        if (!elevatorBreakBeam.get()){
+          return ElevatorIndexed;
         }
         return Idle;
       };
@@ -389,7 +370,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-    
+
     MMStateMachineState intakeBroken = new MMStateMachineState("Intake Broken") {
 
       @Override
@@ -433,7 +414,8 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (runElevatorIndex) {
+        if (runElevatorIndex && isInMargin(intakeRotateCanCoder.getAbsolutePosition().getValue(),
+            intakeUpPos, intakeRotationMargin)) {
           return ElevatorDown;
         }
         if (runShoot) {
@@ -494,8 +476,9 @@ public class Shooter extends SubsystemBase {
       }
     };
 
-        MMStateMachineState ElevatorPassNoteAbove2 = new MMStateMachineState("ElevatorPassNoteAbove2") {
+    MMStateMachineState ElevatorPassNoteAbove2 = new MMStateMachineState("ElevatorPassNoteAbove2") {
       double rev;
+
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         rev = elevatorBelt.getPosition().getValue();
@@ -504,14 +487,14 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (Math.abs(elevatorBelt.getPosition().getValue() - rev)>3) {
-          return ElevatorWaitForAction;
+        if (Math.abs(elevatorBelt.getPosition().getValue() - rev) > 4.5) {
+          return ElevatorIndexed;
         }
         return this;
       }
     };
 
-    MMStateMachineState ElevatorWaitForAction = new MMStateMachineState("ElevatorWaitForAction") {
+    MMStateMachineState ElevatorIndexed = new MMStateMachineState("Elevator Indexed") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setElevatorIndexFlag(false);
@@ -542,7 +525,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorUpPosition, elevatorPositionMargin)) {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin)) {
           return ElevatorPassNoteAbove;
         }
         return this;
@@ -564,8 +547,6 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-
-
 
     MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {
 
@@ -911,7 +892,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= diagnosticRunTime && diagnosticDesiredLeftShooterVel) {
-          return Idle;
+          return DiagnosticElevatorUp;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -964,7 +945,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void doState() {
-        diagnosticDesiredElevatorUp = isInMargin(elevatorMotor.getPosition().getValue(), elevatorUpPosition,
+        diagnosticDesiredElevatorUp = isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition,
             elevatorPositionMargin);
       }
 
@@ -1137,6 +1118,10 @@ public class Shooter extends SubsystemBase {
     return intakeBreakBeam.get();
   }
 
+  public double getElevatorPosition() {
+    return elevatorMotor.getPosition().getValue();
+  }
+
   public void runShooters(double leftMotorSpeed, double rightMotorSpeed) {
     runLeftMotor(leftMotorSpeed);
     runRightMotor(rightMotorSpeed);
@@ -1216,7 +1201,7 @@ public class Shooter extends SubsystemBase {
     if (runAim && !aim) {
       stopShooterMotors();
     }
-     if(aim){
+    if (aim) {
       setAimWallFlag(false);
     }
     runAim = aim;
@@ -1227,7 +1212,7 @@ public class Shooter extends SubsystemBase {
     if (runWallAim && !aim) {
       stopShooterMotors();
     }
-    if(aim){
+    if (aim) {
       setAimFlag(false);
     }
     runWallAim = aim;
@@ -1586,9 +1571,9 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(.5) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(320)
+        .withKP(330)
         .withKI(0)
-        .withKD(3);
+        .withKD(3.3);
     cfg.Feedback
         .withFeedbackRemoteSensorID(shooterRotateCanCoder.getDeviceID())
         .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
@@ -1597,7 +1582,7 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(shooterRotateMotor, cfg);
   }
 
-  private void configElevatorMotors() {
+  private void configElevatorMotor() {
     double cruiseVelocity = 80;
     double timeToReachCruiseVelocity = .125;
     double timeToReachMaxAcceleration = .05;
@@ -1621,7 +1606,7 @@ public class Shooter extends SubsystemBase {
         .withKS(0) // voltage to overcome static friction
         .withKV(feedForwardVoltage)
         .withKA(0) // "arbitrary" amount to provide crisp response
-        .withKG(0) // gravity can be used for elevator or arm
+        .withKG(.1) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
         .withKP(.4)
         .withKI(0)
@@ -1630,7 +1615,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setElevatorUp() {
-    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorUpPosition));
+    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorAmpPosition));
+  }
+
+  public void setElevatorUpTrap() {
+    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorTrapPosition));
   }
 
   public void setElevatorDown() {
