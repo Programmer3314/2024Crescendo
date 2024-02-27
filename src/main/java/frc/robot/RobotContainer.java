@@ -37,6 +37,7 @@ import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.badAuto;
+import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
@@ -186,7 +187,7 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto", new StageSideAuto(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
-    autoChooser.addOption("HorseShoeAuto", new FourNoteAuto(this));
+    autoChooser.addOption("HorseShoeAuto", new HorseShoe(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 

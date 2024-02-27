@@ -103,10 +103,11 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.shooterSubsystem.stopMotors();
 
+    // TODO: Turned off logging.
     // // Starts recording to data log
-    DataLogManager.start();
+    //DataLogManager.start();
     // // Record both DS control and joystick data
-    DriverStation.startDataLog(DataLogManager.getLog());
+    //DriverStation.startDataLog(DataLogManager.getLog());
     Navigation.visionUpdate = 0;
 
   }

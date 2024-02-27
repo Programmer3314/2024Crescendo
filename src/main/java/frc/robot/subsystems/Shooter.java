@@ -1393,8 +1393,10 @@ public class Shooter extends SubsystemBase {
 
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3556)
-        && isInMargin(targetAngleSpeaker.getDegrees(),
-            currentPose.getRotation().getDegrees(), 80);
+// TODO: URGENT!!! Fix bingo for both alliances. 
+        // && isInMargin(targetAngleSpeaker.getDegrees(),
+        //     currentPose.getRotation().getDegrees(), 80)
+        ;
     // SmartDashboard.putBoolean("yMargin", isInMargin(c.getY(),
     // MMField.blueSpeakerPose.getTranslation().getY(), .3556));
     // SmartDashboard.putBoolean("")
