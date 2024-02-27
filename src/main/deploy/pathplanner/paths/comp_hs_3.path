@@ -20,8 +20,8 @@
         "y": 4.185419462073272
       },
       "prevControl": {
-        "x": 1.6323281304881043,
-        "y": 4.875646531257285
+        "x": 1.8819847299801942,
+        "y": 4.846275166611156
       },
       "nextControl": null,
       "isLocked": false,
@@ -40,7 +40,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 147.0,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "HorseShoeCompetition",
