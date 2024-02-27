@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -18,19 +19,22 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
 
   public static DriverStation.Alliance alliance;
+  public static int resetDriverValue = 1;
 
   // TODO: GLOBAL TODOs...
   // TODO: Control Documentation
   // TODO: Chase with Intake (controler button) - speed up
   // TODO: Shoot button to throw not shoot. (controller button)
-  // TODO: Climb with Trap - on hold (controller button) - Add AbortClimb 
+  // TODO: Climb with Trap - on hold (controller button) - Add AbortClimb
   // TODO: Clean up test autos vs. competition autos.
   // TODO: top 3 Autos for competition
-  // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place, clear
-  // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen, title screens.
-  // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom draw and get rid of all useless stuff.
+  // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
+  // clear
+  // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
+  // title screens.
+  // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom
+  // draw and get rid of all useless stuff.
   // TODO: Spares
-
 
   @Override
   public void robotInit() {
@@ -91,6 +95,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    if (alliance != null) {
+      resetDriverValue = alliance.equals(Alliance.Red) ? -1 : 1;
+    }
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

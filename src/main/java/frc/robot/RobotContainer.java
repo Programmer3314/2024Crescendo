@@ -36,10 +36,10 @@ import frc.robot.commands.StartClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
-import frc.robot.commands.Autos.FourNoteAuto;
+import frc.robot.commands.Autos.badAuto;
+import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
-import frc.robot.commands.Autos.TwoShotAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -65,7 +65,8 @@ public class RobotContainer {
       new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
   };
 
-  // TOOD: Replace with Live Shoot positions (3 woofer locations, and  left & right wing locations)
+  // TOOD: Replace with Live Shoot positions (3 woofer locations, and left & right
+  // wing locations)
   private Pose2d[] shootPoseList = {
       new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
       MMField.getBlueWooferApproachPose(),
@@ -107,21 +108,21 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(() -> drive
-            .withVelocityX(driverController.getLeftYSmoothed())
-            .withVelocityY(driverController.getLeftXSmoothed())
+            .withVelocityX(driverController.getLeftYSmoothed() * Robot.resetDriverValue)
+            .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
 
-    //TODO: Low Priority Driver Controller Layout--operator role needed?
-    //Needs:
-    //-Shoot : RT
-    //-Eject
-    //-Intake
-    //-Aim
-    //-Reset State Machine
-    //-Reset Position
-    //-Aim
-    //-Climb / StopClimb
-    //-RequestAmp(shoot/ eject are the same thing)
+    // TODO: Low Priority Driver Controller Layout--operator role needed?
+    // Needs:
+    // -Shoot : RT
+    // -Eject
+    // -Intake
+    // -Aim
+    // -Reset State Machine
+    // -Reset Position
+    // -Aim
+    // -Climb / StopClimb
+    // -RequestAmp(shoot/ eject are the same thing)
 
     driverController.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
@@ -137,21 +138,26 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
     driverController.y().whileTrue(new GoAmp(this));
+
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-    driverController.povDown().onTrue(new InstantCommand(() -> shooterSubsystem.resetStateMachine()));
+    driverController.povDown()
+        .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
+            new InstantCommand(() -> climber.resetStateMachine())));
     driverController.povUp().whileTrue(new AimToWall(this));
 
-    // driverController.leftTrigger().whileTrue(new InstantCommand(()-> shooterSubsystem.runElevatorBeltUpSlow()));
+    // driverController.leftTrigger().whileTrue(new InstantCommand(()->
+    // shooterSubsystem.runElevatorBeltUpSlow()));
     // joystick.x().whileTrue(new PathFindTo(this,
     // MMField::getBlueWooferApproachPose));
     // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
     // joystick.a().whileTrue(new NotAim(this));
 
-    oppController.a().onTrue(new StartClimb(this));
+    // oppController.a().onTrue(new StartClimb(this));
+    oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-    oppController.povUp().whileTrue(new FullClimb(this,MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this,MMField.getBlueStageLeftPose()));
-    oppController.povRight().whileTrue(new FullClimb(this,MMField.getBlueStageRightPose()));
+    oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
+    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageLeftPose()));
+    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageRightPose()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -175,11 +181,12 @@ public class RobotContainer {
     // autoChooser = AutoBuilder.buildAutoChooser();
     autoChooser = new SendableChooser<>();
     autoChooser.addOption("none", Commands.none());
-    autoChooser.addOption("TwoShotAuto", new TwoShotAuto(this));
+    autoChooser.addOption("FourNoteAuto", new FourNoteAuto(this));
     autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
     autoChooser.addOption("MustangAuto", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto", new StageSideAuto(this));
-    autoChooser.addOption("FourNoteAuto", new FourNoteAuto(this));
+    // autoChooser.addOption("FourNoteAuto", new badAuto(this));
+    autoChooser.addOption("HorseShoeAuto", new FourNoteAuto(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 

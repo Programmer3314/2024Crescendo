@@ -133,7 +133,11 @@ public class Navigation extends SubsystemBase {
   public double getDistanceToSpeaker() {
     Pose2d currentPose = rc.drivetrain.getState().Pose;
     Translation2d target = MMField.currentSpeakerPose().getTranslation();
+    // double distance = currentPose.getTranslation().minus(target).getX();
     double distance = currentPose.getTranslation().minus(target).getNorm();
+    // if (rc.shooterSubsystem.targetAngleSpeaker != null) {
+    //   distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
+    // }
     return distance;
   }
 

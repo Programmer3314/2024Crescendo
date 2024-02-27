@@ -8,10 +8,10 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 
-public class FourNoteAuto extends MMDeferredCommand<SequentialCommandGroup> {
+public class badAuto extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
 
-  public FourNoteAuto(RobotContainer rc) {
+  public badAuto(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
     

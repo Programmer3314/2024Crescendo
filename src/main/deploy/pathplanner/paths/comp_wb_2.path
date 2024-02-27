@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.658721713839824,
+        "y": 6.998240302786913
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.658721713839824,
+        "y": 6.998240302786913
+      },
+      "isLocked": false,
+      "linkedName": "comp_wb_1"
+    },
+    {
+      "anchor": {
+        "x": 7.817266084982619,
+        "y": 7.405007242446917
+      },
+      "prevControl": {
+        "x": 7.068445127881247,
+        "y": 7.599146009102829
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "comp_wb_2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "WarmbloodCompetition",
+  "previewStartingState": {
+    "rotation": -152.80187205149093,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

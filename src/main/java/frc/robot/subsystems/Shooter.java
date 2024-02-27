@@ -49,7 +49,7 @@ public class Shooter extends SubsystemBase {
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
   private MMTurnPIDController turnWallPidController = new MMTurnPIDController(true);
-  Rotation2d targetAngleSpeaker;
+  public Rotation2d targetAngleSpeaker;
   Rotation2d leftBoundaryAngleSpeaker;
   Rotation2d rightBoundaryAngleSpeaker;
   Pose2d speakerPose;
@@ -106,7 +106,6 @@ public class Shooter extends SubsystemBase {
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
 
-  public double distanceToSpeaker;
   public MMWaypoint desiredWaypoint;
 
   public MMFiringSolution firingSolution;
@@ -140,10 +139,10 @@ public class Shooter extends SubsystemBase {
   double intakeVelOut = -20;
 
   // TODO: make 3 positions for the elevator down, amp, trap...
-  // and use trap in the trap routine. 
+  // and use trap in the trap routine.
   double elevatorDownPosition = .1;
   double elevatorAmpPosition = 47.2;
-  double elevatorTrapPosition = 65.0;
+  double elevatorTrapPosition = 67.0;
 
   double ampUpPosition = 37.2;
 
@@ -246,29 +245,28 @@ public class Shooter extends SubsystemBase {
     }
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
-    //  if (!hasHomedElevator) {
-    //   runElevatorToHome();
-    //  }
-    //   if (!elevatorHomeSensor.get()) {
-    //     // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
-    //     elevatorMotor.setPosition(0);
-    //     hasHomedElevator = true;
-    //   }
-    //}
+    // if (!hasHomedElevator) {
+    // runElevatorToHome();
+    // }
+    // if (!elevatorHomeSensor.get()) {
+    // // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+    // elevatorMotor.setPosition(0);
+    // hasHomedElevator = true;
+    // }
+    // }
 
     ssm.update();
 
-    // TODO: Check this for Red. 
+    // TODO: Check this for Red.
     turnPidController.initialize(targetAngleSpeaker);
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
 
-    // TODO: This might not work for red. We may need to 
+    // TODO: This might not work for red. We may need to
     turnWallPidController.initialize(180);
     WallTurnRate = turnWallPidController.execute(currentPose.getRotation());
     if (runWallAim) {
       aimToWall();
-    }
-    else if (runAim) {
+    } else if (runAim) {
       aimToSpeaker();
     }
 
@@ -307,7 +305,7 @@ public class Shooter extends SubsystemBase {
         if (!intakeBreakBeam.get()) {
           return DropIntake;
         }
-        if (!elevatorBreakBeam.get()){
+        if (!elevatorBreakBeam.get()) {
           return ElevatorIndexed;
         }
         return Idle;
@@ -1170,7 +1168,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public void calcFiringSolution() {
-    distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
+    double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
+    if (targetAngleSpeaker != null) {
+      distanceToSpeaker -= Math.abs(.5 * Math.sin(targetAngleSpeaker.getRadians()));
+    }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
@@ -1393,7 +1394,10 @@ public class Shooter extends SubsystemBase {
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3556)
         && isInMargin(targetAngleSpeaker.getDegrees(),
-            currentPose.getRotation().getDegrees(), 40);
+            currentPose.getRotation().getDegrees(), 80);
+    // SmartDashboard.putBoolean("yMargin", isInMargin(c.getY(),
+    // MMField.blueSpeakerPose.getTranslation().getY(), .3556));
+    // SmartDashboard.putBoolean("")
 
     // boolean bingo = isInMargin(c.getY(),
     // MMField.blueSpeakerPose.getTranslation().getY(), .3556)
@@ -1650,7 +1654,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBeltShoot() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(60));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(80));
   }
 
   public void stopElevator() {

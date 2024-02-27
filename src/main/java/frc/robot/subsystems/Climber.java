@@ -33,11 +33,11 @@ public class Climber extends SubsystemBase {
   CANcoder rightCanCoder;
   Pigeon2 pigeon;
   TalonFX climbMotor;
-   private ClimbStateMachine csm = new ClimbStateMachine();
+  private ClimbStateMachine csm = new ClimbStateMachine();
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
   private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
-  double climbDownPosition = 0.05;
+  double climbDownPosition = 0.047;
   double climbUpPosition = .28;
   double climbEngaged = .27;
   double climbSlowPos = .15;
@@ -48,6 +48,7 @@ public class Climber extends SubsystemBase {
 
   boolean runClimb;
   boolean runTrap;
+  boolean unwindClimb;
 
   MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
   MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
@@ -92,6 +93,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
+        stopClimb();
       }
     };
 
@@ -100,15 +102,19 @@ public class Climber extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setClimbFlag(false);
         setTrapFlag(false);
+        setClimbUnwindFlag(false);
         idleCounter++;
       }
 
       @Override
       public MMStateMachineState calcNextState() {
+        if (unwindClimb) {
+          return UnwindClimb;
+        }
         if (runClimb) {
           return ClawsUp;
         }
-        if(runTrap){
+        if (runTrap) {
           return ClawsUp;
         }
         return this;
@@ -119,7 +125,7 @@ public class Climber extends SubsystemBase {
       }
     };
 
- MMStateMachineState ClawsUp = new MMStateMachineState("ClawsUp"){
+    MMStateMachineState ClawsUp = new MMStateMachineState("ClawsUp") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -129,48 +135,40 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if(leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition 
-        && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
-        ){
+        if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
+            && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
           return Engage;
         }
         return this;
-      
+
       };
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
-       setClimbPos();
+        setClimbPos();
       }
     };
 
-    MMStateMachineState Engage = new MMStateMachineState("Engage"){
+    MMStateMachineState Engage = new MMStateMachineState("Engage") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        rc.drivetrain.setControl(drive
-        .withVelocityX(-.25)
-        .withVelocityY(0)
-        .withRotationalRate(0));
+        rc.drivetrain.setControl(drive.withVelocityX(-.25).withVelocityY(0).withRotationalRate(0));
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if(leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged 
-        || rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-        ){
+        if (leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+            || rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged) {
           return Climb;
         }
         return this;
-      
+
       };
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
-        rc.drivetrain.setControl(drive
-        .withVelocityX(0)
-        .withVelocityY(0)
-        .withRotationalRate(0));
+        rc.drivetrain.setControl(drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0));
       }
     };
 
@@ -182,9 +180,8 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if(leftCanCoder.getAbsolutePosition().getValue() <= elevatorSafety 
-        || rightCanCoder.getAbsolutePosition().getValue() <= elevatorSafety
-        ){
+        if (leftCanCoder.getAbsolutePosition().getValue() <= elevatorSafety
+            || rightCanCoder.getAbsolutePosition().getValue() <= elevatorSafety) {
           return RaiseElevator;
         }
         return this;
@@ -195,7 +192,6 @@ public class Climber extends SubsystemBase {
       }
     };
 
-
     MMStateMachineState RaiseElevator = new MMStateMachineState("Raise Elevator ") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -205,9 +201,8 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if(leftCanCoder.getAbsolutePosition().getValue() <= climbSlowPos 
-        || rightCanCoder.getAbsolutePosition().getValue() <= climbSlowPos
-        ){
+        if (leftCanCoder.getAbsolutePosition().getValue() <= climbSlowPos
+            || rightCanCoder.getAbsolutePosition().getValue() <= climbSlowPos) {
           return SlowDown;
         }
         return this;
@@ -218,8 +213,8 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState SlowDown = new MMStateMachineState("SlowDown"){
-       @Override
+    MMStateMachineState SlowDown = new MMStateMachineState("SlowDown") {
+      @Override
       public void transitionTo(MMStateMachineState previousState) {
         rc.shooterSubsystem.setElevatorUpTrap();
         runClimbSlow();
@@ -227,9 +222,8 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if(leftCanCoder.getAbsolutePosition().getValue() <= climbDownPosition 
-        || rightCanCoder.getAbsolutePosition().getValue() <= climbDownPosition
-        ){
+        if (leftCanCoder.getAbsolutePosition().getValue() <= climbDownPosition
+            || rightCanCoder.getAbsolutePosition().getValue() <= climbDownPosition) {
           return CheckElevator;
         }
         return this;
@@ -247,15 +241,13 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (rc.shooterSubsystem.isInMargin(
-        rc.shooterSubsystem.getElevatorPosition(), 
-        rc.shooterSubsystem.elevatorTrapPosition, 
-        rc.shooterSubsystem.elevatorPositionMargin)){
+        if (rc.shooterSubsystem.isInMargin(rc.shooterSubsystem.getElevatorPosition(),
+            rc.shooterSubsystem.elevatorTrapPosition, rc.shooterSubsystem.elevatorPositionMargin)) {
           return ElevatorPassNoteAbove;
         }
         return this;
       };
-      
+
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
       }
@@ -291,24 +283,61 @@ public class Climber extends SubsystemBase {
         }
         return this;
       }
+
       @Override
-      public void transitionFrom(MMStateMachineState nextState){
+      public void transitionFrom(MMStateMachineState nextState) {
         rc.shooterSubsystem.stopElevatorBelt();
+      }
+    };
+
+    MMStateMachineState UnwindClimb = new MMStateMachineState("UnwindClimb") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runClimbNeg();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
+          return ResetClimb;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ResetClimb = new MMStateMachineState("ResetClimb") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (leftCanCoder.getAbsolutePosition().getValue() <= .07
+            || rightCanCoder.getAbsolutePosition().getValue() <= .07) {
+          return Idle;
+        }
+        return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nextState) {
+        stopClimb();
+        setClimbUnwindFlag(false);
       }
     };
 
   }
 
   public void runClimbNeg() {
-    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(-20));
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(-10));
   }
 
   public void runClimbSlow() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(20));
   }
-  public void runClimbFast(){
+
+  public void runClimbFast() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(40));
   }
+
   public void stopClimb() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(0));
   }
@@ -318,7 +347,7 @@ public class Climber extends SubsystemBase {
     return this;
   }
 
-  public void setClimbPos(){
+  public void setClimbPos() {
     climbMotor.setControl(climbMagicVol.withPosition(climbMotor.getPosition().getValue()));
   }
 
@@ -327,9 +356,10 @@ public class Climber extends SubsystemBase {
     return this;
   }
 
-  public int getIdleCounter(){
+  public int getIdleCounter() {
     return idleCounter;
   }
+
   public void configCanCoders() {
     CANcoderConfiguration rightCanConfig = new CANcoderConfiguration();
     rightCanConfig.MagnetSensor
@@ -341,7 +371,7 @@ public class Climber extends SubsystemBase {
     leftCanConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-        .withMagnetOffset(-0.14);
+        .withMagnetOffset(0.023);
     MMConfigure.configureDevice(leftCanCoder, leftCanConfig);
     MMConfigure.configureDevice(rightCanCoder, rightCanConfig);
   }
@@ -386,5 +416,17 @@ public class Climber extends SubsystemBase {
         .withKD(0);
 
     MMConfigure.configureDevice(climbMotor, climbConfig);
+  }
+
+  public void resetStateMachine() {
+    csm.setInitial(csm.Start);
+  }
+
+  public boolean isInMargin(double value1, double value2, double margin) {
+    return Math.abs(value1 - value2) <= margin;
+  }
+
+  public void setClimbUnwindFlag(boolean flag) {
+    unwindClimb = flag;
   }
 }

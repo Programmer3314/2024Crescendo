@@ -61,7 +61,7 @@ public class MMFiringSolution {
         // .16 radians
         // .458 encoder value
         // .385 encoder value
-        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .303;// +.31
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .306;// +.31
         SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
         if (shootAngle > .458) {
             shootAngle = .458;

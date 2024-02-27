@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.66,
+        "y": 5.541275082550166
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.3363329583802028,
+        "y": 5.586528538771366
+      },
+      "isLocked": false,
+      "linkedName": "horseshoe1"
+    },
+    {
+      "anchor": {
+        "x": 2.66,
+        "y": 6.8595697551755475
+      },
+      "prevControl": {
+        "x": 1.845187834519813,
+        "y": 6.545249847256453
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "horseshoe2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 1.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -150.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "HorseShoeCompetition",
+  "previewStartingState": {
+    "rotation": 179.90470120919403,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

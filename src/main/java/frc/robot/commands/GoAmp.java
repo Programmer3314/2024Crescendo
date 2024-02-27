@@ -53,6 +53,7 @@ public class GoAmp extends Command {
   public void execute() {
     pathCommand.execute();
         SmartDashboard.putString("goAmpStatus", "executed");
+        
 
   }
 
