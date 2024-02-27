@@ -90,7 +90,7 @@ public class RobotContainer {
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-  Telemetry logger = new Telemetry(MaxSpeed);
+  // Telemetry logger = new Telemetry(MaxSpeed);
 
   // Subsystems
   public Shooter shooterSubsystem = new Shooter(this);
@@ -164,7 +164,7 @@ public class RobotContainer {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
 
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // drivetrain.registerTelemetry(logger::telemeterize);
   }
 
   public RobotContainer() {
@@ -182,12 +182,13 @@ public class RobotContainer {
     // autoChooser = AutoBuilder.buildAutoChooser();
     autoChooser = new SendableChooser<>();
     autoChooser.addOption("none", Commands.none());
-    autoChooser.addOption("FourNoteAuto", new FourNoteAuto(this));
-    autoChooser.addOption("ShootSmove", new AutoSamplerShootSmove(this));
-    autoChooser.addOption("MustangAuto", new MustangAuto(this));
-    autoChooser.addOption("StageSideAuto", new StageSideAuto(this));
+    autoChooser.addOption("FourNoteAuto-Shop", new FourNoteAuto(this));
+    autoChooser.addOption("ShootSmove-Shop", new AutoSamplerShootSmove(this));
+    autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
+    autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
-    autoChooser.addOption("HorseShoeAuto", new HorseShoe(this));
+    // TODO: redo HorseShoe like FourNoteAuto with paths and shoot sequence
+    autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this)); 
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -236,19 +237,20 @@ public class RobotContainer {
     return autoChooser.getSelected();
   }
 
-  // strip this down to use none of our code...
-  // hard code the poses, etc.
-  // Michael Jansen says it is our code. Let's find out.
-  public Command runDeferredTest() {
-    PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
-    List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
-        new Pose2d(new Translation2d(1.8, 5.5), Rotation2d.fromDegrees(180)),
-        new Pose2d(new Translation2d(1.6, 5.5), Rotation2d.fromDegrees(180)),
-        new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
-    PathPlannerPath path = new PathPlannerPath(bezierPoints,
-        trajectoryConstraints,
-        new GoalEndState(0, Rotation2d.fromDegrees(180)));
-    path.preventFlipping = false;
-    return AutoBuilder.followPath(path);
-  }
+  // Removed as Unused Code...
+  // // strip this down to use none of our code...
+  // // hard code the poses, etc.
+  // // Michael Jansen says it is our code. Let's find out.
+  // public Command runDeferredTest() {
+  //   PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
+  //   List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
+  //       new Pose2d(new Translation2d(1.8, 5.5), Rotation2d.fromDegrees(180)),
+  //       new Pose2d(new Translation2d(1.6, 5.5), Rotation2d.fromDegrees(180)),
+  //       new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
+  //   PathPlannerPath path = new PathPlannerPath(bezierPoints,
+  //       trajectoryConstraints,
+  //       new GoalEndState(0, Rotation2d.fromDegrees(180)));
+  //   path.preventFlipping = false;
+  //   return AutoBuilder.followPath(path);
+  // }
 }

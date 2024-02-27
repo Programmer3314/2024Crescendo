@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.33124097391052,
-        "y": 6.855288032326387
+        "x": 2.1022699648261556,
+        "y": 5.639302012056618
       },
       "isLocked": false,
       "linkedName": "horseshoe2"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 2.66,
-        "y": 4.132382318818692
+        "y": 4.185419462073272
       },
       "prevControl": {
-        "x": 1.6338379476758953,
-        "y": 4.20633994421142
+        "x": 1.6323281304881043,
+        "y": 4.875646531257285
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 169.0,
+    "rotation": 147.0,
     "rotateFast": false
   },
   "reversed": false,

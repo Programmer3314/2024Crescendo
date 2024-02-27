@@ -31,9 +31,11 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMField;
@@ -1333,10 +1335,11 @@ public class Shooter extends SubsystemBase {
         shooterVelocityMargin);
     boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(),
         shooterAngleMargin);
-    boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
-        && rightBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()) ||
-        (rightBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
-            && leftBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()));
+    // Removed as obsolete    
+    // boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
+    //     && rightBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()) ||
+    //     (rightBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
+    //         && leftBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()));
 
     SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
     SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
@@ -1349,7 +1352,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("at velocity left", leftShooterAtVelocity);
     SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
     SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
-    SmartDashboard.putBoolean("at Boundary", atBoundary);
+    //SmartDashboard.putBoolean("at Boundary", atBoundary);
     SmartDashboard.putNumber("angle left boundary", leftBoundaryAngleSpeaker.getDegrees());
     SmartDashboard.putNumber("angle right boundary", rightBoundaryAngleSpeaker.getDegrees());
     SmartDashboard.putNumber("angle Robot", currentPose.getRotation().getDegrees());
@@ -1391,21 +1394,10 @@ public class Shooter extends SubsystemBase {
     Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
 
+    // TODO: Reveiw the following change to bingo to handle NOT resetting angle to something custom.
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3556)
-// TODO: URGENT!!! Fix bingo for both alliances. 
-        // && isInMargin(targetAngleSpeaker.getDegrees(),
-        //     currentPose.getRotation().getDegrees(), 80)
-        ;
-    // SmartDashboard.putBoolean("yMargin", isInMargin(c.getY(),
-    // MMField.blueSpeakerPose.getTranslation().getY(), .3556));
-    // SmartDashboard.putBoolean("")
-
-    // boolean bingo = isInMargin(c.getY(),
-    // MMField.blueSpeakerPose.getTranslation().getY(), .3556)
-    // && isInMargin(targetAngleSpeaker.getDegrees(),
-    // Navigation.predictedPose.getRotation().getDegrees(), 40);
-
+        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees())<90;
     SmartDashboard.putBoolean("bingo", bingo);
 
     return leftShooterAtVelocity

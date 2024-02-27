@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -20,12 +21,13 @@ public class Robot extends TimedRobot {
 
   public static DriverStation.Alliance alliance;
   public static int resetDriverValue = 1;
+  public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
   // TODO: Control Documentation
   // TODO: Chase with Intake (controler button) - speed up
   // TODO: Shoot button to throw not shoot. (controller button)
-  // TODO: Climb with Trap - on hold (controller button) - Add AbortClimb
+  // TODO: Climb with Trap (controller button) - Add AbortClimb
   // TODO: Clean up test autos vs. competition autos.
   // TODO: top 3 Autos for competition
   // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
@@ -58,10 +60,19 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
+    // Merged Reset Driver value from below
+    // Captured alliaceSpeakerRotation (0 or 180 degrees)
     if (alliance == null) {
       var allianceAttempt = DriverStation.getAlliance();
       if (allianceAttempt.isPresent()) {
         alliance = allianceAttempt.get();
+        if (alliance.equals(Alliance.Red)) {
+          resetDriverValue = -1;
+          allianceSpeakerRotation = Rotation2d.fromDegrees(0);
+        } else {
+          resetDriverValue = 1;
+          allianceSpeakerRotation = Rotation2d.fromDegrees(180);
+        }
         SmartDashboard.putString("alliance", alliance.toString());
       }
     }
@@ -95,19 +106,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    if (alliance != null) {
-      resetDriverValue = alliance.equals(Alliance.Red) ? -1 : 1;
-    }
+    // Moved to disabled periodic
+    // if (alliance != null) {
+    // resetDriverValue = alliance.equals(Alliance.Red) ? -1 : 1;
+    // }
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.shooterSubsystem.stopMotors();
 
-    // TODO: Turned off logging.
+    // TODO: Done... Turned off logging.
     // // Starts recording to data log
-    //DataLogManager.start();
+    // DataLogManager.start();
     // // Record both DS control and joystick data
-    //DriverStation.startDataLog(DataLogManager.getLog());
+    // DriverStation.startDataLog(DataLogManager.getLog());
     Navigation.visionUpdate = 0;
 
   }
@@ -118,7 +130,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopExit() {
-    DataLogManager.stop();
+    // DataLogManager.stop();
   }
 
   @Override
@@ -144,4 +156,5 @@ public class Robot extends TimedRobot {
   public static void resetVisionUpdate() {
     Navigation.visionUpdate = 0;
   }
+
 }
