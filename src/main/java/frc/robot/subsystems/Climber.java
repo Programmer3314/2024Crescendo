@@ -60,7 +60,7 @@ public class Climber extends SubsystemBase {
     this.rc = rc;
     csm = new ClimbStateMachine();
     csm.setInitial(csm.Start);
-    // TODO: Access the pidgeon via rc.drivetrain.getpidgeon()
+    // TODO: URGENT!!! Access the pidgeon via rc.drivetrain.getpidgeon()
     pigeon = new Pigeon2(1, "CANIVORE");
 
     leftCanCoder = new CANcoder(7, "CANIVORE");
