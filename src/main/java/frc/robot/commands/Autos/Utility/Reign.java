@@ -8,10 +8,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
-import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
-import frc.robot.commands.Autos.StandardAutoInit;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:

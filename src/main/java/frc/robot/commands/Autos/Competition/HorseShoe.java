@@ -36,8 +36,19 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 0, 0),
         new ShootAndWait(rc),
-        new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
-    );
+        // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_hs_1"),
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_hs_2"),
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_hs_3"),
+        new ShootAndWait(rc));
     cmd.initialize();
   }
 }

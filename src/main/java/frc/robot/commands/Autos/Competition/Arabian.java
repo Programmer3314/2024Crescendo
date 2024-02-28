@@ -14,9 +14,6 @@ import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.Autos.StandardAutoInit;
 import frc.robot.commands.Autos.Utility.ReignChain;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
 
@@ -24,21 +21,32 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
   public Arabian(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
 
   }
 
   @Override
   public void initialize() {
     cmd = new SequentialCommandGroup();
-    // TODO: HIGH PRIORITY Fix Pipelines
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 0, 0),
+        new ShootAndWait(rc),
+        // new ReignChain(rc, "comp_ab_1", "comp_ab_2"),
+        // new ReignChain(rc, "comp_ab_3", "comp_ab_4")
+        new StandardAutoInit(rc, MMField.currentWooferPose())
+            .setPipeLine(0, 0, 0),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_ab_1"),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_ab_2"),
+        new ShootAndWait(rc),
+        new StandardAutoInit(rc, MMField.currentWooferPose())
+            .setPipeLine(0, 0, 0),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_ab_3"),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_ab_4"),
         new ShootAndWait(rc)
-        // new ReignChain(rc, )
-      //  new ReignChain(rc, "")
 
     );
     cmd.initialize();

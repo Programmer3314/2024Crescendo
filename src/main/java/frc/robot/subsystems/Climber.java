@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -24,7 +23,6 @@ import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
-import frc.robot.subsystems.Shooter.ShooterStateMachine;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
@@ -68,7 +66,6 @@ public class Climber extends SubsystemBase {
 
     climbMotor = new TalonFX(18, "CANIVORE");
 
-    // TODO: configs...
     configClimbMotor();
     configCanCoders();
   }

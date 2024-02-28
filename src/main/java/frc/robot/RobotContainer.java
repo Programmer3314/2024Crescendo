@@ -4,15 +4,9 @@
 
 package frc.robot;
 
-import java.util.List;
-
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -29,18 +23,16 @@ import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
-import frc.robot.commands.ChaseNote;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
-import frc.robot.commands.StartClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
-import frc.robot.commands.Autos.badAuto;
-import frc.robot.commands.Autos.Competition.HorseShoe;
-import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
+import frc.robot.commands.Autos.Competition.Arabian;
+import frc.robot.commands.Autos.Competition.HorseShoe;
+import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -113,7 +105,7 @@ public class RobotContainer {
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
 
-    // TODO: Low Priority Driver Controller Layout--operator role needed?
+    // TODO: Low Priority Driver Controller Layout
     // Needs:
     // -Shoot : RT
     // -Eject
@@ -186,9 +178,10 @@ public class RobotContainer {
     autoChooser.addOption("ShootSmove-Shop", new AutoSamplerShootSmove(this));
     autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
+    autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
     // TODO: redo HorseShoe like FourNoteAuto with paths and shoot sequence
-    autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this)); 
+    autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -242,15 +235,16 @@ public class RobotContainer {
   // // hard code the poses, etc.
   // // Michael Jansen says it is our code. Let's find out.
   // public Command runDeferredTest() {
-  //   PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 * Math.PI, 4 * Math.PI);
-  //   List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
-  //       new Pose2d(new Translation2d(1.8, 5.5), Rotation2d.fromDegrees(180)),
-  //       new Pose2d(new Translation2d(1.6, 5.5), Rotation2d.fromDegrees(180)),
-  //       new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
-  //   PathPlannerPath path = new PathPlannerPath(bezierPoints,
-  //       trajectoryConstraints,
-  //       new GoalEndState(0, Rotation2d.fromDegrees(180)));
-  //   path.preventFlipping = false;
-  //   return AutoBuilder.followPath(path);
+  // PathConstraints trajectoryConstraints = new PathConstraints(1.5, 3, 2 *
+  // Math.PI, 4 * Math.PI);
+  // List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
+  // new Pose2d(new Translation2d(1.8, 5.5), Rotation2d.fromDegrees(180)),
+  // new Pose2d(new Translation2d(1.6, 5.5), Rotation2d.fromDegrees(180)),
+  // new Pose2d(new Translation2d(1.4, 5.5), Rotation2d.fromDegrees(180)));
+  // PathPlannerPath path = new PathPlannerPath(bezierPoints,
+  // trajectoryConstraints,
+  // new GoalEndState(0, Rotation2d.fromDegrees(180)));
+  // path.preventFlipping = false;
+  // return AutoBuilder.followPath(path);
   // }
 }

@@ -33,16 +33,25 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
   @Override
   public void initialize() {
     cmd = new SequentialCommandGroup();
-    // TODO: HIGH PRIORITY Fix Pipelines
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 0, 0),
         new ShootAndWait(rc),
-        new Reign(rc, new String[] { "comp_wb_1" }),
-        new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
-        new ReignChain(rc, "comp_wb_4", "comp_wb_5")
-
-    );
+        // new Reign(rc, new String[] { "comp_wb_1" }),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_wb_1"),
+        new ShootAndWait(rc),
+        // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
+        // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
+        new FollowPathFile(rc, "comp_wb_2"),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_wb_3"),
+        new ShootAndWait(rc),
+        new FollowPathFile(rc, "comp_wb_4"),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_wb_5"),
+        new ShootAndWait(rc));
     cmd.initialize();
   }
 }
