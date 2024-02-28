@@ -130,7 +130,7 @@ public class Shooter extends SubsystemBase {
   double elevatorInPerRev = 5.125 / 30;
 
   double intakeUpPos = intakeTop - .005;
-  double intakeDownPos = intakeTop - .78;
+  double intakeDownPos = intakeTop - .76;
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
@@ -1167,7 +1167,7 @@ public class Shooter extends SubsystemBase {
   public void calcFiringSolution() {
     double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
     if (targetAngleSpeaker != null) {
-      distanceToSpeaker -= Math.abs(.5 * Math.sin(targetAngleSpeaker.getRadians()));
+      distanceToSpeaker -= Math.abs(.3 * Math.sin(targetAngleSpeaker.getRadians()));
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
@@ -1534,9 +1534,9 @@ public class Shooter extends SubsystemBase {
   }
 
   private void configShooterRotateMotor() {
-    double cruiseVelocity = .25; // Sensor revolutions/second
-    double timeToReachCruiseVelocity = .4; // seconds
-    double timeToReachMaxAcceleration = .2; // seconds
+    double cruiseVelocity = .5; // Sensor revolutions/second
+    double timeToReachCruiseVelocity = .2; // seconds
+    double timeToReachMaxAcceleration = .1; // seconds
 
     double sensorLow = 0.383;
     double sensorHigh = .455;

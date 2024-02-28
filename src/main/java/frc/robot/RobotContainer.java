@@ -32,6 +32,7 @@ import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.HorseShoe;
+import frc.robot.commands.Autos.Competition.Warmblood;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -179,6 +180,7 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
+        autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
     // TODO: redo HorseShoe like FourNoteAuto with paths and shoot sequence
     autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));

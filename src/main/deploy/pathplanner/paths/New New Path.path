@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.6410247106208504,
-        "y": 7.021880329474945
+        "x": 2.8898392931920998,
+        "y": 4.104648209296419
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.660306030042166,
-        "y": 7.271536928967033
+        "x": 3.8898392931921,
+        "y": 4.104648209296419
       },
       "isLocked": false,
-      "linkedName": "comp_wb_1"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.857389012075321,
-        "y": 7.34029432022828
+        "x": 0.06096012192024374,
+        "y": 5.593045420325076
       },
       "prevControl": {
-        "x": 5.03499080198373,
-        "y": 7.252180226289895
+        "x": -0.939039878079754,
+        "y": 5.593045420325076
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "comp_wb_2"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.5,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -174.0,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "WarmbloodCompetition",
+  "folder": "ArabianCompetition",
   "previewStartingState": {
-    "rotation": -147.0,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

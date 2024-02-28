@@ -23,9 +23,9 @@ public class Robot extends TimedRobot {
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
-  // TODO: Try to reduce can errors by a) reduce odometry Freq using 
-  //        alternate drivetrain constructor with freq parameter (maybe 200?,150?)
-  //        or b) splitting the can bus
+  // TODO: Try to reduce can errors by a) reduce odometry Freq using
+  // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
+  // or b) splitting the can bus
   // TODO: Control Documentation
   // TODO: Chase with Intake (controler button) - speed up
   // TODO: Shoot button to throw not shoot. (controller button)
@@ -39,6 +39,8 @@ public class Robot extends TimedRobot {
   // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom
   // draw and get rid of all useless stuff.
   // TODO: Spares
+  // TODO: add manual dpad up/down to adjust the shooter margin on the fly for the
+  // operator
 
   @Override
   public void robotInit() {

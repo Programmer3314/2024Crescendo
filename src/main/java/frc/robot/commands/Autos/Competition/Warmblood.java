@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.ChaseAndIntake;
+import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.Autos.StandardAutoInit;
@@ -34,7 +36,7 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
   public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
-        new StandardAutoInit(rc, MMField.currentWooferPose())
+        new StandardAutoInit(rc, MMField.getCurrentWooferHumanPlayerPose())
             .setPipeLine(0, 0, 0),
         new ShootAndWait(rc),
         // new Reign(rc, new String[] { "comp_wb_1" }),
@@ -45,13 +47,16 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
         // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
         // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
         new FollowPathFile(rc, "comp_wb_2"),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_wb_3"),
         new ShootAndWait(rc),
         new FollowPathFile(rc, "comp_wb_4"),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_wb_5"),
-        new ShootAndWait(rc));
+        new FollowPathFile(rc, "comp_wb_5")
+        // new ShootAndWait(rc)
+        );
     cmd.initialize();
   }
 }

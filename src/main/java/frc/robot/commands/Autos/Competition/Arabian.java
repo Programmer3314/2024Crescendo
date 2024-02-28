@@ -9,10 +9,10 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.Autos.StandardAutoInit;
-import frc.robot.commands.Autos.Utility.ReignChain;
 
 public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
@@ -37,6 +37,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_1"),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_ab_2"),
         new ShootAndWait(rc),
@@ -44,6 +45,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_3"),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_ab_4"),
         new ShootAndWait(rc)

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1022699648261556,
-        "y": 5.639302012056618
+        "x": 1.702819405638812,
+        "y": 5.790485866686019
       },
       "isLocked": false,
       "linkedName": "horseshoe2"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 2.66,
-        "y": 4.185419462073272
+        "y": 4.0020320040640085
       },
       "prevControl": {
-        "x": 1.8819847299801942,
-        "y": 4.846275166611156
+        "x": 1.7614572372001893,
+        "y": 4.910918393265358
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,14 +32,14 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 0.75,
+    "maxVelocity": 1.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 147.0,
+    "rotation": 150.0,
     "rotateFast": true
   },
   "reversed": false,

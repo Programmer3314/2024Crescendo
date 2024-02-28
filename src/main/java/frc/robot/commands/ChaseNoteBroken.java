@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMPIDController;
 
-public class ChaseNote extends Command {
+public class ChaseNoteBroken extends Command {
   RobotContainer rc;
   MMPIDController rotationPIDController;
   MMPIDController yPIDController;
@@ -22,7 +22,7 @@ public class ChaseNote extends Command {
 
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
-  public ChaseNote(RobotContainer rc) {
+  public ChaseNoteBroken(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
   }
@@ -60,7 +60,7 @@ public class ChaseNote extends Command {
   @Override
   public boolean isFinished() {
     return (Math.abs(rc.navigation.getLeftNoteY() - targetY) < 15
-        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15) || !rc.navigation.hasLeftNoteTarget();
+        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15) || !rc.shooterSubsystem.getIntakeBreakbeam();
     // || !rc.navigation.hasLeftConeTarget();
   }
 }
