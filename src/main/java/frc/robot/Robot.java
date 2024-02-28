@@ -27,10 +27,8 @@ public class Robot extends TimedRobot {
   // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
   // or b) splitting the can bus
   // TODO: Control Documentation
-  // TODO: Chase with Intake (controler button) - speed up
   // TODO: Shoot button to throw not shoot. (controller button)
   // TODO: Climb with Trap (controller button) - Add AbortClimb
-  // TODO: Clean up test autos vs. competition autos.
   // TODO: top 3 Autos for competition
   // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
   // clear

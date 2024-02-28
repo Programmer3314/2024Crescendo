@@ -60,7 +60,8 @@ public class ChaseNote extends Command {
   @Override
   public boolean isFinished() {
     return (Math.abs(rc.navigation.getLeftNoteY() - targetY) < 15
-        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15) || !rc.navigation.hasLeftNoteTarget();
+        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15) 
+        || !rc.navigation.hasLeftNoteTarget();
     // || !rc.navigation.hasLeftConeTarget();
   }
 }
