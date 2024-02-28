@@ -11,14 +11,22 @@ DRIVER CONTROLLER
     X: Send to Elevator
     Down Dpad: Reset State Machine
     Up Dpad: Aim to Wall
+    left Dpad: 
+    right Dpad:
+    7:
+    8:
 OPP CONTROLLER
-    A: Simple Climb
-    B: Trap Climb
+    A: Climber Reset
+    B: 
     X:
     Y:
     RB:
     RT:
     LB:
     LT:
+    Down Dpad: 
+    Up Dpad: Climb Field Side
+    left Dpad: Climb Stage Amp Side
+    right Dpad: Climb Stage Human Side
     7: 
     8: Start Diagnostic

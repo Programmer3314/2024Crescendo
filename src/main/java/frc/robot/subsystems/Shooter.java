@@ -135,8 +135,6 @@ public class Shooter extends SubsystemBase {
   double intakeVelIn = 30;
   double intakeVelOut = -20;
 
-  // TODO: make 3 positions for the elevator down, amp, trap...
-  // and use trap in the trap routine.
   double elevatorDownPosition = .1;
   double elevatorAmpPosition = 47.2;
   double elevatorTrapPosition = 67.0;

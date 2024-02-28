@@ -143,15 +143,14 @@ public class RobotContainer {
     // shooterSubsystem.runElevatorBeltUpSlow()));
     // joystick.x().whileTrue(new PathFindTo(this,
     // MMField::getBlueWooferApproachPose));
-    // joystick.y().whileTrue(new AutoSamplerShootSmove(this));
-    // joystick.a().whileTrue(new NotAim(this));
+    
 
     // oppController.a().onTrue(new StartClimb(this));
     oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
     oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageLeftPose()));
-    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageRightPose()));
+    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageAmpSidePose()));
+    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageHumanSidePose()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

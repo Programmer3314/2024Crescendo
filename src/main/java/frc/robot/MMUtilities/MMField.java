@@ -111,7 +111,7 @@ public class MMField {
     return getBluePose(blueStageLeftSide);
   }
 
-  public static Pose2d getBlueStageLeftPose() {
+  public static Pose2d getBlueStageAmpSidePose() {
     return blueStageLeftSide;
   }
 
@@ -121,7 +121,7 @@ public class MMField {
     return getBluePose(blueStageRightSide);
   }
 
-  public static Pose2d getBlueStageRightPose() {
+  public static Pose2d getBlueStageHumanSidePose() {
     return blueStageRightSide;
   }
 
