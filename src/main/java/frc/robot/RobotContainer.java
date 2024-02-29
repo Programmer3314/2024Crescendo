@@ -51,15 +51,15 @@ public class RobotContainer {
       new Pose2d(0.79, 4.37, Rotation2d.fromDegrees(120))
   };
 
-  // TODO: Replace with Live Auto Notes
+  // TODO: Replace with Live Auto Notes (needs checking)
   private Pose2d[] notePoseList = {
-      new Pose2d(6, 6.62, Rotation2d.fromDegrees(270)),
-      new Pose2d(6.93, 6.44, Rotation2d.fromDegrees(270)),
-      new Pose2d(7.6, 6.42, Rotation2d.fromDegrees(180)),
-      new Pose2d(1.42, 6.33, Rotation2d.fromDegrees(270))
+      new Pose2d(2.9, 4.11, Rotation2d.fromDegrees(150)),
+      new Pose2d(2.9, 5.55, Rotation2d.fromDegrees(180)),
+      new Pose2d(2.9, 7.0, Rotation2d.fromDegrees(-150)),
+      new Pose2d(8.29, 7.46, Rotation2d.fromDegrees(180))
   };
 
-  // TOOD: Replace with Live Shoot positions (3 woofer locations, and left & right
+  // TODO: Replace with Live Shoot positions (3 woofer locations, and left & right
   // wing locations)
   private Pose2d[] shootPoseList = {
       new Pose2d(2.4, 6.22, Rotation2d.fromDegrees(180)),
@@ -96,6 +96,10 @@ public class RobotContainer {
   public static SendableChooser<Pose2d> shootChooser0;
   public static SendableChooser<Pose2d> noteChooser1;
   public static SendableChooser<Pose2d> shootChooser1;
+  public static SendableChooser<Pose2d> noteChooser2;
+  public static SendableChooser<Pose2d> shootChooser2;
+  public static SendableChooser<Pose2d> noteChooser3;
+  public static SendableChooser<Pose2d> shootChooser3;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {
@@ -124,10 +128,10 @@ public class RobotContainer {
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
     driverController.a().whileTrue(new Aim(this));
     driverController.b().whileTrue(new ChaseAndIntake(this));
-    driverController.leftTrigger().onTrue(new GoShoot(this));
+    // driverController.leftTrigger().onTrue(new GoShoot(this));
 
-    driverController.leftBumper().onTrue(
-        new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
+    // driverController.leftBumper().onTrue(
+    //     new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
     driverController.button(8)
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
@@ -138,12 +142,17 @@ public class RobotContainer {
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
     driverController.povUp().whileTrue(new AimToWall(this));
+    driverController.povRight().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
+    driverController.povLeft().onTrue(new InstantCommand(() -> shooterSubsystem.setShootOverrideFlag(true)));
+    // driverController.povUp().whileTrue( new InstantCommand(() ->
+    // shooterSubsystem.shooterAngleMargin+=.0001));
+    // driverController.povUp().whileTrue( new InstantCommand(() ->
+    // shooterSubsystem.shooterAngleMargin-=.0001));
 
     // driverController.leftTrigger().whileTrue(new InstantCommand(()->
     // shooterSubsystem.runElevatorBeltUpSlow()));
     // joystick.x().whileTrue(new PathFindTo(this,
     // MMField::getBlueWooferApproachPose));
-    
 
     // oppController.a().onTrue(new StartClimb(this));
     oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
@@ -151,7 +160,7 @@ public class RobotContainer {
     oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
     oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageAmpSidePose()));
     oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageHumanSidePose()));
-
+    oppController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
@@ -179,7 +188,7 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
-        autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
+    autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
     // TODO: redo HorseShoe like FourNoteAuto with paths and shoot sequence
     autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));
@@ -193,9 +202,13 @@ public class RobotContainer {
 
     noteChooser0 = fillNoteChooser("Note 1");
     noteChooser1 = fillNoteChooser("Note 2");
+    noteChooser2 = fillNoteChooser("Note 3");
+    noteChooser3 = fillNoteChooser("Note 4");
 
     shootChooser0 = fillShootPoseChooser("Shoot Pose 1");
     shootChooser1 = fillShootPoseChooser("Shoot Pose 2");
+    shootChooser2 = fillShootPoseChooser("Shoot Pose 3");
+    shootChooser3 = fillShootPoseChooser("Shoot Pose 4");
 
     startPoseChooser = fillStartPoseChooser("Pick Start Pose");
   }

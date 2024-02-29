@@ -39,6 +39,7 @@ public class Robot extends TimedRobot {
   // TODO: Spares
   // TODO: add manual dpad up/down to adjust the shooter margin on the fly for the
   // operator
+  // TODO: Work on LEDs
 
   @Override
   public void robotInit() {

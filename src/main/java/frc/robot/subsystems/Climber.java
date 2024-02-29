@@ -47,6 +47,7 @@ public class Climber extends SubsystemBase {
   boolean runClimb;
   boolean runTrap;
   boolean unwindClimb;
+  boolean runAbortClimb;
 
   MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
   MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
@@ -318,7 +319,62 @@ public class Climber extends SubsystemBase {
         setClimbUnwindFlag(false);
       }
     };
+  
+    // MMStateMachineState AbortClimb = new MMStateMachineState("AbortClimb") {
 
+    //   @Override
+    //   public void transitionTo(MMStateMachineState previousState) {
+    //     setClimbPos(); // Will stop what we're doing and hold us in place 
+    //     //
+    //   }
+
+    //   @Override
+    //   public MMStateMachineState calcNextState() {
+    //     if (!runAbortClimb) {
+    //       return Idle;
+    //     }
+    //     return this;
+
+    //   };
+
+    //   @Override
+    //   public void transitionFrom(MMStateMachineState NextState) {
+    //   }
+    // };
+
+     // MMStateMachineState AbortClaws = new MMStateMachineState("AbortClaws") {
+
+    //   @Override
+    //   public void transitionTo(MMStateMachineState previousState) {
+    //     runClimbNeg(): // will unwind the claw untill it's in the up pos
+    //     //
+    //   }
+
+    //   @Override
+    //   public MMStateMachineState calcNextState() {
+    //     if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
+    //       return AbortElevator;
+    //     }
+    //     return this;
+    //   };
+
+    // MMStateMachineState AbortElevator = new MMStateMachineState("AbortElevator") {
+
+    //   @Override
+    //   public void transitionTo(MMStateMachineState previousState) {
+    //        stopClimb(); // stop unwinding
+    //        rc.shooterSubsystem.setElevatorDown(); // bring the elevator back down
+    //     //
+    //   }
+
+    //   @Override
+    //   public MMStateMachineState calcNextState() {
+    //     if (rc.shooterSubsystem.isInMargin(rc.shooterSubsystem.getElevatorPosition(),
+    //        rc.shooterSubsystem.elevatorDownPosition, rc.shooterSubsystem.elevatorPositionMargin)) {
+    //       return Idle;
+    //     }
+    //     return this;
+    //   };
   }
 
   public void runClimbNeg() {
@@ -348,6 +404,11 @@ public class Climber extends SubsystemBase {
 
   public Climber setTrapFlag(boolean run) {
     runTrap = run;
+    return this;
+  }
+
+  public Climber setAbortFlag(boolean run) {
+    runAbortClimb = run;
     return this;
   }
 

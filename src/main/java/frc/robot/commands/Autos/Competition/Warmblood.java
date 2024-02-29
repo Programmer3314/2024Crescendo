@@ -11,6 +11,7 @@ import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
+import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.Autos.StandardAutoInit;
@@ -38,7 +39,7 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.getCurrentWooferHumanPlayerPose())
             .setPipeLine(0, 0, 0),
-        new ShootAndWait(rc),
+        new ShootAndWait(rc,false),
         // new Reign(rc, new String[] { "comp_wb_1" }),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
@@ -50,6 +51,7 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
         new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_wb_3"),
+        new Delay(rc, 50),
         new ShootAndWait(rc),
         new FollowPathFile(rc, "comp_wb_4"),
         new ChaseAndIntakeBroken(rc),

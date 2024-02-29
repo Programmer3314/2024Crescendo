@@ -27,6 +27,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -55,11 +56,14 @@ public class Shooter extends SubsystemBase {
   double WallTurnRate;
 
   // TODO: Review the followign margins
-  double shooterAngleMargin = .0015;
+  public double shooterAngleMargin = .0015;
   double shooterVelocityMargin = 5;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .1;
   double elevatorPositionMargin = 1;
+  double leftShooterChuckVelocity = 30;
+  double rightShooterChuckVelocity = 40;
+  double shooterChuckRotation = .38;
 
   int abortIntakeCounter;
 
@@ -72,6 +76,8 @@ public class Shooter extends SubsystemBase {
   boolean runOutTake;
   double shooterDelay = .125;
   double outTakeDelay = .125;
+  boolean runChuck;
+  boolean runShootOverride;
 
   double shotStartTime;
   double shotEndTime;
@@ -263,6 +269,8 @@ public class Shooter extends SubsystemBase {
       aimToWall();
     } else if (runAim) {
       aimToSpeaker();
+    } else if (runChuck) {
+      aimForChuck();
     }
 
     // else {
@@ -328,6 +336,9 @@ public class Shooter extends SubsystemBase {
         setAimFlag(false);
         setAimWallFlag(false);
         setAbortIntakeFlag(false);
+        setReverseIntakeFlag(false);
+        setChuckFlag(false);
+        setShootOverrideFlag(false);
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -350,6 +361,8 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
+        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
       }
 
       @Override
@@ -374,6 +387,8 @@ public class Shooter extends SubsystemBase {
         setIntakeDown();
         runIntakeIn();
         setAimFlag(true);
+        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
       }
 
       @Override
@@ -417,8 +432,21 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
+        if (runChuck) {
+          return PrepareToChuck;
+        }
         if (runOutTake) {
           return IntakeReverse;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState PrepareToChuck = new MMStateMachineState("PrepareToChuck") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (readyToChuck() && runChuck) {
+          return ChuckShoot;
         }
         return this;
       }
@@ -428,7 +456,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToShoot() && runShoot) {
+        if ((readyToShoot() && runShoot) || runShootOverride) {
           return Shoot;
         }
         return this;
@@ -599,6 +627,29 @@ public class Shooter extends SubsystemBase {
         runIntakeIn();
         runIndexShoot();
         setShootFlag(false);
+        setShotStartTime();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return ShootPauseBroken;
+        }
+        if (shooterBreakBeam.get()) {
+          return ShootPause;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState ChuckShoot = new MMStateMachineState("ChuckShoot") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
+        runIndexShoot();
+        setShootFlag(false);
+        setChuckFlag(false);
         setShotStartTime();
       }
 
@@ -1154,6 +1205,12 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(desiredWaypoint.getAngle());
   }
 
+  public void aimForChuck() {
+    runLeftMotor(leftShooterChuckVelocity);
+    runRightMotor(rightShooterChuckVelocity);
+    setShooterPosition(shooterChuckRotation);
+  }
+
   public void aimToWall() {
     double distance = rc.drivetrain.getState().Pose.getX();
     MMWaypoint wallWaypoint = firingSolution.calcSolution(distance);
@@ -1165,9 +1222,11 @@ public class Shooter extends SubsystemBase {
   public void calcFiringSolution() {
     double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
     if (targetAngleSpeaker != null) {
-      distanceToSpeaker -= Math.abs(.3 * Math.sin(targetAngleSpeaker.getRadians()));
+      distanceToSpeaker -= Math.abs(.3 *
+          Math.sin(targetAngleSpeaker.getRadians()));
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+
   }
 
   // public void calcPredictedFiringSolution() {
@@ -1195,12 +1254,26 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setChuckFlag(boolean isChuck) {
+    runChuck = isChuck;
+    if (isChuck) {
+      runAim = false;
+    }
+    return this;
+  }
+
+  public Shooter setShootOverrideFlag(boolean isOverride) {
+    runShootOverride = isOverride;
+    return this;
+  }
+
   public Shooter setAimFlag(boolean aim) {
     if (runAim && !aim) {
       stopShooterMotors();
     }
     if (aim) {
       setAimWallFlag(false);
+      runChuck = false;
     }
     runAim = aim;
     return this;
@@ -1318,7 +1391,6 @@ public class Shooter extends SubsystemBase {
 
   public void setShotStartTime() {
     shotStartTime = Timer.getFPGATimestamp();
-
   }
 
   public boolean readyToShoot() {
@@ -1328,11 +1400,15 @@ public class Shooter extends SubsystemBase {
         shooterVelocityMargin);
     boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(),
         shooterAngleMargin);
-    // Removed as obsolete    
-    // boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
-    //     && rightBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()) ||
-    //     (rightBoundaryAngleSpeaker.getDegrees() < currentPose.getRotation().getDegrees()
-    //         && leftBoundaryAngleSpeaker.getDegrees() > currentPose.getRotation().getDegrees()));
+    // Removed as obsolete
+    // boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() <
+    // currentPose.getRotation().getDegrees()
+    // && rightBoundaryAngleSpeaker.getDegrees() >
+    // currentPose.getRotation().getDegrees()) ||
+    // (rightBoundaryAngleSpeaker.getDegrees() <
+    // currentPose.getRotation().getDegrees()
+    // && leftBoundaryAngleSpeaker.getDegrees() >
+    // currentPose.getRotation().getDegrees()));
 
     SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
     SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
@@ -1345,7 +1421,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("at velocity left", leftShooterAtVelocity);
     SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
     SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
-    //SmartDashboard.putBoolean("at Boundary", atBoundary);
+    // SmartDashboard.putBoolean("at Boundary", atBoundary);
     SmartDashboard.putNumber("angle left boundary", leftBoundaryAngleSpeaker.getDegrees());
     SmartDashboard.putNumber("angle right boundary", rightBoundaryAngleSpeaker.getDegrees());
     SmartDashboard.putNumber("angle Robot", currentPose.getRotation().getDegrees());
@@ -1387,16 +1463,23 @@ public class Shooter extends SubsystemBase {
     Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
 
-    // TODO: Reveiw the following change to bingo to handle NOT resetting angle to something custom.
+    // TODO: Reveiw the following change to bingo to handle NOT resetting angle to
+    // something custom.
     boolean bingo = isInMargin(c.getY(),
-        MMField.blueSpeakerPose.getTranslation().getY(), .3556)
-        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees())<90;
+        MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
     SmartDashboard.putBoolean("bingo", bingo);
 
     return leftShooterAtVelocity
         && rightShooterAtVelocity
         && shooterAtAngle
         && bingo;
+  }
+
+  public boolean readyToChuck() {
+    return isInMargin(getLeftShooterVelocity(), leftShooterChuckVelocity, shooterVelocityMargin) &&
+        isInMargin(getRightShooterVelocity(), rightShooterChuckVelocity, shooterVelocityMargin) &&
+        isInMargin(getShooterAngle(), shooterChuckRotation, shooterAngleMargin);
   }
 
   public boolean isInMargin(double value1, double value2, double margin) {

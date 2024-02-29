@@ -31,6 +31,14 @@ public class MustangAuto extends MMDeferredCommand<SequentialCommandGroup> {
       cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser1.getSelected(),
           RobotContainer.shootChooser1.getSelected()));
     }
+    if (RobotContainer.noteChooser2.getSelected() != null) {
+      cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser2.getSelected(),
+          RobotContainer.shootChooser2.getSelected()));
+    }
+    if (RobotContainer.noteChooser3.getSelected() != null) {
+      cmd.addCommands(new MustangAutoCycle(rc, RobotContainer.noteChooser3.getSelected(),
+          RobotContainer.shootChooser3.getSelected()));
+    }
     cmd.initialize();
   }
 }

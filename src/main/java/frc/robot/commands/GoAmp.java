@@ -25,13 +25,13 @@ public class GoAmp extends Command {
   private Command pathCommand;
 
   public GoAmp(RobotContainer rc) {
-     this.rc = rc;
+    this.rc = rc;
     addRequirements(rc.drivetrain);
     SmartDashboard.putString("goAmpStatus", "constructed");
   }
 
   // Called when the command is initially scheduled.
- @Override
+  @Override
   public void initialize() {
     Pose2d currentPose = MMField.getBluePose(rc.drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(.75, 1.5, 2 * Math.PI, 4 * Math.PI);
@@ -52,8 +52,7 @@ public class GoAmp extends Command {
   @Override
   public void execute() {
     pathCommand.execute();
-        SmartDashboard.putString("goAmpStatus", "executed");
-        
+    SmartDashboard.putString("goAmpStatus", "executed");
 
   }
 
@@ -61,16 +60,15 @@ public class GoAmp extends Command {
   @Override
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
-    SmartDashboard.putString("goAmpStatus", interrupted?"interrupted":"not interrupted");
-    rc.shooterSubsystem.setShootFlag(!interrupted);
+    SmartDashboard.putString("goAmpStatus", interrupted ? "interrupted" : "not interrupted");
+    rc.shooterSubsystem.setShootFlag(!interrupted); 
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-        SmartDashboard.putString("goAmpStatus", pathCommand.isFinished()?"finished":"not finished");
+    SmartDashboard.putString("goAmpStatus", pathCommand.isFinished() ? "finished" : "not finished");
 
     return pathCommand.isFinished();
   }
 }
-
