@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -27,11 +28,13 @@ public class Robot extends TimedRobot {
   // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
   // or b) splitting the can bus
   // TODO: Control Documentation
-  // TODO: Shoot button to throw not shoot. (controller button)
   // TODO: Climb with Trap (controller button) - Add AbortClimb
-  // TODO: top 3 Autos for competition
+  // TODO: Migrate Lessons learned from Warmblood to Arabian
   // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
   // clear
+  // TODO: Catch Dual note intake, and reverse
+  // TODO: intake failure make sure that if a state machine reset is need that it
+  // is automatic.
   // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
   // title screens.
   // TODO: Repack Electronics cabinet, pack up and clear pneumatics from bottom
@@ -118,11 +121,10 @@ public class Robot extends TimedRobot {
     }
     m_robotContainer.shooterSubsystem.stopMotors();
 
-    // TODO: Done... Turned off logging.
-    // // Starts recording to data log
-    // DataLogManager.start();
-    // // Record both DS control and joystick data
-    // DriverStation.startDataLog(DataLogManager.getLog());
+    // Starts recording to data log
+    DataLogManager.start();
+    // Record both DS control and joystick data
+    DriverStation.startDataLog(DataLogManager.getLog());
     Navigation.visionUpdate = 0;
 
   }
