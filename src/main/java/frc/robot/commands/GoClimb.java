@@ -26,13 +26,14 @@ public class GoClimb extends Command {
   private Command pathCommand;
   private Pose2d approachPose;
 
-
   public GoClimb(RobotContainer rc, Pose2d approachPose) {
     this.rc = rc;
     this.approachPose = approachPose;
     SmartDashboard.putString("goClimbStatus", "constructed");
+    addRequirements(rc.drivetrain);
   }
-//.813 how far back
+
+  // .813 how far back
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
@@ -40,10 +41,10 @@ public class GoClimb extends Command {
     PathConstraints trajectoryConstraints = new PathConstraints(.5, 1, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
         currentPose,
-        MMField.getBlueStageFieldPose());
+        approachPose);
     PathPlannerPath path = new PathPlannerPath(bezierPoints,
         trajectoryConstraints,
-        new GoalEndState(0, Rotation2d.fromDegrees(0)));
+        new GoalEndState(0, Rotation2d.fromDegrees(approachPose.getRotation().getDegrees())));
     path.preventFlipping = false;
     pathCommand = AutoBuilder.followPath(path);
     CommandScheduler.getInstance().registerComposedCommands(pathCommand);
@@ -55,7 +56,7 @@ public class GoClimb extends Command {
   @Override
   public void execute() {
     pathCommand.execute();
-        SmartDashboard.putString("goClimbStatus", "executed");
+    SmartDashboard.putString("goClimbStatus", "executed");
 
   }
 
@@ -63,14 +64,14 @@ public class GoClimb extends Command {
   @Override
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
-    SmartDashboard.putString("goClimbStatus", interrupted?"interrupted":"not interrupted");
+    SmartDashboard.putString("goClimbStatus", interrupted ? "interrupted" : "not interrupted");
 
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-        SmartDashboard.putString("goClimbStatus", pathCommand.isFinished()?"finished":"not finished");
+    SmartDashboard.putString("goClimbStatus", pathCommand.isFinished() ? "finished" : "not finished");
 
     return pathCommand.isFinished();
   }

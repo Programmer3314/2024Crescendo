@@ -48,7 +48,8 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     m_robotContainer = new RobotContainer();
-
+    m_robotContainer.climber.setClimbFlag(false);
+    m_robotContainer.climber.setClimbUnwindFlag(false);
     // Shuffleboard.getTab("Field").addString("pose", () ->
     // m_robotContainer.drivetrain.getState().Pose.toString())
     // .withWidget(BuiltInWidgets.kField);

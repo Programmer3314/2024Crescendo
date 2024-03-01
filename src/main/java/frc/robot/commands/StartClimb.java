@@ -32,9 +32,9 @@ public class StartClimb extends Command {
   // TODO: If Interupted, set on AbortClimb flag. 
   @Override
   public void end(boolean interrupted) {
-    if(interrupted){
-      rc.climber.setAbortFlag(true);
-    }
+    // if(interrupted){
+    //   rc.climber.setAbortFlag(true);
+    // }
   }
 
   // Returns true when the command should end.

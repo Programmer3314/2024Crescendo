@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest.Idle;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -41,6 +42,7 @@ public class Climber extends SubsystemBase {
   double climbSlowPos = .15;
   double elevatorSafety = .20;
   double climbPositionMargin = 0;
+  double emergencyStopClimber = .045;
 
   int idleCounter = 0;
 
@@ -75,7 +77,7 @@ public class Climber extends SubsystemBase {
     SmartDashboard.putString("ClimbState", csm.currentState.getName());
     SmartDashboard.putNumber("Idle Counter", idleCounter);
     // configCanCoders()
-
+    // climberLimitStop();
   }
 
   private class ClimbStateMachine extends MMStateMachine {
@@ -134,6 +136,10 @@ public class Climber extends SubsystemBase {
         if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
             && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
           return Engage;
+        }
+        if (climberEmergency() && (leftCanCoder.getVelocity().getValue() < 0
+            || rightCanCoder.getVelocity().getValue() < 0)) {
+          return Idle;
         }
         return this;
 
@@ -298,6 +304,10 @@ public class Climber extends SubsystemBase {
         if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
           return ResetClimb;
         }
+        if (climberEmergency() && (leftCanCoder.getVelocity().getValue() < 0
+            || rightCanCoder.getVelocity().getValue() < 0)) {
+          return Idle;
+        }
         return this;
       }
     };
@@ -319,62 +329,7 @@ public class Climber extends SubsystemBase {
         setClimbUnwindFlag(false);
       }
     };
-  
-    // MMStateMachineState AbortClimb = new MMStateMachineState("AbortClimb") {
 
-    //   @Override
-    //   public void transitionTo(MMStateMachineState previousState) {
-    //     setClimbPos(); // Will stop what we're doing and hold us in place 
-    //     //
-    //   }
-
-    //   @Override
-    //   public MMStateMachineState calcNextState() {
-    //     if (!runAbortClimb) {
-    //       return Idle;
-    //     }
-    //     return this;
-
-    //   };
-
-    //   @Override
-    //   public void transitionFrom(MMStateMachineState NextState) {
-    //   }
-    // };
-
-     // MMStateMachineState AbortClaws = new MMStateMachineState("AbortClaws") {
-
-    //   @Override
-    //   public void transitionTo(MMStateMachineState previousState) {
-    //     runClimbNeg(): // will unwind the claw untill it's in the up pos
-    //     //
-    //   }
-
-    //   @Override
-    //   public MMStateMachineState calcNextState() {
-    //     if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
-    //       return AbortElevator;
-    //     }
-    //     return this;
-    //   };
-
-    // MMStateMachineState AbortElevator = new MMStateMachineState("AbortElevator") {
-
-    //   @Override
-    //   public void transitionTo(MMStateMachineState previousState) {
-    //        stopClimb(); // stop unwinding
-    //        rc.shooterSubsystem.setElevatorDown(); // bring the elevator back down
-    //     //
-    //   }
-
-    //   @Override
-    //   public MMStateMachineState calcNextState() {
-    //     if (rc.shooterSubsystem.isInMargin(rc.shooterSubsystem.getElevatorPosition(),
-    //        rc.shooterSubsystem.elevatorDownPosition, rc.shooterSubsystem.elevatorPositionMargin)) {
-    //       return Idle;
-    //     }
-    //     return this;
-    //   };
   }
 
   public void runClimbNeg() {
@@ -484,5 +439,19 @@ public class Climber extends SubsystemBase {
 
   public void setClimbUnwindFlag(boolean flag) {
     unwindClimb = flag;
+  }
+
+  public void climberLimitStop() {
+    if (climberEmergency()) {
+      resetStateMachine();
+      setClimbFlag(false);
+      stopClimb();
+
+    }
+  }
+
+  public boolean climberEmergency() {
+    return leftCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber
+        || rightCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber;
   }
 }

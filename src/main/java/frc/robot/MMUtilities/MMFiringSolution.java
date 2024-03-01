@@ -12,6 +12,8 @@ public class MMFiringSolution {
     RobotContainer rc;
     double speakerHeight = Units.inchesToMeters(83);
     double pivotHeight = Units.inchesToMeters(5);
+    public static double manualChangeAngle = 0;
+    public static double iteratedAngle = .01;
 
     private MMWaypoint[] waypoints;
 
@@ -63,6 +65,7 @@ public class MMFiringSolution {
         // .385 encoder value
         double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .306;// +.31
         SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
+        shootAngle += manualChangeAngle;
         if (shootAngle > .458) {
             shootAngle = .458;
         }
@@ -81,5 +84,17 @@ public class MMFiringSolution {
                 res.getVelocity());
         // return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity,
         // desiredRightVelocity, desiredVelocity);
+    }
+
+    public static void incrementManualChangeAngle() {
+        manualChangeAngle += iteratedAngle;
+    }
+
+    public static void decrementManualChangeAngle() {
+        manualChangeAngle -= iteratedAngle;
+    }
+
+    public static void resetManualChangeAngle() {
+        manualChangeAngle = 0;
     }
 }

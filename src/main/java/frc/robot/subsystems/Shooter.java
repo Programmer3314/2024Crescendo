@@ -78,6 +78,8 @@ public class Shooter extends SubsystemBase {
   double outTakeDelay = .125;
   boolean runChuck;
   boolean runShootOverride;
+  boolean manualAngleIncrement;
+  boolean manualAngleDecrement;
 
   double shotStartTime;
   double shotEndTime;
@@ -244,6 +246,8 @@ public class Shooter extends SubsystemBase {
       // abortIntake = true;
       abortIntakeCounter++;
     }
+
+    SmartDashboard.putNumber("changed angle", MMFiringSolution.manualChangeAngle);
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
     // if (!hasHomedElevator) {
@@ -1226,7 +1230,7 @@ public class Shooter extends SubsystemBase {
           Math.sin(targetAngleSpeaker.getRadians()));
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
-
+    
   }
 
   // public void calcPredictedFiringSolution() {

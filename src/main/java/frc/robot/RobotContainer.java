@@ -20,11 +20,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
+import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
@@ -131,7 +133,8 @@ public class RobotContainer {
     // driverController.leftTrigger().onTrue(new GoShoot(this));
 
     // driverController.leftBumper().onTrue(
-    //     new ParallelCommandGroup(drivetrain.runOnce(() -> drivetrain.seedFieldRelative())));
+    // new ParallelCommandGroup(drivetrain.runOnce(() ->
+    // drivetrain.seedFieldRelative())));
     driverController.button(8)
         .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
@@ -157,10 +160,23 @@ public class RobotContainer {
     // oppController.a().onTrue(new StartClimb(this));
     oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
+    // oppController.povUp().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageFieldPose()));
+    // oppController.povLeft().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageSpeakerSidePose()));
+    // oppController.povRight().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageNonSpeakerSidePose()));
     oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageAmpSidePose()));
-    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageHumanSidePose()));
+    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageSpeakerSidePose()));
+    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageNonSpeakerSidePose()));
+
     oppController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
+    oppController.leftTrigger()
+        .onTrue(new InstantCommand(() -> MMFiringSolution.decrementManualChangeAngle()));
+    oppController.rightTrigger()
+        .onTrue(new InstantCommand(() -> MMFiringSolution.incrementManualChangeAngle()));
+    oppController.button(10)
+        .onTrue(new InstantCommand(() -> MMFiringSolution.resetManualChangeAngle()));
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
@@ -190,7 +206,6 @@ public class RobotContainer {
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
     autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
-    // TODO: redo HorseShoe like FourNoteAuto with paths and shoot sequence
     autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);
