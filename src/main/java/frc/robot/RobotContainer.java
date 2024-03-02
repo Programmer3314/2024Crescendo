@@ -28,6 +28,7 @@ import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
+import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.MustangAuto;
@@ -37,6 +38,7 @@ import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.Warmblood;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ABlinkin;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Navigation;
@@ -91,6 +93,7 @@ public class RobotContainer {
   public Shooter shooterSubsystem = new Shooter(this);
   public Navigation navigation = new Navigation(this);
   public Climber climber = new Climber(this);
+  public ABlinkin aBlinkin = new ABlinkin(this);
 
   private final SendableChooser<Command> autoChooser;
   public static SendableChooser<Pose2d> startPoseChooser;
@@ -167,8 +170,14 @@ public class RobotContainer {
     // oppController.povRight().whileTrue(new FullClimb(this,
     // MMField.getBlueStageNonSpeakerSidePose()));
     oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this, MMField.getBlueStageSpeakerSidePose()));
-    oppController.povRight().whileTrue(new FullClimb(this, MMField.getBlueStageNonSpeakerSidePose()));
+
+    oppController.povLeft().whileTrue(new FullClimb(this,
+        MMField.getBlueStageSpeakerSidePose()));
+    oppController.povRight().whileTrue(new FullClimb(this,
+        MMField.getBlueStageNonSpeakerSidePose()));
+
+    // oppController.povLeft().whileTrue(new SetColor(this, "Intake"));
+    // oppController.povRight().whileTrue(new SetColor(this, "Gottem"));
 
     oppController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
     oppController.leftTrigger()

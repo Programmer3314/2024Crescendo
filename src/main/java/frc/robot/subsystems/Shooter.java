@@ -40,6 +40,7 @@ import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
 import frc.robot.MMUtilities.MMTurnPIDController;
 import frc.robot.MMUtilities.MMWaypoint;
+import frc.robot.commands.SetColor;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
@@ -367,6 +368,8 @@ public class Shooter extends SubsystemBase {
         runIntakeIn();
         rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
         rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
+
+        rc.aBlinkin.controlBlink(rc.aBlinkin.intakeBlinkValue);
       }
 
       @Override
@@ -393,6 +396,8 @@ public class Shooter extends SubsystemBase {
         setAimFlag(true);
         rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
         rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
+
+        rc.aBlinkin.controlBlink(0.77);
       }
 
       @Override
@@ -1240,6 +1245,10 @@ public class Shooter extends SubsystemBase {
 
   public Shooter setIntakeFlag(boolean run) {
     runIntake = run;
+    return this;
+  }
+
+  public Shooter setColorFlag(boolean run){
     return this;
   }
 
