@@ -25,7 +25,9 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.datalog.BooleanLogEntry;
 import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -68,6 +70,9 @@ public class Shooter extends SubsystemBase {
   double leftShooterChuckVelocity = 30;
   double rightShooterChuckVelocity = 40;
   double shooterChuckRotation = .38;
+  double leftShooterWooferSlamVelocity = 35;
+  double rightShooterWooferSlamVelocity = 45;
+  double shooterAngleWooferSlam = .45;
 
   int abortIntakeCounter;
 
@@ -81,6 +86,7 @@ public class Shooter extends SubsystemBase {
   double shooterDelay = .125;
   double outTakeDelay = .125;
   boolean runChuck;
+  boolean runWooferSlam;
   boolean runShootOverride;
   boolean manualAngleIncrement;
   boolean manualAngleDecrement;
@@ -111,8 +117,6 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredElevatorBeltUp;
   boolean diagnosticDesiredElevatorBeltDown;
   boolean diagnosticDesiredLeftShooterVel;
-
-  StringLogEntry shooterStateLog;
 
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
@@ -183,15 +187,18 @@ public class Shooter extends SubsystemBase {
   private VelocityVoltage elevatorVelVol = new VelocityVoltage(0);
 
   StructPublisher<Pose2d> currentPosePublisher = NetworkTableInstance.getDefault()
-      // some code to get the pose
-      // out displaying on advantagescope.
-      // It's pretty laggy but it works.
-      // Should be helpful for getting the
-      // lead out code sorted and for after
-      // matches.
       .getStructTopic("currentPose", Pose2d.struct).publish();
-  StructPublisher<Pose2d> leadGuessPosePublisher = NetworkTableInstance.getDefault()
-      .getStructTopic("leadGuessPose", Pose2d.struct).publish();
+  StringLogEntry shooterStateLog;
+  BooleanLogEntry intakeFlagLog;
+  BooleanLogEntry aimFlagLog;
+  DoubleLogEntry intakePositionLog;
+  DoubleLogEntry intakeVelocityLog;
+  DoubleLogEntry leftIndexVelocityLog;
+  DoubleLogEntry rightIndexVelocityLog;
+  DoubleLogEntry shooterRotatePositionLog;
+  DoubleLogEntry leftShooterVelocityLog;
+  DoubleLogEntry rightShooterVelocityLog;
+  BooleanLogEntry intakeBreakBeamLog;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
@@ -269,7 +276,8 @@ public class Shooter extends SubsystemBase {
     // }
     // }
 
-    shooterStateLog.append("Logging is here");
+    diagnosticUpdate();
+
     ssm.update();
 
     // TODO: Check this for Red.
@@ -286,6 +294,8 @@ public class Shooter extends SubsystemBase {
       // aimToSpeakerNoShoot();
     } else if (runChuck) {
       aimForChuck();
+    } else if (runWooferSlam) {
+      aimForWooferSlam();
     }
 
     // else {
@@ -454,6 +464,9 @@ public class Shooter extends SubsystemBase {
         if (runChuck) {
           return PrepareToChuck;
         }
+        if (runWooferSlam) {
+          return PrepareToWooferSlam;
+        }
         if (runOutTake) {
           return IntakeReverse;
         }
@@ -464,8 +477,19 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToChuck() && runChuck) {
+        if (readyToChuck() && runChuck) {// TODO: is this really needed, the flag should already be on
           return ChuckShoot;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState PrepareToWooferSlam = new MMStateMachineState("PrepareToWooferSlam") {
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (readyToWooferSlam() && runWooferSlam) {// TODO: is this really needed, the flag should already be on
+          return WooferSlam;
         }
         return this;
       }
@@ -646,6 +670,29 @@ public class Shooter extends SubsystemBase {
         runIntakeIn();
         runIndexShoot();
         setShootFlag(false);
+        setShotStartTime();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return ShootPauseBroken;
+        }
+        if (shooterBreakBeam.get()) {
+          return ShootPause;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState WooferSlam = new MMStateMachineState("WooferSlam") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
+        runIndexShoot();
+        setShootFlag(false);
+        setWooferSlamFlag(false);
         setShotStartTime();
       }
 
@@ -1233,6 +1280,12 @@ public class Shooter extends SubsystemBase {
     runRightMotor(desiredWaypoint.getRightVelocity());
   }
 
+  public void aimForWooferSlam() {
+    runLeftMotor(leftShooterWooferSlamVelocity);
+    runRightMotor(rightShooterWooferSlamVelocity);
+    setShooterPosition(shooterAngleWooferSlam);
+  }
+
   public void aimForChuck() {
     runLeftMotor(leftShooterChuckVelocity);
     runRightMotor(rightShooterChuckVelocity);
@@ -1289,6 +1342,14 @@ public class Shooter extends SubsystemBase {
   public Shooter setChuckFlag(boolean isChuck) {
     runChuck = isChuck;
     if (isChuck) {
+      runAim = false;
+    }
+    return this;
+  }
+
+  public Shooter setWooferSlamFlag(boolean isSlam) {
+    runWooferSlam = isSlam;
+    if (isSlam) {
       runAim = false;
     }
     return this;
@@ -1512,6 +1573,12 @@ public class Shooter extends SubsystemBase {
     return isInMargin(getLeftShooterVelocity(), leftShooterChuckVelocity, shooterVelocityMargin) &&
         isInMargin(getRightShooterVelocity(), rightShooterChuckVelocity, shooterVelocityMargin) &&
         isInMargin(getShooterAngle(), shooterChuckRotation, shooterAngleMargin);
+  }
+
+  public boolean readyToWooferSlam() {
+    return isInMargin(getLeftShooterVelocity(), leftShooterWooferSlamVelocity, shooterVelocityMargin) &&
+        isInMargin(getRightShooterVelocity(), rightShooterWooferSlamVelocity, shooterVelocityMargin) &&
+        isInMargin(getShooterAngle(), shooterAngleWooferSlam, shooterAngleMargin);
   }
 
   public boolean isInMargin(double value1, double value2, double margin) {
@@ -1768,12 +1835,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public void diagnosticUpdate() {
-    // TODO: What do we want on our logs?
-    // -All the Counters
-    // -All the Flags
-    // -State
-    // -Robot Position(with cool animation thing)
-    // -Motor Positions/Velocity
+
+    shooterStateLog.append(ssm.currentState.getName());
+    currentPosePublisher.accept(currentPose);
+    intakeFlagLog.append(runIntake);
+    aimFlagLog.append(runAim);
+
   }
 
   public void shooterDown() {

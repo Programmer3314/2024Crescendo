@@ -11,6 +11,9 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Power;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,12 +28,14 @@ import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
+import frc.robot.commands.FullChuck;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
+import frc.robot.commands.SignalForNote;
 import frc.robot.commands.StartClimb;
 import frc.robot.commands.StartClimbManual;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
@@ -51,6 +56,8 @@ import frc.robot.subsystems.Shooter;
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
   public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
+  public PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
+  
 
   public final Field2d field = new Field2d();
   private Pose2d[] startPoseList = {
@@ -131,33 +138,41 @@ public class RobotContainer {
     // -Climb / StopClimb
     // -RequestAmp(shoot/ eject are the same thing)
 
-    driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
-    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
-        .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
-    driverController.a().whileTrue(new Aim(this));
-    driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
-        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
+    // driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
+    // driverController.rightTrigger().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setShootFlag(true)))
+    // .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
+    // driverController.a().whileTrue(new Aim(this));
+    // driverController.b().whileTrue(new InstantCommand(() ->
+    // shooterSubsystem.setIntakeFlag(true)))
+    // .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
     // driverController.leftTrigger().onTrue(new GoShoot(this));
 
     // driverController.leftBumper().onTrue(
     // new ParallelCommandGroup(drivetrain.runOnce(() ->
     // drivetrain.seedFieldRelative())));
-    driverController.button(8)
-        .onTrue(new InstantCommand(() -> drivetrain.seedFieldRelative(MMField.currentWooferPose())));
+    // driverController.button(8)
+    // .onTrue(new InstantCommand(() ->
+    // drivetrain.seedFieldRelative(MMField.currentWooferPose())));
 
-    driverController.y().whileTrue(new GoAmp(this));
+    // driverController.y().whileTrue(new GoAmp(this));
 
-    driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-    driverController.povDown()
-        .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
-            new InstantCommand(() -> climber.resetStateMachine())));
-    driverController.povUp().whileTrue(new AimToWall(this));
-    driverController.povRight().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
-    driverController.povLeft().onTrue(new InstantCommand(() -> shooterSubsystem.setShootOverrideFlag(true)));
+    // driverController.x().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setElevatorIndexFlag(true)));
+    // driverController.povDown()
+    // .onTrue(new ParallelCommandGroup(new InstantCommand(() ->
+    // shooterSubsystem.resetStateMachine()),
+    // new InstantCommand(() -> climber.resetStateMachine())));
+    // driverController.povUp().whileTrue(new AimToWall(this));
+    // driverController.povRight().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setChuckFlag(true)));
+    // driverController.povLeft().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setShootOverrideFlag(true)));
     // driverController.povUp().whileTrue( new InstantCommand(() ->
     // shooterSubsystem.shooterAngleMargin+=.0001));
     // driverController.povUp().whileTrue( new InstantCommand(() ->
     // shooterSubsystem.shooterAngleMargin-=.0001));
+    // driverController.getHID().setRumble(null, MaxAngularRate);
 
     // driverController.leftTrigger().whileTrue(new InstantCommand(()->
     // shooterSubsystem.runElevatorBeltUpSlow()));
@@ -165,43 +180,86 @@ public class RobotContainer {
     // MMField::getBlueWooferApproachPose));
 
     // oppController.a().onTrue(new StartClimb(this));
-    oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
-    oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-  
+    // oppController.a().onTrue(new InstantCommand(() ->
+    // climber.setClimbUnwindFlag(true)));
+    // oppController.button(8).onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setRunDiagnosticFlag(true)));
+
     // oppController.povUp().whileTrue(new FullClimb(this,
     // MMField.getBlueStageFieldPose()));
     // oppController.povLeft().whileTrue(new FullClimb(this,
     // MMField.getBlueStageSpeakerSidePose()));
     // oppController.povRight().whileTrue(new FullClimb(this,
     // MMField.getBlueStageNonSpeakerSidePose()));
-    oppController.povUp().whileTrue(new FullClimb(this,
-        MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this,
-        MMField.getBlueStageSpeakerSidePose()));
-    oppController.povRight().whileTrue(new FullClimb(this,
-        MMField.getBlueStageNonSpeakerSidePose()));
-    oppController.leftBumper().onTrue(new InstantCommand(() -> climber.setMoveHooksUp(true)));
-    oppController.rightBumper().onTrue(new StartClimbManual(this));
-    oppController.povDown().onTrue(new InstantCommand(() -> navigation.resetVision()));
+    // oppController.povUp().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageFieldPose()));
+    // oppController.povLeft().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageSpeakerSidePose()));
+    // oppController.povRight().whileTrue(new FullClimb(this,
+    // MMField.getBlueStageNonSpeakerSidePose()));
+    // oppController.leftBumper().onTrue(new InstantCommand(() ->
+    // climber.setMoveHooksUp(true)));
+    // oppController.rightBumper().onTrue(new StartClimbManual(this));
+    // oppController.povDown().onTrue(new InstantCommand(() ->
+    // navigation.resetVision()));
 
     // oppController.povLeft().whileTrue(new SetColor
     // (this, "Intake"));
     // oppController.povRight().whileTrue(new SetCol
 
-    oppController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
-    oppController.leftTrigger()
-        .onTrue(new InstantCommand(() -> MMFiringSolution.decrementManualChangeAngle()));
-    oppController.rightTrigger()
-        .onTrue(new InstantCommand(() -> MMFiringSolution.incrementManualChangeAngle()));
-    oppController.button(10)
-        .onTrue(new InstantCommand(() -> MMFiringSolution.resetManualChangeAngle()));
-        
+    // oppController.b().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setReverseIntakeFlag(true)));
+    // oppController.leftTrigger()
+    // .onTrue(new InstantCommand(() ->
+    // MMFiringSolution.decrementManualChangeAngle()));
+    // oppController.rightTrigger()
+    // .onTrue(new InstantCommand(() ->
+    // MMFiringSolution.incrementManualChangeAngle()));
+    // oppController.button(10)
+    // .onTrue(new InstantCommand(() -> MMFiringSolution.resetManualChangeAngle()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
 
     // drivetrain.registerTelemetry(logger::telemeterize);
+
+    // Final CONTROLS:
+    driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
+
+    driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));// TODO: Is this even needed?
+    driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
+    driverController.y().whileTrue(new GoAmp(this));
+    driverController.povDown()
+        .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
+            new InstantCommand(() -> climber.resetStateMachine())));
+
+    driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
+    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
+
+    driverController.leftBumper().onTrue(new SignalForNote(this));
+    driverController.leftTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setWooferSlamFlag(true)));
+
+    oppController.a().whileTrue(new Aim(this));
+
+    oppController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
+        oppController.leftTrigger().whileTrue(new FullChuck(this));
+        // oppController.rightBumper().onTrue(new InstantCommand(()-> shooterSubsystem.));
+
+    oppController.button(7).onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
+
+    oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
+    oppController.povUp().whileTrue(new FullClimb(this,
+        MMField.getBlueStageFieldPose()));
+    oppController.povLeft().whileTrue(new FullClimb(this,
+        MMField.getBlueStageSpeakerSidePose()));
+    oppController.povRight().whileTrue(new FullClimb(this,
+        MMField.getBlueStageNonSpeakerSidePose()));
+    oppController.leftBumper().whileTrue(new AimToWall(this));
+
+
   }
 
   public RobotContainer() {

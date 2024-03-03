@@ -46,17 +46,18 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
         // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
         // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
         new FollowPathFile(rc, "comp_wb_2"),
-        new ChaseAndIntakeBroken(rc),
+        // new ChaseAndIntakeBroken(rc),
+        new ChaseAndIntakeBroken(rc, true),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_wb_3"),
         new Delay(rc, 50),
         new ShootAndWait(rc),
         new FollowPathFile(rc, "comp_wb_4"),
-        new ChaseAndIntakeBroken(rc),
+        // new ChaseAndIntakeBroken(rc),
+        new ChaseAndIntakeBroken(rc, true),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_wb_5")
-    // new ShootAndWait(rc)
-    );
+        new FollowPathFile(rc, "comp_wb_5"),
+        new ShootAndWait(rc));
     cmd.initialize();
   }
 }

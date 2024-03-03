@@ -22,6 +22,7 @@ public class Robot extends TimedRobot {
   public static DriverStation.Alliance alliance;
   public static int resetDriverValue = 1;
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
+  
 
   // TODO: GLOBAL TODOs...
   // TODO: HIGH PRIORITY Migrate Lessons learned from Warmblood to Arabian and
@@ -50,6 +51,7 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     m_robotContainer.climber.setClimbFlag(false);
     m_robotContainer.climber.setClimbUnwindFlag(false);
+    m_robotContainer.pdh.setSwitchableChannel(false);
     // Shuffleboard.getTab("Field").addString("pose", () ->
     // m_robotContainer.drivetrain.getState().Pose.toString())
     // .withWidget(BuiltInWidgets.kField);
@@ -58,7 +60,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
   }
 
   @Override
@@ -101,6 +102,8 @@ public class Robot extends TimedRobot {
     Navigation.visionUpdate = 0;
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+
+    m_robotContainer.pdh.setSwitchableChannel(true);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

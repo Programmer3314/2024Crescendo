@@ -133,10 +133,10 @@ public class Climber extends SubsystemBase {
           return Engage;
         }
         if (runTrap) {
-          return ClawsUp;
+          return ClawsUpTrap;
         }
         if (moveHooksUp) {
-          return ClawsUp;
+          return ClawsUpFast;
         }
         return this;
       };
@@ -146,14 +146,75 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState ClawsUp = new MMStateMachineState("ClawsUp") {
+    MMStateMachineState ClawsUpTrap = new MMStateMachineState("ClawsUpTrap") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         // runClimbSlow();
-        clawsUpMove();
+        clawsUpTrapMove();
         //
       }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
+            && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
+          if (moveHooksUp) {
+            return Idle;
+          }
+        }
+        if (climberEmergency()
+            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
+          return Idle;
+        }
+        return this;
+
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+        setClimbPos();
+      }
+    };
+
+    MMStateMachineState ClawsUpFast = new MMStateMachineState("ClawsUpFast") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // runClimbSlow();
+        clawsUpFastMove();
+        //
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (leftCanCoder.getAbsolutePosition().getValue() >= climbSlowPos
+            && rightCanCoder.getAbsolutePosition().getValue() >= climbSlowPos) {
+          return ClawsUpSlow;
+        }
+        if (climberEmergency()
+            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
+          return Idle;
+        }
+        return this;
+
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+        setClimbPos();
+      }
+    };
+
+    MMStateMachineState ClawsUpSlow = new MMStateMachineState("ClawsUpSlow") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // runClimbSlow();
+        clawsUpSlowMove();
+        //
+      }
+
       @Override
       public MMStateMachineState calcNextState() {
         if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
@@ -368,8 +429,16 @@ public class Climber extends SubsystemBase {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(40));
   }
 
-  public void clawsUpMove() {
+  public void clawsUpSlowMove() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(20));
+  }
+
+  public void clawsUpTrapMove() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(60));
+  }
+
+  public void clawsUpFastMove() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(90));
   }
 
   public void stopClimb() {
@@ -487,6 +556,5 @@ public class Climber extends SubsystemBase {
     return leftCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber
         || rightCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber;
   }
-
 
 }

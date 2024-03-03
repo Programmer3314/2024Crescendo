@@ -14,6 +14,7 @@ public class ABlinkin extends SubsystemBase {
   public double intakeBlinkValue = -.07;
   public double gottemBlinkValue = -.77;
   public double shootBlinkValue = -.17;
+  public double gimmeNoteValue = -.68;
   public double normalValue = 0;
 
   /** Creates a new spark. */
@@ -28,5 +29,13 @@ public class ABlinkin extends SubsystemBase {
 
   public void controlBlink(double value) {
     sparkblinkin.set(value);
+  }
+
+  public void gimmeNote(){
+    sparkblinkin.set(gimmeNoteValue);
+  }
+
+  public void gotNote() {
+    sparkblinkin.set(normalValue);
   }
 }
