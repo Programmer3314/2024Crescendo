@@ -18,12 +18,14 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMConfigure;
 import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
+import frc.robot.MMUtilities.MMTurnPIDController;
 
 public class Climber extends SubsystemBase {
   /** Creates a new Climber. */
@@ -36,13 +38,13 @@ public class Climber extends SubsystemBase {
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
   private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
-  double climbDownPosition = 0.047;
-  double climbUpPosition = .28;
+  double climbDownPosition = 0.056;
+  double climbUpPosition = .275;
   double climbEngaged = .27;
   double climbSlowPos = .15;
   double elevatorSafety = .20;
   double climbPositionMargin = 0;
-  double emergencyStopClimber = .045;
+  double emergencyStopClimber = .051;
 
   int idleCounter = 0;
 
@@ -50,6 +52,7 @@ public class Climber extends SubsystemBase {
   boolean runTrap;
   boolean unwindClimb;
   boolean runAbortClimb;
+  boolean moveHooksUp;
 
   MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
   MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
@@ -101,7 +104,24 @@ public class Climber extends SubsystemBase {
         setClimbFlag(false);
         setTrapFlag(false);
         setClimbUnwindFlag(false);
+        setMoveHooksUp(false);
         idleCounter++;
+      }
+
+      public void doState() {
+        if ((leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+            && leftCanCoder.getAbsolutePosition().getValue() >= .2)
+            && (rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+                && rightCanCoder.getAbsolutePosition().getValue() >= .2)) {
+          rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
+          // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+          // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
+        } else {
+
+          rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
+          // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+          // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        }
       }
 
       @Override
@@ -110,9 +130,12 @@ public class Climber extends SubsystemBase {
           return UnwindClimb;
         }
         if (runClimb) {
-          return ClawsUp;
+          return Engage;
         }
         if (runTrap) {
+          return ClawsUp;
+        }
+        if (moveHooksUp) {
           return ClawsUp;
         }
         return this;
@@ -127,18 +150,20 @@ public class Climber extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runClimbSlow();
+        // runClimbSlow();
+        clawsUpMove();
         //
       }
-
       @Override
       public MMStateMachineState calcNextState() {
         if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
             && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
-          return Engage;
+          if (moveHooksUp) {
+            return Idle;
+          }
         }
-        if (climberEmergency() && (leftCanCoder.getVelocity().getValue() < 0
-            || rightCanCoder.getVelocity().getValue() < 0)) {
+        if (climberEmergency()
+            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
           return Idle;
         }
         return this;
@@ -165,7 +190,6 @@ public class Climber extends SubsystemBase {
           return Climb;
         }
         return this;
-
       };
 
       @Override
@@ -281,7 +305,7 @@ public class Climber extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= .5) {
-          return Idle;
+          return Idle;//
         }
         return this;
       }
@@ -304,8 +328,8 @@ public class Climber extends SubsystemBase {
         if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
           return ResetClimb;
         }
-        if (climberEmergency() && (leftCanCoder.getVelocity().getValue() < 0
-            || rightCanCoder.getVelocity().getValue() < 0)) {
+        if (climberEmergency()
+            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
           return Idle;
         }
         return this;
@@ -316,8 +340,8 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (leftCanCoder.getAbsolutePosition().getValue() <= .07
-            || rightCanCoder.getAbsolutePosition().getValue() <= .07) {
+        if (leftCanCoder.getAbsolutePosition().getValue() <= .05
+            || rightCanCoder.getAbsolutePosition().getValue() <= .05) {
           return Idle;
         }
         return this;
@@ -344,6 +368,10 @@ public class Climber extends SubsystemBase {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(40));
   }
 
+  public void clawsUpMove() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(60));
+  }
+
   public void stopClimb() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(0));
   }
@@ -364,6 +392,11 @@ public class Climber extends SubsystemBase {
 
   public Climber setAbortFlag(boolean run) {
     runAbortClimb = run;
+    return this;
+  }
+
+  public Climber setMoveHooksUp(boolean isUp) {
+    moveHooksUp = isUp;
     return this;
   }
 
@@ -454,4 +487,6 @@ public class Climber extends SubsystemBase {
     return leftCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber
         || rightCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber;
   }
+
+
 }

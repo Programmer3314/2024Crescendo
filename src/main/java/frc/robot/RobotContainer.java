@@ -24,17 +24,21 @@ import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
+import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
 import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
+import frc.robot.commands.StartClimb;
+import frc.robot.commands.StartClimbManual;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.HorseShoe;
+import frc.robot.commands.Autos.Competition.HorseShoeTwo;
 import frc.robot.commands.Autos.Competition.Warmblood;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
@@ -127,12 +131,12 @@ public class RobotContainer {
     // -Climb / StopClimb
     // -RequestAmp(shoot/ eject are the same thing)
 
-    driverController.rightBumper().onTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
-        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
+    driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
     driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
     driverController.a().whileTrue(new Aim(this));
-    driverController.b().whileTrue(new ChaseAndIntake(this));
+    driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
+        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));
     // driverController.leftTrigger().onTrue(new GoShoot(this));
 
     // driverController.leftBumper().onTrue(
@@ -163,21 +167,26 @@ public class RobotContainer {
     // oppController.a().onTrue(new StartClimb(this));
     oppController.a().onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
+  
     // oppController.povUp().whileTrue(new FullClimb(this,
     // MMField.getBlueStageFieldPose()));
     // oppController.povLeft().whileTrue(new FullClimb(this,
     // MMField.getBlueStageSpeakerSidePose()));
     // oppController.povRight().whileTrue(new FullClimb(this,
     // MMField.getBlueStageNonSpeakerSidePose()));
-    oppController.povUp().whileTrue(new FullClimb(this, MMField.getBlueStageFieldPose()));
-
+    oppController.povUp().whileTrue(new FullClimb(this,
+        MMField.getBlueStageFieldPose()));
     oppController.povLeft().whileTrue(new FullClimb(this,
         MMField.getBlueStageSpeakerSidePose()));
     oppController.povRight().whileTrue(new FullClimb(this,
         MMField.getBlueStageNonSpeakerSidePose()));
+    oppController.leftBumper().onTrue(new InstantCommand(() -> climber.setMoveHooksUp(true)));
+    oppController.rightBumper().onTrue(new StartClimbManual(this));
+    oppController.povDown().onTrue(new InstantCommand(() -> navigation.resetVision()));
 
-    // oppController.povLeft().whileTrue(new SetColor(this, "Intake"));
-    // oppController.povRight().whileTrue(new SetColor(this, "Gottem"));
+    // oppController.povLeft().whileTrue(new SetColor
+    // (this, "Intake"));
+    // oppController.povRight().whileTrue(new SetCol
 
     oppController.b().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
     oppController.leftTrigger()
@@ -186,6 +195,8 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> MMFiringSolution.incrementManualChangeAngle()));
     oppController.button(10)
         .onTrue(new InstantCommand(() -> MMFiringSolution.resetManualChangeAngle()));
+        
+
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
@@ -214,7 +225,10 @@ public class RobotContainer {
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
     autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
+    autoChooser.addOption("Horseshoe2-Comp", new HorseShoeTwo(this));
+
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
+
     autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));
     autoChooser.setDefaultOption("none", Commands.none());
     SmartDashboard.putData("Auto Mode", autoChooser);

@@ -7,6 +7,7 @@ package frc.robot.commands;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 
 public class Aim extends Command {
@@ -29,8 +30,8 @@ public class Aim extends Command {
   @Override
   public void execute() {
     rc.drivetrain.setControl(drive
-        .withVelocityX(rc.driverController.getLeftYSmoothed())
-        .withVelocityY(rc.driverController.getLeftXSmoothed())
+        .withVelocityX(rc.driverController.getLeftYSmoothed() * Robot.resetDriverValue)
+        .withVelocityY(rc.driverController.getLeftXSmoothed() * Robot.resetDriverValue)
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
   }
 

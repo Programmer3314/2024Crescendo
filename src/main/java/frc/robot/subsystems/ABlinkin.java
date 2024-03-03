@@ -14,6 +14,8 @@ public class ABlinkin extends SubsystemBase {
   public double intakeBlinkValue = -.07;
   public double gottemBlinkValue = -.77;
   public double shootBlinkValue = -.17;
+  public double normalValue = 0;
+
   /** Creates a new spark. */
   public ABlinkin(RobotContainer rc) {
     this.rc = rc;

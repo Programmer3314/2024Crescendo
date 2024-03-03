@@ -54,10 +54,11 @@ public class Navigation extends SubsystemBase {
       if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
         llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
-        if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
+        if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
-          double margin = pose.minus(llPose).getTranslation().getNorm();
+          // double margin = pose.minus(llPose).getTranslation().getNorm();
+          double margin = 0;
           if (visionUpdate < 50
               || margin < .25
               || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
@@ -75,10 +76,11 @@ public class Navigation extends SubsystemBase {
       if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
         llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
-        if (lastResult.valid && lastResult.targets_Fiducials.length > 0) {
+        if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
-          double margin = pose.minus(llPose).getTranslation().getNorm();
+          // double margin = pose.minus(llPose).getTranslation().getNorm();
+          double margin = 0;
           if (visionUpdate < 50
               || margin < .25
               || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
@@ -134,7 +136,7 @@ public class Navigation extends SubsystemBase {
     // double distance = currentPose.getTranslation().minus(target).getX();
     double distance = currentPose.getTranslation().minus(target).getNorm();
     // if (rc.shooterSubsystem.targetAngleSpeaker != null) {
-    //   distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
+    // distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
     // }
     return distance;
   }
@@ -185,4 +187,7 @@ public class Navigation extends SubsystemBase {
   // angVelocity.remove(angVelocity.size() - 1);
   // }
   // }
+  public void resetVision() {
+    visionUpdate = 0;
+  }
 }

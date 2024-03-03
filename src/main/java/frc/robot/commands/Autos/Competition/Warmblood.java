@@ -36,7 +36,8 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.getCurrentWooferHumanPlayerPose())
             .setPipeLine(0, 0, 0),
-        new ShootAndWait(rc,false),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new ShootAndWait(rc),
         // new Reign(rc, new String[] { "comp_wb_1" }),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
@@ -54,8 +55,8 @@ public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
         new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_wb_5")
-        // new ShootAndWait(rc)
-        );
+    // new ShootAndWait(rc)
+    );
     cmd.initialize();
   }
 }

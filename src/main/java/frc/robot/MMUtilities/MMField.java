@@ -47,7 +47,7 @@ public class MMField {
 
   private static Pose2d blueWooferPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
 
-  private static Pose2d blueWooferHumanPlayerPose = new Pose2d(0.74, 6.68, Rotation2d.fromDegrees(120));
+  private static Pose2d blueWooferHumanPlayerPose = new Pose2d(0.74, 6.68, Rotation2d.fromDegrees(-120));//-120
 
   public static Pose2d getBlueWooferPose() {
     return blueWooferPose;

@@ -4,6 +4,8 @@
 
 package frc.robot.MMUtilities;
 
+import java.util.HashMap;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
@@ -14,6 +16,7 @@ public class MMFiringSolution {
     double pivotHeight = Units.inchesToMeters(5);
     public static double manualChangeAngle = 0;
     public static double iteratedAngle = .01;
+    public HashMap<String, MMWaypoint> autoSetPoint = new HashMap<String, MMWaypoint>();
 
     private MMWaypoint[] waypoints;
 
@@ -63,7 +66,7 @@ public class MMFiringSolution {
         // .16 radians
         // .458 encoder value
         // .385 encoder value
-        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .306;// +.31
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .306;// +.306
         SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
         shootAngle += manualChangeAngle;
         if (shootAngle > .458) {

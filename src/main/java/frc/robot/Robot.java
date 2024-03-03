@@ -24,11 +24,10 @@ public class Robot extends TimedRobot {
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
-  // TODO: HIGH PRIORITY Migrate Lessons learned from Warmblood to Arabian and clean up arabian in general
-  // watch out for the Inits... 
-  // TODO: HIGH PRIORITY Get HS2 in place with attempt at 5th Note 
-
-
+  // TODO: HIGH PRIORITY Migrate Lessons learned from Warmblood to Arabian and
+  // clean up arabian in general
+  // watch out for the Inits...
+  // TODO: HIGH PRIORITY Get HS2 in place with attempt at 5th Note
 
   // TODO: Try to reduce can errors by a) reduce odometry Freq using
   // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
@@ -93,6 +92,10 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
+    m_robotContainer.climber.setClimbFlag(false);
+    m_robotContainer.climber.setClimbUnwindFlag(false);
+    m_robotContainer.climber.setClimbPos();
+
     m_robotContainer.shooterSubsystem.stopMotors();
     m_robotContainer.shooterSubsystem.resetStateMachine();
     Navigation.visionUpdate = 0;
@@ -118,6 +121,12 @@ public class Robot extends TimedRobot {
     // if (alliance != null) {
     // resetDriverValue = alliance.equals(Alliance.Red) ? -1 : 1;
     // }
+
+    m_robotContainer.climber.resetStateMachine();
+    m_robotContainer.climber.setClimbFlag(false);
+    m_robotContainer.climber.setClimbUnwindFlag(false);
+    m_robotContainer.climber.setClimbPos();
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -137,7 +146,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopExit() {
-    // DataLogManager.stop();
+    DataLogManager.stop();
   }
 
   @Override

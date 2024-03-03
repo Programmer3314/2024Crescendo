@@ -25,6 +25,9 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -109,6 +112,8 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredElevatorBeltDown;
   boolean diagnosticDesiredLeftShooterVel;
 
+  StringLogEntry shooterStateLog;
+
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
 
@@ -139,7 +144,7 @@ public class Shooter extends SubsystemBase {
   double elevatorInPerRev = 5.125 / 30;
 
   double intakeUpPos = intakeTop - .005;
-  double intakeDownPos = intakeTop - .76;
+  double intakeDownPos = intakeTop - .74;// .76
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
@@ -190,7 +195,9 @@ public class Shooter extends SubsystemBase {
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
+
     this.rc = rc;
+    DataLog log = DataLogManager.getLog();
     firingSolution = new MMFiringSolution(
         rc,
         new MMWaypoint(1.3, .45, 35, 45, 40),
@@ -217,6 +224,7 @@ public class Shooter extends SubsystemBase {
         new InstantCommand(() -> this.runElevatorBeltDownFast()));
     SmartDashboard.putData("Run Belt Down Slow",
         new InstantCommand(() -> this.runElevatorBeltDownSlow()));
+    shooterStateLog = new StringLogEntry(log, "/my/state/shooter");
   }
 
   @Override
@@ -261,6 +269,7 @@ public class Shooter extends SubsystemBase {
     // }
     // }
 
+    shooterStateLog.append("Logging is here");
     ssm.update();
 
     // TODO: Check this for Red.
@@ -274,6 +283,7 @@ public class Shooter extends SubsystemBase {
       aimToWall();
     } else if (runAim) {
       aimToSpeaker();
+      // aimToSpeakerNoShoot();
     } else if (runChuck) {
       aimForChuck();
     }
@@ -393,7 +403,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
-        setAimFlag(true);
+        // setAimFlag(true); Changed to stop battery bleed
         rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
         rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
 
@@ -427,7 +437,7 @@ public class Shooter extends SubsystemBase {
         stopIntake();
         stopIndexers();
         setIntakeFlag(false);
-        setAimFlag(true);
+        // setAimFlag(true); BB
         stopElevatorBelt();
         indexCounter++;
       }
@@ -1214,6 +1224,15 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(desiredWaypoint.getAngle());
   }
 
+  // public void aimToSpeakerNoShoot() {
+  // setShooterPosition(desiredWaypoint.getAngle());
+  // }
+
+  public void aimToSpeakerNoRotate() {
+    runLeftMotor(desiredWaypoint.getLeftVelocity());
+    runRightMotor(desiredWaypoint.getRightVelocity());
+  }
+
   public void aimForChuck() {
     runLeftMotor(leftShooterChuckVelocity);
     runRightMotor(rightShooterChuckVelocity);
@@ -1235,7 +1254,7 @@ public class Shooter extends SubsystemBase {
           Math.sin(targetAngleSpeaker.getRadians()));
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
-    
+
   }
 
   // public void calcPredictedFiringSolution() {
@@ -1248,7 +1267,7 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
-  public Shooter setColorFlag(boolean run){
+  public Shooter setColorFlag(boolean run) {
     return this;
   }
 
@@ -1737,7 +1756,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBeltShoot() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(80));
+    elevatorBelt.setControl(elevatorVelVol.withVelocity(60));
   }
 
   public void stopElevator() {
@@ -1756,4 +1775,9 @@ public class Shooter extends SubsystemBase {
     // -Robot Position(with cool animation thing)
     // -Motor Positions/Velocity
   }
+
+  public void shooterDown() {
+    setShooterPosition(.385);
+  }
+
 }
