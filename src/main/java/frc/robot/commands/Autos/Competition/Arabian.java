@@ -29,7 +29,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
   public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
-        new StandardAutoInit(rc, MMField.currentWooferPose())
+        new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new ShootAndWait(rc),
@@ -38,7 +38,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_1"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc, true),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_ab_2"),
         new Delay(rc, 50),
@@ -46,7 +46,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_3"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc, true),
+        new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_ab_4"),
         new Delay(rc, 50),

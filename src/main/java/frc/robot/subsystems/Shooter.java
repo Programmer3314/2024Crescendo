@@ -155,6 +155,7 @@ public class Shooter extends SubsystemBase {
 
   double elevatorDownPosition = .1;
   double elevatorAmpPosition = 47.2;
+  double elevatorTrapShootPosition = 52;
   double elevatorTrapPosition = 67.0;
 
   double ampUpPosition = 37.2;
@@ -199,12 +200,16 @@ public class Shooter extends SubsystemBase {
   DoubleLogEntry leftShooterVelocityLog;
   DoubleLogEntry rightShooterVelocityLog;
   BooleanLogEntry intakeBreakBeamLog;
+  BooleanLogEntry shooterBreakBeamLog;
+  BooleanLogEntry atTargetAngleLog;
+  BooleanLogEntry atSpeedLog;
+  BooleanLogEntry atShooterAngleLog;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
 
     this.rc = rc;
-    DataLog log = DataLogManager.getLog();
+
     firingSolution = new MMFiringSolution(
         rc,
         new MMWaypoint(1.3, .45, 35, 45, 40),
@@ -231,7 +236,22 @@ public class Shooter extends SubsystemBase {
         new InstantCommand(() -> this.runElevatorBeltDownFast()));
     SmartDashboard.putData("Run Belt Down Slow",
         new InstantCommand(() -> this.runElevatorBeltDownSlow()));
+    DataLog log = DataLogManager.getLog();
     shooterStateLog = new StringLogEntry(log, "/my/state/shooter");
+    intakeFlagLog = new BooleanLogEntry(log, "my/flag/intake");
+    aimFlagLog = new BooleanLogEntry(log, "my/flag/aim");
+    intakePositionLog = new DoubleLogEntry(log, "my/intake/position");
+    intakeVelocityLog = new DoubleLogEntry(log, "my/intake/velocity");
+    leftIndexVelocityLog = new DoubleLogEntry(log, "my/shooter/leftIndexVel");
+    rightIndexVelocityLog = new DoubleLogEntry(log, "my/shooter/rightIndexVel");
+    shooterRotatePositionLog = new DoubleLogEntry(log, "my/shooter/position");
+    leftShooterVelocityLog = new DoubleLogEntry(log, "my/shooter/leftVel");
+    rightShooterVelocityLog = new DoubleLogEntry(log, "my/shooter/rightVel");
+    intakeBreakBeamLog = new BooleanLogEntry(log, "my/breakBeam/intake");
+    shooterBreakBeamLog = new BooleanLogEntry(log, "my/breakBeam/shooter");
+    atTargetAngleLog = new BooleanLogEntry(log, "my/shooterCondition/targetAngle");
+    atSpeedLog = new BooleanLogEntry(log, "my/shooterCondition/motorSpeed");
+    atShooterAngleLog = new BooleanLogEntry(log, "my/shooterCondition/shooterAngle");
   }
 
   @Override
@@ -276,7 +296,7 @@ public class Shooter extends SubsystemBase {
     // }
     // }
 
-    diagnosticUpdate();
+    logUpdate();
 
     ssm.update();
 
@@ -772,6 +792,7 @@ public class Shooter extends SubsystemBase {
         if (Math.abs(intakeRotateMotor.getPosition().getValue() - intakeDownPos) < .05) {
           return IndexReverse;
         }
+        // return IndexReverse;
         return this;
       }
     };
@@ -1493,6 +1514,9 @@ public class Shooter extends SubsystemBase {
         shooterVelocityMargin);
     boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), desiredWaypoint.getAngle(),
         shooterAngleMargin);
+    atShooterAngleLog.append(shooterAtAngle);
+    atSpeedLog.append(rightShooterAtVelocity && leftShooterAtVelocity);
+
     // Removed as obsolete
     // boolean atBoundary = ((leftBoundaryAngleSpeaker.getDegrees() <
     // currentPose.getRotation().getDegrees()
@@ -1544,7 +1568,6 @@ public class Shooter extends SubsystemBase {
     // MMField.getBlueTranslation(a.plus(predictedTransform).plus(inTargetTransform).getTranslation());
 
     // leadGuessPosePublisher.set(a.plus(predictedTransform));
-    // currentPosePublisher.set(a);
 
     // leadActualPosition.append(a.toString());
     // leadXVelocity.append(chassisSpeeds.vxMetersPerSecond);
@@ -1553,6 +1576,7 @@ public class Shooter extends SubsystemBase {
     // leadGuessPosition.append(a.plus(predictedTransform).toString());
 
     Pose2d a = currentPose;
+    currentPosePublisher.set(a);
     Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
     Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
 
@@ -1562,6 +1586,7 @@ public class Shooter extends SubsystemBase {
         MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
         && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
     SmartDashboard.putBoolean("bingo", bingo);
+    atTargetAngleLog.append(bingo);
 
     return leftShooterAtVelocity
         && rightShooterAtVelocity
@@ -1798,6 +1823,10 @@ public class Shooter extends SubsystemBase {
     elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorTrapPosition));
   }
 
+  public void setElevatorUpTrapShot() {
+    elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorTrapShootPosition));
+  }
+
   public void setElevatorDown() {
     elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorDownPosition));
   }
@@ -1834,12 +1863,20 @@ public class Shooter extends SubsystemBase {
     elevatorBelt.setControl(elevatorvoVoltageOut.withOutput(0));
   }
 
-  public void diagnosticUpdate() {
+  public void logUpdate() {
 
     shooterStateLog.append(ssm.currentState.getName());
     currentPosePublisher.accept(currentPose);
     intakeFlagLog.append(runIntake);
     aimFlagLog.append(runAim);
+    intakePositionLog.append(getIntakePos());
+    intakeVelocityLog.append(getIntakeVel());
+    leftShooterVelocityLog.append(getLeftShooterVelocity());
+    rightShooterVelocityLog.append(getRightShooterVelocity());
+    rightIndexVelocityLog.append(index1.getVelocity().getValue());
+    shooterRotatePositionLog.append(getShooterAngle());
+    leftIndexVelocityLog.append(index2.getVelocity().getValue());
+    intakeBreakBeamLog.append(intakeBreakBeam.get());
 
   }
 

@@ -8,27 +8,49 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.000775731281192,
-        "y": 1.8027171189477522
+        "x": 2.230559889691208,
+        "y": 2.506767299248885
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.587720562828513,
-        "y": 1.6270677586400224
+        "x": 3.5059327261511672,
+        "y": 1.4806052469247806
       },
       "prevControl": {
-        "x": 3.638660250293473,
-        "y": 0.4529904555304609
+        "x": 2.098624768678109,
+        "y": 1.6565187416089124
+      },
+      "nextControl": {
+        "x": 4.699080431562965,
+        "y": 1.331461783748306
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.804310751478646,
+        "y": 1.6711781994992572
+      },
+      "prevControl": {
+        "x": 5.4263217097862775,
+        "y": 1.0701404259951377
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "comp_ab_1"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 170.524677906037,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -39,13 +61,13 @@
   },
   "goalEndState": {
     "velocity": 2.0,
-    "rotation": -155.0560947365755,
+    "rotation": -154.88516511385532,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "ArabianCompetition",
   "previewStartingState": {
-    "rotation": 120.20323775494268,
+    "rotation": 120.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

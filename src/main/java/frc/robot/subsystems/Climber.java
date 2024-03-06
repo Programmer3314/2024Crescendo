@@ -18,6 +18,10 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,6 +58,14 @@ public class Climber extends SubsystemBase {
   boolean runAbortClimb;
   boolean moveHooksUp;
 
+  StringLogEntry climberStateLog;
+  DoubleLogEntry leftClimberVelocityLog;
+  DoubleLogEntry rightClimberVelocityLog;
+  DoubleLogEntry leftClimberPositionLog;
+  DoubleLogEntry rightClimberPositionLog;
+  DoubleLogEntry climbMotorVelocityLog;
+  DoubleLogEntry climbMotorPositionLog;
+
   MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
   MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
 
@@ -68,6 +80,15 @@ public class Climber extends SubsystemBase {
     leftCanCoder = new CANcoder(7, "CANIVORE");
     rightCanCoder = new CANcoder(8, "CANIVORE");
 
+    DataLog log = DataLogManager.getLog();
+    climberStateLog = new StringLogEntry(log, "/my/state/climber");
+    leftClimberVelocityLog = new DoubleLogEntry(log, "/my/climber/leftVelocity");
+    rightClimberVelocityLog = new DoubleLogEntry(log, "/my/climber/rightVelocity");
+    leftClimberPositionLog = new DoubleLogEntry(log, "/my/climber/leftPosition");
+    rightClimberPositionLog = new DoubleLogEntry(log, "/my/climber/rightPosition");
+    climbMotorVelocityLog = new DoubleLogEntry(log, "/my/climber/velocity");
+    climbMotorPositionLog = new DoubleLogEntry(log, "/my/climber/position");
+
     climbMotor = new TalonFX(18, "CANIVORE");
 
     configClimbMotor();
@@ -80,6 +101,7 @@ public class Climber extends SubsystemBase {
     SmartDashboard.putString("ClimbState", csm.currentState.getName());
     SmartDashboard.putNumber("Idle Counter", idleCounter);
     // configCanCoders()
+    logUpdate();
     // climberLimitStop();
   }
 
@@ -327,6 +349,11 @@ public class Climber extends SubsystemBase {
       }
 
       @Override
+      public void doState(){
+
+      }
+
+      @Override
       public MMStateMachineState calcNextState() {
         if (rc.shooterSubsystem.isInMargin(rc.shooterSubsystem.getElevatorPosition(),
             rc.shooterSubsystem.elevatorTrapPosition, rc.shooterSubsystem.elevatorPositionMargin)) {
@@ -356,7 +383,7 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {
+    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {//transition to shoot, run the elevator down a little
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -365,7 +392,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= .5) {
+        if (timeInState >= 2.5) {//started @ .5
           return Idle;//
         }
         return this;
@@ -374,6 +401,7 @@ public class Climber extends SubsystemBase {
       @Override
       public void transitionFrom(MMStateMachineState nextState) {
         rc.shooterSubsystem.stopElevatorBelt();
+        rc.shooterSubsystem.setElevatorUpTrapShot();
       }
     };
 
@@ -555,6 +583,16 @@ public class Climber extends SubsystemBase {
   public boolean climberEmergency() {
     return leftCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber
         || rightCanCoder.getAbsolutePosition().getValue() < emergencyStopClimber;
+  }
+
+  public void logUpdate() {
+    climberStateLog.append(csm.currentState.getName());
+    leftClimberVelocityLog.append(leftCanCoder.getVelocity().getValue());
+    rightClimberVelocityLog.append(rightCanCoder.getVelocity().getValue());
+    leftClimberPositionLog.append(leftCanCoder.getAbsolutePosition().getValue());
+    rightClimberPositionLog.append(rightCanCoder.getAbsolutePosition().getValue());
+    climbMotorVelocityLog.append(climbMotor.getVelocity().getValue());
+    climbMotorPositionLog.append(climbMotor.getVelocity().getValue());
   }
 
 }

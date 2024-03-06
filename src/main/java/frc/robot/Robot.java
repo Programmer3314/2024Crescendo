@@ -8,6 +8,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,10 +21,11 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
+
   public static DriverStation.Alliance alliance;
   public static int resetDriverValue = 1;
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
-  
 
   // TODO: GLOBAL TODOs...
   // TODO: HIGH PRIORITY Migrate Lessons learned from Warmblood to Arabian and
@@ -51,7 +54,7 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     m_robotContainer.climber.setClimbFlag(false);
     m_robotContainer.climber.setClimbUnwindFlag(false);
-    m_robotContainer.pdh.setSwitchableChannel(false);
+    pdh.setSwitchableChannel(true);
     // Shuffleboard.getTab("Field").addString("pose", () ->
     // m_robotContainer.drivetrain.getState().Pose.toString())
     // .withWidget(BuiltInWidgets.kField);
@@ -103,7 +106,7 @@ public class Robot extends TimedRobot {
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    m_robotContainer.pdh.setSwitchableChannel(true);
+    // pdh.setSwitchableChannel(true);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

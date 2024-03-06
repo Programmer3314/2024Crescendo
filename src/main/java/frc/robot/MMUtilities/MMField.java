@@ -47,7 +47,9 @@ public class MMField {
 
   private static Pose2d blueWooferPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
 
-  private static Pose2d blueWooferHumanPlayerPose = new Pose2d(0.74, 6.68, Rotation2d.fromDegrees(-120));//-120
+  private static Pose2d blueWooferHumanPlayerPose = new Pose2d(0.74, 6.68, Rotation2d.fromDegrees(-120));// -120
+
+  private static Pose2d blueWooferNonHumanPlayerPose = new Pose2d(0.74, 4.29, Rotation2d.fromDegrees(120));// -120
 
   public static Pose2d getBlueWooferPose() {
     return blueWooferPose;
@@ -59,6 +61,14 @@ public class MMField {
 
   public static Pose2d getCurrentWooferHumanPlayerPose() {
     return getBluePose(blueWooferHumanPlayerPose);
+  }
+
+  public static Pose2d getBlueWooferNonHumanPlayerPose() {
+    return blueWooferNonHumanPlayerPose;
+  }
+
+  public static Pose2d getCurrentWooferNonHumanPlayerPose() {
+    return getBluePose(blueWooferNonHumanPlayerPose);
   }
 
   public static Pose2d currentWooferPose() {
@@ -105,7 +115,8 @@ public class MMField {
     return blueStageFieldSide;
   }
 
-  // private static Pose2d blueStageSpeakerSide = new Pose2d(3.056, 5.29, Rotation2d.fromDegrees(210));
+  // private static Pose2d blueStageSpeakerSide = new Pose2d(3.056, 5.29,
+  // Rotation2d.fromDegrees(210));
   private static Pose2d blueStageSpeakerSide = new Pose2d(4.03, 5.59, Rotation2d.fromDegrees(120));
 
   public static Pose2d currentStageSpeakerSidePose() {
@@ -116,7 +127,8 @@ public class MMField {
     return blueStageSpeakerSide;
   }
 
-  // private static Pose2d blueStageNonSpeakerSide = new Pose2d(3.056, 2.924, Rotation2d.fromDegrees(150));
+  // private static Pose2d blueStageNonSpeakerSide = new Pose2d(3.056, 2.924,
+  // Rotation2d.fromDegrees(150));
   private static Pose2d blueStageNonSpeakerSide = new Pose2d(4.09, 2.67, Rotation2d.fromDegrees(-120));
 
   public static Pose2d currentStageNonSpeakerPose() {
