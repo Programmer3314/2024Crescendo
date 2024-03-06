@@ -28,18 +28,13 @@ public class Robot extends TimedRobot {
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
-  // TODO: HIGH PRIORITY Migrate Lessons learned from Warmblood to Arabian and
-  // clean up arabian in general
-  // watch out for the Inits...
   // TODO: HIGH PRIORITY Get HS2 in place with attempt at 5th Note
-
   // TODO: Try to reduce can errors by a) reduce odometry Freq using
   // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
   // or b) splitting the can bus
   // TODO: Control Documentation
   // TODO: Climb with Trap (controller button) - Add AbortClimb
-  // TODO: Talk to 1768's Driver re: Current Limitting Drive Motors
-
+  // TODO: Investigate raising drivetrain current limitting to 80 (or above)
   // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
   // clear
   // TODO: Catch Dual note intake, and reverse
