@@ -144,15 +144,13 @@ public class Shooter extends SubsystemBase {
   DigitalInput elevatorBreakBeam = new DigitalInput(3);
 
   double intakeTop = .924;
-
-  double elevatorInPerRev = 5.125 / 30;
-
   double intakeUpPos = intakeTop - .005;
   double intakeDownPos = intakeTop - .74;// .76
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
 
+  double elevatorInPerRev = 5.125 / 30;
   double elevatorDownPosition = .1;
   double elevatorAmpPosition = 47.2;
   double elevatorTrapShootPosition = 52;
@@ -765,6 +763,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        // TODO: Are the next two lines needed/used at all?
         shotEndTime = Timer.getFPGATimestamp();
         shotTotalTime = shotEndTime - shotStartTime;
         // totaltime=.1
@@ -824,6 +823,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
+
     MMStateMachineState IntakePause = new MMStateMachineState("IntakePause") {
 
       @Override
@@ -837,6 +837,7 @@ public class Shooter extends SubsystemBase {
         }
       }
     };
+
     MMStateMachineState DiagnosticSetIntakeDown = new MMStateMachineState("DiagnosticSetIntakeDown") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -858,10 +859,9 @@ public class Shooter extends SubsystemBase {
           return Idle;
         }
         return this;
-
       }
-
     };
+
     MMStateMachineState DiagnosticIntakeIn = new MMStateMachineState("DiagnosticIntakeIn") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -889,6 +889,7 @@ public class Shooter extends SubsystemBase {
 
       }
     };
+
     MMStateMachineState DiagnosticIntakeOut = new MMStateMachineState("DiagnosticIntakeOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -909,15 +910,14 @@ public class Shooter extends SubsystemBase {
           return Idle;
         }
         return this;
-
       }
     };
+
     MMStateMachineState DiagnosticSetIntakeUp = new MMStateMachineState("DiagnosticSetIntakeUp") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         stopIntake();
         setIntakeUp();
-
       }
 
       @Override
@@ -934,15 +934,13 @@ public class Shooter extends SubsystemBase {
           return Idle;
         }
         return this;
-
       }
-
     };
+
     MMStateMachineState DiagnosticRunIndexIn = new MMStateMachineState("DiagnosticRunIndexIn") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runIndexIn();
-
       }
 
       @Override
@@ -962,6 +960,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
+
     MMStateMachineState DiagnosticRunIndexOut = new MMStateMachineState("DiagnosticRunIndexOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -985,6 +984,7 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
+
     MMStateMachineState DiagnosticAngle = new MMStateMachineState("DiagnosticAngle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -1006,7 +1006,6 @@ public class Shooter extends SubsystemBase {
           return Idle;
         }
         return this;
-
       }
     };
 
@@ -1092,7 +1091,6 @@ public class Shooter extends SubsystemBase {
         }
         return this;
       }
-
     };
 
     MMStateMachineState DiagnosticElevatorDown = new MMStateMachineState("DiagnosticElevatorDown") {
@@ -1118,7 +1116,6 @@ public class Shooter extends SubsystemBase {
         }
         return this;
       }
-
     };
 
     MMStateMachineState DiagnosticElevatorBeltUp = new MMStateMachineState("DiagnosticElevatorBeltUp") {
@@ -1146,6 +1143,7 @@ public class Shooter extends SubsystemBase {
       }
 
     };
+
     MMStateMachineState DiagnosticElevatorBeltDown = new MMStateMachineState("DiagnosticElevatorBeltDown") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -1169,7 +1167,6 @@ public class Shooter extends SubsystemBase {
         }
         return this;
       }
-
     };
 
     MMStateMachineState IntakeStallPause = new MMStateMachineState("IntakeStallPause") {
@@ -1328,7 +1325,6 @@ public class Shooter extends SubsystemBase {
           Math.sin(targetAngleSpeaker.getRadians()));
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
-
   }
 
   // public void calcPredictedFiringSolution() {

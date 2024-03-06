@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -47,6 +48,22 @@ public class Navigation extends SubsystemBase {
     Pose2d pose = rc.drivetrain.getState().Pose;
     currentPose = pose;
 
+
+    // TODO: try a couple of latency approaches
+    // a.
+    // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) - (result.latency_pipeline / 1000.0)
+    // and maybe also subtract latency_jsonParse/1000.0
+    // b. 
+    // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+    // if(limelightMeasurement.tagCount >= 2)
+    // {
+    //   m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+    //   m_poseEstimator.addVisionMeasurement(
+    //       limelightMeasurement.pose,
+    //       limelightMeasurement.timestampSeconds);
+    // }    
+
+
     if (true) {
       var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
       SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
@@ -83,7 +100,7 @@ public class Navigation extends SubsystemBase {
           double margin = 0;
           if (visionUpdate < 50
               || margin < .25
-              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {    
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             visionUpdate++;
           }

@@ -59,6 +59,9 @@ public class MMFiringSolution {
             res = new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
         }
 
+        // TODO: Try to simplify by using constant velocities (max from waypoints, or maybe a little faster)
+        // see if we can clean up deadzone (blue dots on floor), or maybe we need more more better waypoints. 
+
         // Alternate angle calc...
         // 34 degrees and .389 encoder value
         // .593 radians .095+ .294
