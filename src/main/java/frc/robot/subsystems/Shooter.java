@@ -143,7 +143,7 @@ public class Shooter extends SubsystemBase {
   DigitalInput elevatorHomeSensor = new DigitalInput(0);
   DigitalInput elevatorBreakBeam = new DigitalInput(3);
 
-  double intakeTop = .924;
+  double intakeTop = .775;
   double intakeUpPos = intakeTop - .005;
   double intakeDownPos = intakeTop - .74;// .76
 
@@ -305,16 +305,18 @@ public class Shooter extends SubsystemBase {
     // TODO: This might not work for red. We may need to
     turnWallPidController.initialize(180);
     WallTurnRate = turnWallPidController.execute(currentPose.getRotation());
-    if (runWallAim) {
-      aimToWall();
-    } else if (runAim) {
-      aimToSpeaker();
-      // aimToSpeakerNoShoot();
-    } else if (runChuck) {
-      aimForChuck();
-    } else if (runWooferSlam) {
-      aimForWooferSlam();
-    }
+    // if (runWallAim) {
+    // aimToWall();
+    // }
+    // if (runAim) {
+    //   aimToSpeaker();
+    // }
+    // // aimToSpeakerNoShoot();
+    // } else if (runChuck) {
+    // aimForChuck();
+    // } else if (runWooferSlam) {
+    // aimForWooferSlam();
+    // }
 
     // else {
     // // stopShooterMotors();
@@ -382,6 +384,7 @@ public class Shooter extends SubsystemBase {
         setReverseIntakeFlag(false);
         setChuckFlag(false);
         setShootOverrideFlag(false);
+        setWooferSlamFlag(false);
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -404,6 +407,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         runIntakeIn();
+
         rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
         rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
 
@@ -450,7 +454,7 @@ public class Shooter extends SubsystemBase {
           return Idle;
         }
         return this;
-      }
+      };
 
       @Override
       public void transitionFrom(MMStateMachineState nexState) {
@@ -467,6 +471,12 @@ public class Shooter extends SubsystemBase {
         setIntakeFlag(false);
         // setAimFlag(true); BB
         stopElevatorBelt();
+        setShootFlag(false);
+        setAimFlag(false);
+        setAimWallFlag(false);
+        setChuckFlag(false);
+        setShootOverrideFlag(false);
+        setWooferSlamFlag(false);
         indexCounter++;
       }
 
@@ -492,6 +502,11 @@ public class Shooter extends SubsystemBase {
       }
     };
     MMStateMachineState PrepareToChuck = new MMStateMachineState("PrepareToChuck") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // aimToWall();
+        aimForChuck();
+      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -503,6 +518,9 @@ public class Shooter extends SubsystemBase {
     };
 
     MMStateMachineState PrepareToWooferSlam = new MMStateMachineState("PrepareToWooferSlam") {
+      public void transitionTo(MMStateMachineState previousState) {
+        aimForWooferSlam();
+      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -514,6 +532,9 @@ public class Shooter extends SubsystemBase {
     };
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
+      public void transitionTo(MMStateMachineState previousState) {
+        aimToSpeaker();
+      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -1676,7 +1697,7 @@ public class Shooter extends SubsystemBase {
     canConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.5);
+        .withMagnetOffset(-0.165);
     MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 

@@ -23,7 +23,7 @@ public class Aim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rc.shooterSubsystem.setAimFlag(true);
+    // rc.shooterSubsystem.setAimFlag(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

@@ -18,11 +18,11 @@ import frc.robot.commands.Autos.StandardAutoInit;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class Warmblood extends MMDeferredCommand<SequentialCommandGroup> {
+public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
 
   /** Creates a new TwoShotAuto. */
-  public Warmblood(RobotContainer rc) {
+  public Thoroughbred(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.

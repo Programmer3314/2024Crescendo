@@ -45,7 +45,7 @@ import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.HorseShoeTwo;
-import frc.robot.commands.Autos.Competition.Warmblood;
+import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ABlinkin;
@@ -251,7 +251,6 @@ public class RobotContainer {
     // oppController.leftBumper().whileTrue(new
     // InstantCommand(()->shooterSubsystem.aimToWall()));
     oppController.rightBumper().whileTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
-
     // oppController.rightBumper().onTrue(new InstantCommand(()->
     // shooterSubsystem.));
 
@@ -291,7 +290,7 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
-    autoChooser.addOption("WarmbloodAuto-Comp", new Warmblood(this));
+    autoChooser.addOption("WarmbloodAuto-Comp", new Thoroughbred(this));
     autoChooser.addOption("Horseshoe2-Comp", new HorseShoeTwo(this));
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
