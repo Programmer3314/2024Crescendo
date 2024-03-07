@@ -4,9 +4,13 @@
 
 package frc.robot.subsystems;
 
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -34,6 +38,128 @@ public class Navigation extends SubsystemBase {
   // double timeToShoot = .1;
   private Pose2d currentPose;
 
+  // private AprilThread aprilThread;
+  // protected final ReadWriteLock aprilStateLock = new ReentrantReadWriteLock();
+
+  // TODO: Try parsing limelights in a thread...
+  // I read that the json parsing is very time consuming
+  // public class AprilThread {
+  //   double llFrontHearbeat = 0;
+  //   double llBackHeartbeat = 0;
+  //   long visionUpdate = 0;
+
+  //   protected static final int START_THREAD_PRIORITY = 1;
+  //   protected final Thread thread;
+  //   protected volatile boolean running;
+  //   protected final double UpdateFrequency = 50;
+
+  //   public AprilThread() {
+  //     thread = new Thread(this::run);
+  //     /*
+  //      * Mark this thread as a "daemon" (background) thread
+  //      * so it doesn't hold up program shutdown
+  //      */
+  //     thread.setDaemon(true);
+  //   }
+
+  //   /**
+  //    * Starts the odometry thread.
+  //    */
+  //   public void start() {
+  //     running = true;
+  //     thread.start();
+  //   }
+
+  //   /**
+  //    * Stops the odometry thread.
+  //    */
+  //   public void stop() {
+  //     stop(0);
+  //   }
+
+  //   /**
+  //    * Stops the odometry thread with a timeout.
+  //    *
+  //    * @param millis The time to wait in milliseconds
+  //    */
+  //   public void stop(long millis) {
+  //     running = false;
+  //     try {
+  //       thread.join(millis);
+  //     } catch (final InterruptedException ex) {
+  //       Thread.currentThread().interrupt();
+  //     }
+  //   }
+
+  //   public void run() {
+  //     Threads.setCurrentThreadPriority(true, START_THREAD_PRIORITY);
+  //     while (running) {
+  //       try {
+  //         aprilStateLock.writeLock().lock();
+
+  //         Timer.delay(1.0 / UpdateFrequency);
+  //         {
+  //           var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
+  //           // SmartDashboard.putNumber("LL Heartbeat",
+  //           // lastResult.timestamp_LIMELIGHT_publish);
+
+  //           if (lastResult.timestamp_LIMELIGHT_publish != llBackHeartbeat) {
+  //             llBackHeartbeat = lastResult.timestamp_LIMELIGHT_publish;
+
+  //             if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
+  //               Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+  //               // SmartDashboard.putString("llPose", llPose.toString());
+  //               // double margin = pose.minus(llPose).getTranslation().getNorm();
+  //               double margin = 0;
+  //               if (visionUpdate < 50
+  //                   || margin < .25
+  //                   || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+  //                 rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
+  //                     - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0));
+  //                 visionUpdate++;
+  //               }
+  //             }
+  //           }
+  //         }
+  //         {
+  //           var lastResult = LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
+  //           // SmartDashboard.putNumber("LL Heartbeat",
+  //           // lastResult.timestamp_LIMELIGHT_publish);
+
+  //           if (lastResult.timestamp_LIMELIGHT_publish != llFrontHearbeat) {
+  //             llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+
+  //             if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
+  //               Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+  //               // SmartDashboard.putString("llPose", llPose.toString());
+  //               // double margin = pose.minus(llPose).getTranslation().getNorm();
+  //               double margin = 0;
+  //               if (visionUpdate < 50
+  //                   || margin < .25
+  //                   || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+  //                 rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
+  //                     - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0));
+  //                 visionUpdate++;
+  //               }
+  //             }
+  //           }
+  //         }
+  //       } finally {
+  //         aprilStateLock.writeLock().unlock();
+  //       }
+  //     }
+  //   }
+
+  //   public void ResetVisionUpdate() {
+  //     try {
+  //       aprilStateLock.writeLock().lock();
+  //       visionUpdate = 0;
+  //     } finally {
+  //       aprilStateLock.writeLock().unlock();
+  //     }
+  //   }
+  // }
+
   /** Creates a new Navigation. */
   public Navigation(RobotContainer rc) {
     this.rc = rc;
@@ -41,6 +167,10 @@ public class Navigation extends SubsystemBase {
     LimelightHelpers.setPipelineIndex("limelight-bd", 0);
     LimelightHelpers.setPipelineIndex("limelight-backup", 0);
     LimelightHelpers.setPipelineIndex("limelight-front", 0);
+
+    // aprilThread = new AprilThread();
+    // aprilThread.start();
+
   }
 
   @Override
@@ -48,21 +178,21 @@ public class Navigation extends SubsystemBase {
     Pose2d pose = rc.drivetrain.getState().Pose;
     currentPose = pose;
 
-
     // TODO: try a couple of latency approaches
     // a.
-    // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) - (result.latency_pipeline / 1000.0)
+    // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) -
+    // (result.latency_pipeline / 1000.0)
     // and maybe also subtract latency_jsonParse/1000.0
-    // b. 
-    // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+    // b.
+    // LimelightHelpers.PoseEstimate limelightMeasurement =
+    // LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
     // if(limelightMeasurement.tagCount >= 2)
     // {
-    //   m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
-    //   m_poseEstimator.addVisionMeasurement(
-    //       limelightMeasurement.pose,
-    //       limelightMeasurement.timestampSeconds);
-    // }    
-
+    // m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+    // m_poseEstimator.addVisionMeasurement(
+    // limelightMeasurement.pose,
+    // limelightMeasurement.timestampSeconds);
+    // }
 
     if (true) {
       var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
@@ -100,7 +230,7 @@ public class Navigation extends SubsystemBase {
           double margin = 0;
           if (visionUpdate < 50
               || margin < .25
-              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {    
+              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             visionUpdate++;
           }
@@ -206,5 +336,6 @@ public class Navigation extends SubsystemBase {
   // }
   public void resetVision() {
     visionUpdate = 0;
+    // aprilThread.ResetVisionUpdate();
   }
 }
