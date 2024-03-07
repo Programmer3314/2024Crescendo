@@ -28,10 +28,11 @@ public class Robot extends TimedRobot {
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
-  // TODO: HIGH PRIORITY Get HS2 in place with attempt at 5th Note
-  // TODO: Try to reduce can errors by a) reduce odometry Freq using
-  // alternate drivetrain constructor with freq parameter (maybe 200?,150?)
-  // or b) splitting the can bus
+  // TODO: Try Vision Threading and latency calcs
+  
+  // TODO: Before Weekend - get autos in place (roughed out)
+  // TODO: Get HS2 in place with attempt at 5th Note
+  // TODO: Split the can bus
   // TODO: Control Documentation
   // TODO: Climb with Trap (controller button) - Add AbortClimb
   // TODO: Investigate raising drivetrain current limitting to 80 (or above)
@@ -42,6 +43,8 @@ public class Robot extends TimedRobot {
   // is automatic.
   // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
   // title screens.
+  // TODO: Extended Diagnostics
+  
 
   @Override
   public void robotInit() {
