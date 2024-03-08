@@ -107,7 +107,7 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredIntakeUp;
   boolean diagnosticDesiredIntakeDown;
   boolean diagnosticDesiredIntakeIn;
-  boolean diagnosticDesiredIntakeOut;
+  boolean diagnosticMoveToIndex;
   boolean diagnosticDesiredIndexIn;
   boolean diagnosticDesiredIndexOut;
   boolean diagnosticDesiredShooterAngle;
@@ -156,6 +156,8 @@ public class Shooter extends SubsystemBase {
   double elevatorTrapShootPosition = 52;
   double elevatorTrapPosition = 67.0;
 
+  double shooterAngleDownPos = .38;
+
   double ampUpPosition = 37.2;
 
   double index1InVel = 8;
@@ -202,6 +204,7 @@ public class Shooter extends SubsystemBase {
   BooleanLogEntry atTargetAngleLog;
   BooleanLogEntry atSpeedLog;
   BooleanLogEntry atShooterAngleLog;
+  String diagnosticState;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
@@ -284,6 +287,9 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("changed angle", MMFiringSolution.manualChangeAngle);
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
+
+    //TODO: finish below diagnostic (null)
+    // SmartDashboard.putString("DGState", diagnosticState);
     // if (!hasHomedElevator) {
     // runElevatorToHome();
     // }
@@ -309,7 +315,7 @@ public class Shooter extends SubsystemBase {
     // aimToWall();
     // }
     // if (runAim) {
-    //   aimToSpeaker();
+    // aimToSpeaker();
     // }
     // // aimToSpeakerNoShoot();
     // } else if (runChuck) {
@@ -324,7 +330,7 @@ public class Shooter extends SubsystemBase {
     if (runDiagnosticTest) {
       SmartDashboard.putBoolean("diagnosticIntakeDown", diagnosticDesiredIntakeDown);
       SmartDashboard.putBoolean("diagnosticIntakeIn", diagnosticDesiredIntakeIn);
-      SmartDashboard.putBoolean("diagnosticIntakeOut", diagnosticDesiredIntakeOut);
+      SmartDashboard.putBoolean("diagnosticIntakeOut", diagnosticMoveToIndex);
       SmartDashboard.putBoolean("diagnosticIntakeUp", diagnosticDesiredIntakeUp);
       SmartDashboard.putBoolean("diagnosticIndexIn", diagnosticDesiredIndexIn);
       SmartDashboard.putBoolean("diagnosticIndexOut", diagnosticDesiredIndexOut);
@@ -864,16 +870,19 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
         setAimFlag(false);
+        diagnosticState = "IntakeDown";
+        // TODO: make the first noise
       }
 
       @Override
       public void doState() {
         diagnosticDesiredIntakeDown = isInMargin(intakeDownPos, getIntakePos(), intakeRotationMargin);
+
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeDown) {
+        if (diagnosticDesiredIntakeDown) {
           return DiagnosticIntakeIn;
         }
         if (timeInState >= diagnosticTimeOut) {
@@ -887,21 +896,20 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runIntakeIn();
+        diagnosticState = "IntakeIn";
       }
 
       @Override
       public void doState() {
         double actualvel = getIntakeVel();
         diagnosticDesiredIntakeIn = isInMargin(intakeVelIn, actualvel, intakeVelocityMargin);
-        SmartDashboard.putBoolean("intIn", diagnosticDesiredIntakeIn);
-        SmartDashboard.putNumber("intDesired", intakeVelIn);
-        SmartDashboard.putNumber("intActual", actualvel);
+
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeIn) {
-          return DiagnosticIntakeOut;
+        if (!intakeBreakBeam.get()) {
+          return DiagnosticMoveToIndex;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -911,20 +919,169 @@ public class Shooter extends SubsystemBase {
       }
     };
 
+    MMStateMachineState DiagnosticMoveToIndex = new MMStateMachineState("DiagnosticMoveToIndex") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIndexIn();
+        // runIntakeOut();
+        // TODO: make second noise
+        diagnosticState = "MoveToIndex";
+      }
+
+      @Override
+      public void doState() {
+        double actualvel = getIntakeVel();
+        diagnosticMoveToIndex = isInMargin(intakeVelIn, actualvel, intakeVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return DiagnosticSetIntakeUp;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState DiagnosticShooterAngle = new MMStateMachineState("DiagnosticShooterAngle") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIndexers();
+        stopIntake();
+        setShooterPosition(diagnosticShooterAngle);
+        diagnosticState = "DiagnosticShooterAngle";
+        // TODO: make second noise
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredShooterAngle = isInMargin(diagnosticShooterAngle, getShooterAngle(), shooterAngleMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (diagnosticDesiredShooterAngle) {
+          return DiagnosticSlowShoot;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState DiagnosticSlowShoot = new MMStateMachineState("DiagnosticSlowShoot") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
+        diagnosticState = "DiagnosticSlowShoot";
+        // TODO: make fourth noise
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (shooterBreakBeam.get()) {
+          return DiagnosticShooterAngleDown;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+
+    };
+    MMStateMachineState DiagnosticShooterAngleDown = new MMStateMachineState("DiagnosticShooterAngleDown") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIndexers();
+        stopIntake();
+        stopShooterMotors();
+        setShooterPosition(shooterAngleDownPos);
+        diagnosticState = "DiagnosticShooterAngleDown";
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredShooterAngle = isInMargin(shooterAngleDownPos, getShooterAngle(), shooterAngleMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (diagnosticDesiredShooterAngle) {
+          return DiagnosticSlowReverse;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticSlowReverse = new MMStateMachineState("DiagnosticSlowReverse") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runShooters(-diagnosticLeftMotorSpeed, -diagnosticRightMotorSpeed);
+        diagnosticState = "DiagnosticSlowReverse";
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return DiagnosticReverseToIndex;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+
+    };
+    MMStateMachineState DiagnosticReverseToIndex = new MMStateMachineState("DiagnosticReverseToIndex") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopShooterMotors();
+        runIndexOut();
+        // runIntakeOut();
+        // TODO: make fifth noise
+        diagnosticState = "DiagnosticReverseToIndex";
+      }
+
+      @Override
+      public void doState() {
+        double actualvel1 = getIndex1Vel();
+        double actualvel2 = getIndex2Vel();
+        diagnosticMoveToIndex = isInMargin(index1OutVel, actualvel1, intakeVelocityMargin)
+            && isInMargin(index1OutVel, actualvel2, intakeVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!intakeBreakBeam.get()) {
+          return DiagnosticIntakeOut;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+
     MMStateMachineState DiagnosticIntakeOut = new MMStateMachineState("DiagnosticIntakeOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        //TODO: make another noise
         runIntakeOut();
       }
 
       @Override
       public void doState() {
-        diagnosticDesiredIntakeOut = isInMargin(intakeVelOut, getIntakeVel(), intakeVelocityMargin);
+        diagnosticMoveToIndex = isInMargin(intakeVelOut, getIntakeVel(), intakeVelocityMargin);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeOut) {
+        if (intakeBreakBeam.get() && timeInState >= diagnosticRunTime) {
           return DiagnosticSetIntakeUp;
         }
         if (timeInState >= diagnosticTimeOut) {
@@ -938,6 +1095,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         stopIntake();
+        stopIndexers();
         setIntakeUp();
       }
 
@@ -949,239 +1107,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeUp) {
-          return DiagnosticRunIndexIn;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticRunIndexIn = new MMStateMachineState("DiagnosticRunIndexIn") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runIndexIn();
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredIndexIn = isInMargin(index1InVel, getIndex1Vel(), shooterVelocityMargin)
-            && isInMargin(index2InVel, getIndex2Vel(), shooterVelocityMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexIn) {
-          return DiagnosticRunIndexOut;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticRunIndexOut = new MMStateMachineState("DiagnosticRunIndexOut") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runIndexOut();
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredIndexOut = isInMargin(index2OutVel, getIndex2Vel(), shooterVelocityMargin)
-            && isInMargin(index1OutVel, getIndex1Vel(), shooterVelocityMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexOut) {
-          return DiagnosticAngle;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticAngle = new MMStateMachineState("DiagnosticAngle") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        stopIndexers();
-        setShooterPosition(diagnosticShooterAngle);
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredShooterAngle = isInMargin(diagnosticShooterAngle, getShooterAngle(), shooterAngleMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterAngle) {
-          return DiagnosticRightShoot;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticLeftShoot = new MMStateMachineState("DiagnosticLeftShooter") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runLeftMotor(diagnosticLeftMotorSpeed);
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredLeftShooterVel = isInMargin(diagnosticLeftMotorSpeed, getLeftShooterVelocity(),
-            shooterVelocityMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredLeftShooterVel) {
-          return DiagnosticElevatorUp;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-
-      @Override
-      public void transitionFrom(MMStateMachineState nextState) {
-        stopLeftMotor();
-      }
-    };
-
-    MMStateMachineState DiagnosticRightShoot = new MMStateMachineState("DiagnosticRightShooter") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runRightMotor(diagnosticRightMotorSpeed);
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredRightShooterVel = isInMargin(diagnosticRightMotorSpeed, getRightShooterVelocity(),
-            shooterVelocityMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredRightShooterVel) {
-          return DiagnosticLeftShoot;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-
-      @Override
-      public void transitionFrom(MMStateMachineState nextState) {
-        stopRightMotor();
-      }
-
-    };
-
-    MMStateMachineState DiagnosticElevatorUp = new MMStateMachineState("DiagnosticElevatorUp") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        setElevatorUp();
-        // rc.joystick.setRumble
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredElevatorUp = isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition,
-            elevatorPositionMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorUp) {
-          return DiagnosticElevatorDown;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticElevatorDown = new MMStateMachineState("DiagnosticElevatorDown") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        setElevatorDown();
-        // rc.joystick.setRumble
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredElevatorDown = isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition,
-            elevatorPositionMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorDown) {
-          return DiagnosticElevatorBeltUp;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState DiagnosticElevatorBeltUp = new MMStateMachineState("DiagnosticElevatorBeltUp") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runElevatorBeltUpSlow();
-        // rc.joystick.setRumble
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredElevatorBeltUp = isInMargin(elevatorBelt.getVelocity().getValue(), DiagnosticElevatorBeltVel,
-            DiagnosticElevatorBeltMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorBeltUp) {
-          return DiagnosticElevatorBeltDown;
-        }
-        if (timeInState >= diagnosticTimeOut) {
-          return Idle;
-        }
-        return this;
-      }
-
-    };
-
-    MMStateMachineState DiagnosticElevatorBeltDown = new MMStateMachineState("DiagnosticElevatorBeltDown") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runElevatorBeltDownSlow();
-        // rc.joystick.setRumble
-      }
-
-      @Override
-      public void doState() {
-        diagnosticDesiredElevatorBeltDown = isInMargin(elevatorBelt.getVelocity().getValue(),
-            -DiagnosticElevatorBeltVel, DiagnosticElevatorBeltMargin);
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorBeltDown) {
-          return Idle;
+          return Index;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -1901,4 +1827,253 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(.385);
   }
 
+  // MMStateMachineState DiagnosticRunIndexIn = new
+  // MMStateMachineState("DiagnosticRunIndexIn") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runIndexIn();
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredIndexIn = isInMargin(index1InVel, getIndex1Vel(),
+  // shooterVelocityMargin)
+  // && isInMargin(index2InVel, getIndex2Vel(), shooterVelocityMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexIn) {
+  // return DiagnosticRunIndexOut;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticRunIndexOut = new
+  // MMStateMachineState("DiagnosticRunIndexOut") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runIndexOut();
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredIndexOut = isInMargin(index2OutVel, getIndex2Vel(),
+  // shooterVelocityMargin)
+  // && isInMargin(index1OutVel, getIndex1Vel(), shooterVelocityMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredIndexOut) {
+  // return DiagnosticShooterAngle;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticAngle = new
+  // MMStateMachineState("DiagnosticAngle") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // stopIndexers();
+  // setShooterPosition(diagnosticShooterAngle);
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredShooterAngle = isInMargin(diagnosticShooterAngle,
+  // getShooterAngle(), shooterAngleMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredShooterAngle) {
+  // return DiagnosticRightShoot;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticLeftShoot = new
+  // MMStateMachineState("DiagnosticLeftShooter") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runLeftMotor(diagnosticLeftMotorSpeed);
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredLeftShooterVel = isInMargin(diagnosticLeftMotorSpeed,
+  // getLeftShooterVelocity(),
+  // shooterVelocityMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredLeftShooterVel) {
+  // return DiagnosticElevatorUp;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+
+  // @Override
+  // public void transitionFrom(MMStateMachineState nextState) {
+  // stopLeftMotor();
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticRightShoot = new
+  // MMStateMachineState("DiagnosticRightShooter") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runRightMotor(diagnosticRightMotorSpeed);
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredRightShooterVel = isInMargin(diagnosticRightMotorSpeed,
+  // getRightShooterVelocity(),
+  // shooterVelocityMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredRightShooterVel) {
+  // return DiagnosticLeftShoot;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+
+  // @Override
+  // public void transitionFrom(MMStateMachineState nextState) {
+  // stopRightMotor();
+  // }
+
+  // };
+
+  // MMStateMachineState DiagnosticElevatorUp = new
+  // MMStateMachineState("DiagnosticElevatorUp") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // setElevatorUp();
+  // // rc.joystick.setRumble
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredElevatorUp =
+  // isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition,
+  // elevatorPositionMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorUp) {
+  // return DiagnosticElevatorDown;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticElevatorDown = new
+  // MMStateMachineState("DiagnosticElevatorDown") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // setElevatorDown();
+  // // rc.joystick.setRumble
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredElevatorDown =
+  // isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition,
+  // elevatorPositionMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorDown) {
+  // return DiagnosticElevatorBeltUp;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
+
+  // MMStateMachineState DiagnosticElevatorBeltUp = new
+  // MMStateMachineState("DiagnosticElevatorBeltUp") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runElevatorBeltUpSlow();
+  // // rc.joystick.setRumble
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredElevatorBeltUp =
+  // isInMargin(elevatorBelt.getVelocity().getValue(), DiagnosticElevatorBeltVel,
+  // DiagnosticElevatorBeltMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorBeltUp) {
+  // return DiagnosticElevatorBeltDown;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+
+  // };
+
+  // MMStateMachineState DiagnosticElevatorBeltDown = new
+  // MMStateMachineState("DiagnosticElevatorBeltDown") {
+  // @Override
+  // public void transitionTo(MMStateMachineState previousState) {
+  // runElevatorBeltDownSlow();
+  // // rc.joystick.setRumble
+  // }
+
+  // @Override
+  // public void doState() {
+  // diagnosticDesiredElevatorBeltDown =
+  // isInMargin(elevatorBelt.getVelocity().getValue(),
+  // -DiagnosticElevatorBeltVel, DiagnosticElevatorBeltMargin);
+  // }
+
+  // @Override
+  // public MMStateMachineState calcNextState() {
+  // if (timeInState >= diagnosticRunTime && diagnosticDesiredElevatorBeltDown) {
+  // return Idle;
+  // }
+  // if (timeInState >= diagnosticTimeOut) {
+  // return Idle;
+  // }
+  // return this;
+  // }
+  // };
 }
