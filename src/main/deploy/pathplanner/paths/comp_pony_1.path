@@ -3,32 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.66,
-        "y": 4.0020320040640085
+        "x": 0.7352951848760846,
+        "y": 4.397837367103306
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4536086215029578,
-        "y": 4.192604956638485
+        "x": 3.579230015602889,
+        "y": 1.363329583802025
       },
       "isLocked": false,
-      "linkedName": "horseshoe2_2"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.66,
-        "y": 6.8595697551755475
+        "x": 7.082840451395188,
+        "y": 1.8764106099640774
       },
       "prevControl": {
-        "x": 1.3125042447980328,
-        "y": 6.28759174214297
+        "x": 5.279727130882833,
+        "y": 0.9675242207627281
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "comp_hs2_4"
+      "linkedName": "comp_pony_1"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.2,
+      "rotationDegrees": -157.25,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -38,14 +44,14 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -150.0,
-    "rotateFast": true
+    "velocity": 1.5,
+    "rotation": -157.24902365721235,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "HorseShoe2Competition",
+  "folder": "PonyCompetition",
   "previewStartingState": {
-    "rotation": 172.93927895656014,
+    "rotation": 118.92642583525361,
     "velocity": 0
   },
   "useDefaultConstraints": false

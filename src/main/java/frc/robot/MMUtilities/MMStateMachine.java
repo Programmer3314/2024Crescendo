@@ -33,6 +33,7 @@ public class MMStateMachine {
             }
         } else {
             firstUpdate = false;
+            stateStartSeconds = currentTime;
         }
         currentState.doState();
         return this;

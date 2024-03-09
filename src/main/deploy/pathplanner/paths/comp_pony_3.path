@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.66,
-        "y": 5.541275082550166
+        "x": 4.488116404804239,
+        "y": 4.676367067019849
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.039986937116732,
-        "y": 5.2187670089625895
+        "x": 5.089154178308357,
+        "y": 4.133967125077108
       },
       "isLocked": false,
-      "linkedName": "horseshoe1"
+      "linkedName": "comp_pony_2"
     },
     {
       "anchor": {
-        "x": 2.66,
-        "y": 4.0020320040640085
+        "x": 7.097499909285533,
+        "y": 4.0606698356253865
       },
       "prevControl": {
-        "x": 1.9445452551201625,
-        "y": 4.72906805614205
+        "x": 6.1153162306324615,
+        "y": 3.9140752567219437
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "horseshoe2_2"
+      "linkedName": "comp_pony_3"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 1.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 150.0,
-    "rotateFast": true
+    "velocity": 1.5,
+    "rotation": 180.0,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "HorseShoe2Competition",
+  "folder": "PonyCompetition",
   "previewStartingState": {
-    "rotation": 179.90470120919403,
+    "rotation": 168.340707346477,
     "velocity": 0
   },
   "useDefaultConstraints": false

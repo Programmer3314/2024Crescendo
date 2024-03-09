@@ -4,8 +4,10 @@
   "holonomicMode": true,
   "pathFolders": [
     "ArabianCompetition",
-    "HorseShoeCompetition",
     "HorseShoe2Competition",
+    "HorseShoeCompetition",
+    "New Folder",
+    "PonyCompetition",
     "StageSideStart",
     "WarmbloodCompetition"
   ],

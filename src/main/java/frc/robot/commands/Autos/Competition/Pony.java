@@ -9,20 +9,18 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
-import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.Autos.StandardAutoInit;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
+public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
 
-  public HorseShoeTwo(RobotContainer rc) {
+  /** Creates a new TwoShotAuto. */
+  public Pony(RobotContainer rc) {
+    // YIPPE
     this.rc = rc;
     addRequirements(rc.drivetrain);
 
@@ -32,31 +30,30 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
   public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
-        new StandardAutoInit(rc, MMField.currentWooferPose())
+        new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new ShootAndWait(rc),
-        // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        // new ReignChain(rc, "comp_ab_1", "comp_ab_2"),
+        // new ReignChain(rc, "comp_ab_3", "comp_ab_4")
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_1"),
-        new ShootAndWait(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_2"),
-        new ShootAndWait(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_3"),
-        new ShootAndWait(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_4"),
+        new FollowPathFile(rc, "comp_pony_1"),
+        // new ChaseAndIntakeBroken(rc),
         new ChaseAndIntakeBroken(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_5"),
+        new FollowPathFile(rc, "comp_pony_2"),
         new Delay(rc, 50),
-        new ShootAndWait(rc));
+        new ShootAndWait(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
+        new FollowPathFile(rc, "comp_pony_3"),
+        // new ChaseAndIntakeBroken(rc),
+        new ChaseAndIntakeBroken(rc),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_pony_4"),
+        new Delay(rc, 50),
+        new ShootAndWait(rc)
+
+    );
     cmd.initialize();
   }
 }

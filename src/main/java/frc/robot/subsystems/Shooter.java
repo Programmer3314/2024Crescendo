@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -33,6 +34,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -62,10 +64,10 @@ public class Shooter extends SubsystemBase {
   double WallTurnRate;
 
   // TODO: Review the followign margins
-  public double shooterAngleMargin = .0015;
-  double shooterVelocityMargin = 5;
+  public double shooterAngleMargin = .002;
+  double shooterVelocityMargin = 2;
   double intakeVelocityMargin = 20;
-  double intakeRotationMargin = .1;
+  double intakeRotationMargin = .24;
   double elevatorPositionMargin = 1;
   double leftShooterChuckVelocity = 30;
   double rightShooterChuckVelocity = 40;
@@ -97,9 +99,9 @@ public class Shooter extends SubsystemBase {
 
   boolean runDiagnosticTest;
   double diagnosticRunTime = 3;
-  double diagnosticTimeOut = 5;
+  double diagnosticTimeOut = 20;
   double diagnosticShooterAngle = .41;
-  double diagnosticLeftMotorSpeed = 50;
+  double diagnosticLeftMotorSpeed = 4;
   double diagnosticRightMotorSpeed = diagnosticLeftMotorSpeed;
   double DiagnosticElevatorBeltVel = 10;
   double DiagnosticElevatorBeltMargin = 5;
@@ -120,6 +122,8 @@ public class Shooter extends SubsystemBase {
 
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
+
+  // public Orchestra orchestra = new Orchestra();
 
   public MMWaypoint desiredWaypoint;
 
@@ -204,19 +208,20 @@ public class Shooter extends SubsystemBase {
   BooleanLogEntry atTargetAngleLog;
   BooleanLogEntry atSpeedLog;
   BooleanLogEntry atShooterAngleLog;
-  String diagnosticState;
+  String diagnosticState = "None";
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
-
     this.rc = rc;
 
     firingSolution = new MMFiringSolution(
         rc,
-        new MMWaypoint(1.3, .45, 35, 45, 40),
-        new MMWaypoint(2.12, .425, 40, 50, 45),
-        new MMWaypoint(2.81, 0.394, 40, 50, 45),
-        new MMWaypoint(3.55, .39, 40, 50, 45));
+        new MMWaypoint(1.3, .45, 32, 48, 40),
+        new MMWaypoint(2.12, .425, 37, 53, 45),
+        new MMWaypoint(2.81, 0.394, 37, 53, 45),
+        new MMWaypoint(3.55, .39, 37, 53, 45),
+        new MMWaypoint(4.5, .382, 37, 53, 45),
+        new MMWaypoint(4.78, .379, 47, 63, 55));
     configShooterRotateCanCoder();
     configShooterRotateMotor();
     configIntakeRotateCanCoder();
@@ -253,10 +258,14 @@ public class Shooter extends SubsystemBase {
     atTargetAngleLog = new BooleanLogEntry(log, "my/shooterCondition/targetAngle");
     atSpeedLog = new BooleanLogEntry(log, "my/shooterCondition/motorSpeed");
     atShooterAngleLog = new BooleanLogEntry(log, "my/shooterCondition/shooterAngle");
+
+    // var status = orchestra.loadMusic("rickroll.chrp");
+    // orchestra.addInstrument(rc.climber.climbMotor);
   }
 
   @Override
   public void periodic() {
+    // SmartDashboard.putNumber("Played Time", orchestra.getCurrentTime());
     // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
 
     // rc.navigation.updatePredictedPosition(chassisSpeeds.vxMetersPerSecond,
@@ -288,8 +297,8 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
 
-    //TODO: finish below diagnostic (null)
-    // SmartDashboard.putString("DGState", diagnosticState);
+    // TODO: finish below diagnostic (null)
+    SmartDashboard.putString("DGState", diagnosticState);
     // if (!hasHomedElevator) {
     // runElevatorToHome();
     // }
@@ -872,6 +881,7 @@ public class Shooter extends SubsystemBase {
         setAimFlag(false);
         diagnosticState = "IntakeDown";
         // TODO: make the first noise
+        // startOrchestra();
       }
 
       @Override
@@ -925,6 +935,7 @@ public class Shooter extends SubsystemBase {
         runIndexIn();
         // runIntakeOut();
         // TODO: make second noise
+        // stopOrchestra();
         diagnosticState = "MoveToIndex";
       }
 
@@ -937,7 +948,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (!shooterBreakBeam.get()) {
-          return DiagnosticSetIntakeUp;
+          return DiagnosticSetIntakeUpToShoot;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -952,7 +963,9 @@ public class Shooter extends SubsystemBase {
         stopIntake();
         setShooterPosition(diagnosticShooterAngle);
         diagnosticState = "DiagnosticShooterAngle";
-        // TODO: make second noise
+        // TODO: make Third noise
+        // orchestra.play();
+
       }
 
       @Override
@@ -974,9 +987,13 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticSlowShoot = new MMStateMachineState("DiagnosticSlowShoot") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        runIndexers(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
         runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
+
         diagnosticState = "DiagnosticSlowShoot";
         // TODO: make fourth noise
+        // orchestra.play();
+
       }
 
       @Override
@@ -1040,8 +1057,8 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticReverseToIndex = new MMStateMachineState("DiagnosticReverseToIndex") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        stopShooterMotors();
         runIndexOut();
+        runIntakeOut();
         // runIntakeOut();
         // TODO: make fifth noise
         diagnosticState = "DiagnosticReverseToIndex";
@@ -1058,7 +1075,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (!intakeBreakBeam.get()) {
-          return DiagnosticIntakeOut;
+          return DiagnosticSetIntakeDownEnd;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -1067,10 +1084,34 @@ public class Shooter extends SubsystemBase {
       }
     };
 
+    MMStateMachineState DiagnosticSetIntakeDownEnd = new MMStateMachineState("DiagnosticSetIntakeDownEnd") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        stopIntake();
+        stopIndexers();
+        setIntakeDown();
+      }
+
+      @Override
+      public void doState() {
+        diagnosticDesiredIntakeUp = isInMargin(intakeUpPos, getIntakePos(),
+            intakeRotationMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (diagnosticDesiredIntakeUp) {
+          return DiagnosticIntakeOut;
+        }
+        return this;
+      }
+    };
+
     MMStateMachineState DiagnosticIntakeOut = new MMStateMachineState("DiagnosticIntakeOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        //TODO: make another noise
+        // TODO: make another noise
+        stopShooterMotors();
         runIntakeOut();
       }
 
@@ -1082,7 +1123,8 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (intakeBreakBeam.get() && timeInState >= diagnosticRunTime) {
-          return DiagnosticSetIntakeUp;
+          // return DiagnosticSetIntakeUp;AUtoDebug
+          return Idle;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -1091,23 +1133,25 @@ public class Shooter extends SubsystemBase {
       }
     };
 
-    MMStateMachineState DiagnosticSetIntakeUp = new MMStateMachineState("DiagnosticSetIntakeUp") {
+    MMStateMachineState DiagnosticSetIntakeUpToShoot = new MMStateMachineState("DiagnosticSetIntakeUpToShoot") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         stopIntake();
         stopIndexers();
         setIntakeUp();
+        diagnosticState = "DiagnosticSetIntakeUpToShoot";
       }
 
       @Override
       public void doState() {
         diagnosticDesiredIntakeUp = isInMargin(intakeUpPos, getIntakePos(), intakeRotationMargin);
+        SmartDashboard.putBoolean("stateIntakeUpbool", diagnosticDesiredIntakeUp);
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= diagnosticRunTime && diagnosticDesiredIntakeUp) {
-          return Index;
+        if (diagnosticDesiredIntakeUp) {
+          return DiagnosticShooterAngle;
         }
         if (timeInState >= diagnosticTimeOut) {
           return Idle;
@@ -1756,6 +1800,14 @@ public class Shooter extends SubsystemBase {
         .withKI(0)
         .withKD(0);
     MMConfigure.configureDevice(elevatorMotor, cfg);
+  }
+
+  public void startOrchestra() {
+    // orchestra.play();
+  }
+
+  public void stopOrchestra() {
+    // orchestra.stop();
   }
 
   public void setElevatorUp() {

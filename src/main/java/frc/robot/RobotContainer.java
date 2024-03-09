@@ -225,7 +225,7 @@ public class RobotContainer {
 
     // Final CONTROLS:
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-
+    
     driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));// TODO: Is this even needed?
     driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
