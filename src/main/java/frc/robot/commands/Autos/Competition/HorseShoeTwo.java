@@ -49,7 +49,7 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs2_3"),
         new ShootAndWait(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)), // TODO: Is this too soon?
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs2_4"),
         new ChaseAndIntakeBroken(rc),
