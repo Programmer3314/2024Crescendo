@@ -13,6 +13,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
 public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
@@ -38,18 +39,23 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_1"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_ab_2"),
-        new Delay(rc, 50),
+        new ChaseAndIntakeBroken(rc, true),
+
+        // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_arabian_2"),
+        new SpinUpForAutoShot(rc, "arabian_2"),
+        new Delay(rc, 50, true),
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_ab_3"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new ChaseAndIntakeBroken(rc, true),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
+        new SpinUpForAutoShot(rc, "arabian_3"),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_ab_4"),
-        new Delay(rc, 50),
+        new Delay(rc, 50, true),
         new ShootAndWait(rc)
 
     );

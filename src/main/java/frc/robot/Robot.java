@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -29,7 +30,7 @@ public class Robot extends TimedRobot {
 
   // TODO: GLOBAL TODOs...
   // TODO: Try Vision Threading and latency calcs
-  
+
   // TODO: Before Weekend - get autos in place (roughed out)
   // TODO: Get HS2 in place with attempt at 5th Note
   // TODO: Split the can bus
@@ -44,7 +45,6 @@ public class Robot extends TimedRobot {
   // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
   // title screens.
   // TODO: Extended Diagnostics
-  
 
   @Override
   public void robotInit() {
@@ -65,6 +65,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
+    m_robotContainer.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+    m_robotContainer.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
   }
 
   @Override

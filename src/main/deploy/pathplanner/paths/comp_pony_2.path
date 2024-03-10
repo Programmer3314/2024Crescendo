@@ -8,31 +8,31 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.5875757465800655,
-        "y": 4.031350919844697
+        "x": 5.690191951812475,
+        "y": 4.1632860408577965
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.488116404804239,
-        "y": 4.676367067019849
+        "x": 4.45879748902355,
+        "y": 4.896258935375014
       },
       "prevControl": {
-        "x": 5.440981167676622,
-        "y": 4.133967125077108
+        "x": 5.411662251895933,
+        "y": 4.353858993432273
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "comp_pony_2"
+      "linkedName": "pony_shoot"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.5,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0

@@ -14,6 +14,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -51,12 +52,14 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)), // TODO: Is this too soon?
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_4"),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_hs2_5"),
-        new Delay(rc, 50),
-        new ShootAndWait(rc));
+        new FollowPathFile(rc, "comp_horseshoe2_4"),
+        new ChaseAndIntakeBroken(rc)
+        // new SpinUpForAutoShot(rc, "Horseshoe2_5"),
+        // // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        // new FollowPathFile(rc, "comp_hs2_5Alt"),
+        // new Delay(rc, 50, true),
+        // new ShootAndWait(rc)
+        );
     cmd.initialize();
   }
 }

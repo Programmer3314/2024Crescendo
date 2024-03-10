@@ -13,6 +13,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
 public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
@@ -20,7 +21,6 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
 
   /** Creates a new TwoShotAuto. */
   public Pony(RobotContainer rc) {
-    // YIPPE
     this.rc = rc;
     addRequirements(rc.drivetrain);
 
@@ -39,18 +39,24 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_pony_1"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new ChaseAndIntakeBroken(rc, true),
+        new SpinUpForAutoShot(rc, "pony_2"),
+
+        // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_2"),
-        new Delay(rc, 50),
+
+        new Delay(rc, 50, true),
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_pony_3"),
         // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new ChaseAndIntakeBroken(rc, true),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
+        new SpinUpForAutoShot(rc, "pony_3"),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_4"),
-        new Delay(rc, 50),
+        new Delay(rc, 50, true),
         new ShootAndWait(rc)
 
     );

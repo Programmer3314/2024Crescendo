@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.007511157879459,
-        "y": 2.2135781414419977
+        "x": 4.45879748902355,
+        "y": 4.896258935375014
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.784066224503106,
-        "y": 1.381554855773805
+        "x": 5.822127072825575,
+        "y": 4.104648209296419
       },
       "isLocked": false,
       "linkedName": "comp_ab_2"
     },
     {
       "anchor": {
-        "x": 5.838899605727138,
-        "y": 0.9799385364536499
+        "x": 7.2734134039696645,
+        "y": 3.1224645306433474
       },
       "prevControl": {
-        "x": 4.969897507362581,
-        "y": 1.0446514586722866
+        "x": 6.774991835697957,
+        "y": 3.444972604230923
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 2.0,
-    "rotation": 180.0,
-    "rotateFast": false
+    "velocity": 1.0,
+    "rotation": 150.751173663453,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "ArabianCompetition",
   "previewStartingState": {
-    "rotation": 137.07717476516282,
+    "rotation": 168.69006752597974,
     "velocity": 0
   },
   "useDefaultConstraints": false

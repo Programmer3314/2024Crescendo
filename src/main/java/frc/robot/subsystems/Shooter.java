@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.HashMap;
+
 import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -52,6 +54,8 @@ import frc.robot.commands.SetColor;
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
 
+  public static HashMap<String, MMWaypoint> determineShot = new HashMap<String, MMWaypoint>();
+
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
   private MMTurnPIDController turnWallPidController = new MMTurnPIDController(true);
@@ -64,7 +68,7 @@ public class Shooter extends SubsystemBase {
   double WallTurnRate;
 
   // TODO: Review the followign margins
-  public double shooterAngleMargin = .002;
+  public double shooterAngleMargin = .0025;
   double shooterVelocityMargin = 2;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .24;
@@ -105,6 +109,9 @@ public class Shooter extends SubsystemBase {
   double diagnosticRightMotorSpeed = diagnosticLeftMotorSpeed;
   double DiagnosticElevatorBeltVel = 10;
   double DiagnosticElevatorBeltMargin = 5;
+  double autoShooterAngle;
+  double autoShooterLeftVelocity;
+  double autoShooterRightVelocity;
 
   boolean diagnosticDesiredIntakeUp;
   boolean diagnosticDesiredIntakeDown;
@@ -119,6 +126,8 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredElevatorBeltUp;
   boolean diagnosticDesiredElevatorBeltDown;
   boolean diagnosticDesiredLeftShooterVel;
+  boolean autoForceShot;
+  boolean shootAutoShot;
 
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
@@ -213,6 +222,13 @@ public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
     this.rc = rc;
+    // sets up our targets for the auto shots
+    determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
+    determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .39, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));
+    determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
+
 
     firingSolution = new MMFiringSolution(
         rc,
@@ -220,7 +236,7 @@ public class Shooter extends SubsystemBase {
         new MMWaypoint(2.12, .425, 37, 53, 45),
         new MMWaypoint(2.81, 0.394, 37, 53, 45),
         new MMWaypoint(3.55, .39, 37, 53, 45),
-        new MMWaypoint(4.5, .382, 37, 53, 45),
+        new MMWaypoint(4.5, .38, 37, 53, 45),
         new MMWaypoint(4.78, .379, 47, 63, 55));
     configShooterRotateCanCoder();
     configShooterRotateMotor();
@@ -385,6 +401,9 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        setReadyToAutoShoot(false);
         setIntakeUp();
         stopIndexers();
         stopShooterMotors();
@@ -400,6 +419,7 @@ public class Shooter extends SubsystemBase {
         setChuckFlag(false);
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
+        
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -501,6 +521,9 @@ public class Shooter extends SubsystemBase {
             intakeUpPos, intakeRotationMargin)) {
           return ElevatorDown;
         }
+        if (autoForceShot) {
+          return PrepareToAutoShoot;
+        }
         if (runShoot) {
           return PrepareToShoot;
         }
@@ -512,6 +535,21 @@ public class Shooter extends SubsystemBase {
         }
         if (runOutTake) {
           return IntakeReverse;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState PrepareToAutoShoot = new MMStateMachineState("PrepareToAutoShoot") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // aimToWall();
+        aimForAuto();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isReadyToAutoShoot() && shootAutoShot) {
+          return Shoot;
         }
         return this;
       }
@@ -1301,6 +1339,12 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(shooterChuckRotation);
   }
 
+  public void aimForAuto() {
+    runLeftMotor(autoShooterLeftVelocity);
+    runRightMotor(autoShooterRightVelocity);
+    setShooterPosition(autoShooterAngle);
+  }
+
   public void aimToWall() {
     double distance = rc.drivetrain.getState().Pose.getX();
     MMWaypoint wallWaypoint = firingSolution.calcSolution(distance);
@@ -1312,8 +1356,9 @@ public class Shooter extends SubsystemBase {
   public void calcFiringSolution() {
     double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
     if (targetAngleSpeaker != null) {
-      distanceToSpeaker -= Math.abs(.3 *
-          Math.sin(targetAngleSpeaker.getRadians()));
+      // distanceToSpeaker += Math.abs(.2*
+      // Math.sin(targetAngleSpeaker.getRadians()));
+      // distanceToSpeaker = distanceToSpeaker;
     }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
@@ -1877,6 +1922,56 @@ public class Shooter extends SubsystemBase {
 
   public void shooterDown() {
     setShooterPosition(.385);
+  }
+
+  public boolean getShooterBreakBeam() {
+    return shooterBreakBeam.get();
+  }
+
+  public void setReadyToAutoShoot(boolean isTrue) {
+    shootAutoShot = isTrue;
+  }
+
+  public void setAutoForce(boolean isTrue) {
+    autoForceShot = isTrue;
+  }
+
+  public boolean isReadyToAutoShoot() {
+    boolean leftShooterAtVelocity = isInMargin(leftMotor.getVelocity().getValue(), autoShooterLeftVelocity,
+        shooterVelocityMargin);
+    boolean rightShooterAtVelocity = isInMargin(rightMotor.getVelocity().getValue(), autoShooterRightVelocity,
+        shooterVelocityMargin);
+    boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), autoShooterAngle,
+        shooterAngleMargin);
+    Pose2d a = currentPose;
+    currentPosePublisher.set(a);
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+    boolean bingo = isInMargin(c.getY(),
+        MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
+
+    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo;
+  }
+
+  public void setLeftAutoShooterVelocity(double v) {
+    autoShooterLeftVelocity = v;
+  }
+
+  public void setRightAutoShooterVelocity(double v) {
+    autoShooterRightVelocity = v;
+
+  }
+
+  public void setAutoShooterAngle(double v) {
+    autoShooterAngle = v;
+
+  }
+
+  public void populateAutoShot(String shotName) {
+    autoShooterLeftVelocity = determineShot.get(shotName).getLeftVelocity();
+    autoShooterRightVelocity = determineShot.get(shotName).getRightVelocity();
+    autoShooterAngle = determineShot.get(shotName).getAngle();
   }
 
   // MMStateMachineState DiagnosticRunIndexIn = new

@@ -45,6 +45,7 @@ import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.HorseShoeTwo;
+import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.generated.TunerConstants;
@@ -225,7 +226,7 @@ public class RobotContainer {
 
     // Final CONTROLS:
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-    
+
     driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));// TODO: Is this even needed?
     driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
@@ -292,6 +293,7 @@ public class RobotContainer {
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
     autoChooser.addOption("WarmbloodAuto-Comp", new Thoroughbred(this));
     autoChooser.addOption("Horseshoe2-Comp", new HorseShoeTwo(this));
+    autoChooser.addOption("Pony-Comp", new Pony(this));
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
 

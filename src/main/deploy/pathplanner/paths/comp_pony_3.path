@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.488116404804239,
-        "y": 4.676367067019849
+        "x": 4.45879748902355,
+        "y": 4.896258935375014
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.089154178308357,
-        "y": 4.133967125077108
+        "x": 5.866105446496608,
+        "y": 4.51511303022606
       },
       "isLocked": false,
-      "linkedName": "comp_pony_2"
+      "linkedName": "pony_shoot"
     },
     {
       "anchor": {
-        "x": 7.097499909285533,
-        "y": 4.0606698356253865
+        "x": 6.848289125149679,
+        "y": 4.353858993432273
       },
       "prevControl": {
-        "x": 6.1153162306324615,
-        "y": 3.9140752567219437
+        "x": 6.2765702674262505,
+        "y": 4.456475198664684
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,14 +32,14 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.5,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 1.5,
-    "rotation": 180.0,
+    "velocity": 2.0,
+    "rotation": 170.21759296819278,
     "rotateFast": false
   },
   "reversed": false,

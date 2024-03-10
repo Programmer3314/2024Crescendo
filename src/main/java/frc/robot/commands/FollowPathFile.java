@@ -22,6 +22,8 @@ public class FollowPathFile extends Command {
     this.rc = rc;
     this.pathFile = pathFile;
     this.pathFileSupplier = this::getPathFile;
+    PathPlannerPath path = PathPlannerPath.fromPathFile(pathFileSupplier.get());
+    pathCommand = AutoBuilder.followPath(path);
 
     addRequirements(rc.drivetrain);
   }
@@ -29,6 +31,8 @@ public class FollowPathFile extends Command {
   public FollowPathFile(RobotContainer rc, Supplier<String> pathFileSupplier) {
     this.rc = rc;
     this.pathFileSupplier = pathFileSupplier;
+    PathPlannerPath path = PathPlannerPath.fromPathFile(pathFileSupplier.get());
+    pathCommand = AutoBuilder.followPath(path);
 
     addRequirements(rc.drivetrain);
   }
@@ -39,8 +43,7 @@ public class FollowPathFile extends Command {
 
   @Override
   public void initialize() {
-    PathPlannerPath path = PathPlannerPath.fromPathFile(pathFileSupplier.get());
-    pathCommand = AutoBuilder.followPath(path);
+
     pathCommand.initialize();
   }
 

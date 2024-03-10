@@ -9,8 +9,10 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.WaitToIndexed;
 import frc.robot.commands.Autos.StandardAutoInit;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -40,14 +42,19 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_1"),
+        new WaitToIndexed(rc),
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_2"),
+        new WaitToIndexed(rc),
+        new Delay(rc, 15),
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_3"),
+        new WaitToIndexed(rc),
+        new Delay(rc,15),
         new ShootAndWait(rc));
     cmd.initialize();
   }
