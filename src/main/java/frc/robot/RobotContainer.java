@@ -43,6 +43,7 @@ import frc.robot.commands.Autos.AutoSamplerShootSmove;
 import frc.robot.commands.Autos.MustangAuto;
 import frc.robot.commands.Autos.StageSideAuto;
 import frc.robot.commands.Autos.Competition.Arabian;
+import frc.robot.commands.Autos.Competition.CrazyHorse;
 import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.HorseShoeTwo;
 import frc.robot.commands.Autos.Competition.Pony;
@@ -291,9 +292,10 @@ public class RobotContainer {
     autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
     autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
     autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
-    autoChooser.addOption("WarmbloodAuto-Comp", new Thoroughbred(this));
+    autoChooser.addOption("Thoroughbred-Comp", new Thoroughbred(this));
     autoChooser.addOption("Horseshoe2-Comp", new HorseShoeTwo(this));
     autoChooser.addOption("Pony-Comp", new Pony(this));
+    autoChooser.addOption("CrazyHorse-Comp", new CrazyHorse(this));
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
 

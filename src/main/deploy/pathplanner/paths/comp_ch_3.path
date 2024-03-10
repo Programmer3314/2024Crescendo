@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.857389012075321,
-        "y": 7.34029432022828
+        "x": 3.0221706157698036,
+        "y": 5.467977793098444
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.469111478763498,
-        "y": 7.06295322500555
+        "x": 2.8272818317065216,
+        "y": 6.112993940273595
       },
       "isLocked": false,
-      "linkedName": "comp_wb_2"
+      "linkedName": "comp_ch_3"
     },
     {
       "anchor": {
-        "x": 4.459321977677945,
-        "y": 6.43232885750208
+        "x": 2.245219347581553,
+        "y": 6.611415508545304
       },
       "prevControl": {
-        "x": 4.489172942309848,
-        "y": 6.425068705993269
+        "x": 2.3478355528139634,
+        "y": 6.3328858086287605
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "comp_wb_3"
+      "linkedName": "comp_ch_4"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
+    "maxVelocity": 2.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 3.0,
-    "rotation": -165.0,
-    "rotateFast": false
+    "velocity": 0,
+    "rotation": -148.76078511179122,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "WarmbloodCompetition",
+  "folder": "CrazyHorse",
   "previewStartingState": {
-    "rotation": -172.0,
+    "rotation": -149.46361133180497,
     "velocity": 0
   },
   "useDefaultConstraints": false

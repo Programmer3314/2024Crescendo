@@ -13,6 +13,8 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.ShootAndWaitRegular;
+import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -41,23 +43,25 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
         // new Reign(rc, new String[] { "comp_wb_1" }),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_wb_1"),
-        new ShootAndWait(rc),
+        new FollowPathFile(rc, "comp_tb_1"),
+        // new Delay(rc, 50),
+        new ShootAndWaitRegular(rc),
         // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
         // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
-        new FollowPathFile(rc, "comp_wb_2"),
-        // new ChaseAndIntakeBroken(rc),
+        new FollowPathFile(rc, "comp_tb_2"),
         new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_wb_3"),
-        new Delay(rc, 50),
+        new SpinUpForAutoShot(rc, "thoroughbred_3"),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_tb_3"),
+        new Delay(rc, 15, true),
         new ShootAndWait(rc),
-        new FollowPathFile(rc, "comp_wb_4"),
-        // new ChaseAndIntakeBroken(rc),
-        new ChaseAndIntakeBroken(rc),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_wb_5"),
-        new ShootAndWait(rc));
+        new FollowPathFile(rc, "comp_tb_4"),
+        new ChaseAndIntakeBroken(rc)
+    // new SpinUpForAutoShot(rc, "thoroughbred_4"),
+    // // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+    // new FollowPathFile(rc, "comp_tb_5"),
+    // new ShootAndWait(rc)
+    );
     cmd.initialize();
   }
 }

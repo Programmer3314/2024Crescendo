@@ -225,10 +225,16 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .39, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .396, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
-
+    determineShot.put("thoroughbred_3", new MMWaypoint(0, .39, 37, 53, 40));
+    determineShot.put("thoroughbred_4", new MMWaypoint(0, .39, 37, 53, 40));
+    determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
+    determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
+    determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
+    determineShot.put("crazyhorse_4", new MMWaypoint(0, .408, 37, 53, 40));
+    determineShot.put("crazyhorse_5", new MMWaypoint(0, .379, 47, 63, 55));
 
     firingSolution = new MMFiringSolution(
         rc,
@@ -419,7 +425,7 @@ public class Shooter extends SubsystemBase {
         setChuckFlag(false);
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
-        
+
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -586,6 +592,10 @@ public class Shooter extends SubsystemBase {
 
     MMStateMachineState PrepareToShoot = new MMStateMachineState("PrepareToShoot") {
       public void transitionTo(MMStateMachineState previousState) {
+      }
+
+      @Override
+      public void doState() {
         aimToSpeaker();
       }
 
@@ -1804,7 +1814,7 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(.5) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(330)
+        .withKP(330)// 330
         .withKI(0)
         .withKD(3.3);
     cfg.Feedback
@@ -1950,6 +1960,10 @@ public class Shooter extends SubsystemBase {
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
         && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
+    SmartDashboard.putBoolean("AutoleftShooterAt", leftShooterAtVelocity);
+    SmartDashboard.putBoolean("AutorightShooterAt", rightShooterAtVelocity);
+    SmartDashboard.putBoolean("AutoshooterAt", shooterAtAngle);
+    SmartDashboard.putBoolean("Autobingo", bingo);
 
     return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo;
   }

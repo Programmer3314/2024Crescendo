@@ -20,12 +20,12 @@ public class ChaseAndIntakeBroken extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
         new ChaseNoteBroken(rc),
-        new DriveForwardDistBroken(rc, 0.25, -0.75));
+        new DriveForwardDistBroken(rc, 0.5, -0.75));
   }
 
   public ChaseAndIntakeBroken(RobotContainer rc, boolean isFast) {
     addCommands(
         new ChaseNoteBroken(rc),
-        new DriveForwardDistBroken(rc, 0.25, isFast ? -2 : -.75));
+        new DriveForwardDistBroken(rc, 0.5, isFast ? -2 : -.75));
   }
 }

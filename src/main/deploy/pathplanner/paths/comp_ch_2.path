@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.6410247106208504,
+        "y": 4.236583330309518
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8157792372727615,
+        "y": 4.48782611850938
+      },
+      "isLocked": false,
+      "linkedName": "comp_ch_2"
+    },
+    {
+      "anchor": {
+        "x": 3.0221706157698036,
+        "y": 5.467977793098444
+      },
+      "prevControl": {
+        "x": 1.6002032004064015,
+        "y": 5.658550745672921
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "comp_ch_3"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 23.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": -170.53767779197457,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "CrazyHorse",
+  "previewStartingState": {
+    "rotation": 150.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

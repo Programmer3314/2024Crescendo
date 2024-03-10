@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.463986356544141,
+        "y": 5.878442614028085
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.833629667259334,
+        "y": 5.907761529808773
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.297543452229762,
+        "y": 5.878442614028085
+      },
+      "prevControl": {
+        "x": 5.177110925650423,
+        "y": 5.922420987699119
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "comp_tb_4"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": -174.28940686249877,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "ThoroughbredCompetition",
+  "previewStartingState": {
+    "rotation": 171.86989764584393,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}
