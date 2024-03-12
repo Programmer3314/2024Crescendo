@@ -12,11 +12,11 @@ import frc.robot.RobotContainer;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class FullChuck extends SequentialCommandGroup {
+public class FullChuckLow extends SequentialCommandGroup {
   /** Creates a new FullChuck. */
   RobotContainer rc;
 
-  public FullChuck(RobotContainer rc) {
+  public FullChuckLow(RobotContainer rc) {
     this.rc = rc;
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());

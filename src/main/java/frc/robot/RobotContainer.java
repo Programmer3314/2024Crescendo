@@ -29,7 +29,7 @@ import frc.robot.commands.AimToWall;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.ClawsUpAndIndex;
-import frc.robot.commands.FullChuck;
+import frc.robot.commands.FullChuckLow;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
@@ -138,6 +138,7 @@ public class RobotContainer {
     // -Aim
     // -Climb / StopClimb
     // -RequestAmp(shoot/ eject are the same thing)
+    // -Clean up comments please
 
     // driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->
@@ -227,9 +228,7 @@ public class RobotContainer {
 
     // Final CONTROLS:
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
-
-    driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)))
-        .onFalse(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(false)));// TODO: Is this even needed?
+    driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)));
     driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
     driverController.y().whileTrue(new GoAmp(this));
     driverController.povDown()
@@ -237,8 +236,9 @@ public class RobotContainer {
             new InstantCommand(() -> climber.resetStateMachine())));
 
     driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this, true));
-    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
-
+    // driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
+    driverController.povLeft().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
+    driverController.povRight().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckHighFlag(true)));
     driverController.leftBumper().onTrue(new SignalForNote(this));
     driverController.leftTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setWooferSlamFlag(true)));
 
@@ -249,7 +249,7 @@ public class RobotContainer {
 
     oppController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setShootFlag(true)))
         .onFalse(new InstantCommand(() -> shooterSubsystem.setShootFlag(false)));
-    oppController.leftTrigger().whileTrue(new FullChuck(this));
+    oppController.leftTrigger().whileTrue(new FullChuckLow(this));
     // oppController.leftBumper().whileTrue(new
     // InstantCommand(()->shooterSubsystem.aimToWall()));
     oppController.rightBumper().whileTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));

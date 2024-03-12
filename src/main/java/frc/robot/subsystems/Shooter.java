@@ -73,9 +73,12 @@ public class Shooter extends SubsystemBase {
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .24;
   double elevatorPositionMargin = 1;
-  double leftShooterChuckVelocity = 30;
-  double rightShooterChuckVelocity = 40;
-  double shooterChuckRotation = .38;
+  double leftShooterChuckLowVelocity = 30;
+  double rightShooterChuckLowVelocity = 40;
+  double shooterChuckLowRotation = .38;
+  double leftShooterChuckHighVelocity = 35;
+  double rightShooterChuckHighVelocity = 45;
+  double shooterChuckHighRotation = .45;
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;
@@ -91,7 +94,8 @@ public class Shooter extends SubsystemBase {
   boolean runOutTake;
   double shooterDelay = .125;
   double outTakeDelay = .125;
-  boolean runChuck;
+  boolean runChuckLow;
+  boolean runChuckHigh;
   boolean runWooferSlam;
   boolean runShootOverride;
   boolean manualAngleIncrement;
@@ -536,8 +540,11 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
-        if (runChuck) {
-          return PrepareToChuck;
+        if (runChuckLow) {
+          return PrepareToChuckLow;
+        }
+        if(runChuckHigh) {
+        return PrepareToChuckHigh;
         }
         if (runWooferSlam) {
           return PrepareToWooferSlam;
@@ -563,16 +570,32 @@ public class Shooter extends SubsystemBase {
         return this;
       }
     };
-    MMStateMachineState PrepareToChuck = new MMStateMachineState("PrepareToChuck") {
+    MMStateMachineState PrepareToChuckLow = new MMStateMachineState("PrepareToChuckLow") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         // aimToWall();
-        aimForChuck();
+        aimForChuckLow();
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToChuck() && runChuck) {// TODO: is this really needed, the flag should already be on
+        if (readyToChuck() && runChuckLow) {// TODO: is this really needed, the flag should already be on
+          return ChuckShoot;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState PrepareToChuckHigh = new MMStateMachineState("PrepareToChuckHigh") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        // aimToWall();
+        aimForChuckHigh();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (readyToChuck() && runChuckLow) {// TODO: is this really needed, the flag should already be on
           return ChuckShoot;
         }
         return this;
@@ -827,6 +850,7 @@ public class Shooter extends SubsystemBase {
         runIndexShoot();
         setShootFlag(false);
         setChuckLowFlag(false);
+        setChuckHighFlag(false);
         setShotStartTime();
       }
 
@@ -1352,10 +1376,16 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(shooterAngleWooferSlam);
   }
 
-  public void aimForChuck() {
-    runLeftMotor(leftShooterChuckVelocity);
-    runRightMotor(rightShooterChuckVelocity);
-    setShooterPosition(shooterChuckRotation);
+  public void aimForChuckLow() {
+    runLeftMotor(leftShooterChuckLowVelocity);
+    runRightMotor(rightShooterChuckLowVelocity);
+    setShooterPosition(shooterChuckLowRotation);
+  }
+
+  public void aimForChuckHigh() {
+    runLeftMotor(leftShooterChuckHighVelocity);
+    runRightMotor(rightShooterChuckHighVelocity);
+    setShooterPosition(shooterChuckHighRotation);
   }
 
   public void aimForAuto() {
@@ -1412,7 +1442,15 @@ public class Shooter extends SubsystemBase {
   }
 
   public Shooter setChuckLowFlag(boolean isChuck) {
-    runChuck = isChuck;
+    runChuckLow = isChuck;
+    if (isChuck) {
+      runAim = false;
+    }
+    return this;
+  }
+
+public Shooter setChuckHighFlag(boolean isChuck) {
+    runChuckHigh = isChuck;
     if (isChuck) {
       runAim = false;
     }
@@ -1438,7 +1476,7 @@ public class Shooter extends SubsystemBase {
     }
     if (aim) {
       setAimWallFlag(false);
-      runChuck = false;
+      runChuckLow = false;
     }
     runAim = aim;
     return this;
@@ -1646,9 +1684,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean readyToChuck() {
-    return isInMargin(getLeftShooterVelocity(), leftShooterChuckVelocity, shooterVelocityMargin) &&
-        isInMargin(getRightShooterVelocity(), rightShooterChuckVelocity, shooterVelocityMargin) &&
-        isInMargin(getShooterAngle(), shooterChuckRotation, shooterAngleMargin);
+    return isInMargin(getLeftShooterVelocity(), leftShooterChuckLowVelocity, shooterVelocityMargin) &&
+        isInMargin(getRightShooterVelocity(), rightShooterChuckLowVelocity, shooterVelocityMargin) &&
+        isInMargin(getShooterAngle(), shooterChuckLowRotation, shooterAngleMargin);
   }
 
   public boolean readyToWooferSlam() {
