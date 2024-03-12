@@ -237,7 +237,7 @@ public class RobotContainer {
             new InstantCommand(() -> climber.resetStateMachine())));
 
     driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this, true));
-    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
+    driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
 
     driverController.leftBumper().onTrue(new SignalForNote(this));
     driverController.leftTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setWooferSlamFlag(true)));
@@ -252,7 +252,7 @@ public class RobotContainer {
     oppController.leftTrigger().whileTrue(new FullChuck(this));
     // oppController.leftBumper().whileTrue(new
     // InstantCommand(()->shooterSubsystem.aimToWall()));
-    oppController.rightBumper().whileTrue(new InstantCommand(() -> shooterSubsystem.setChuckFlag(true)));
+    oppController.rightBumper().whileTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
     // oppController.rightBumper().onTrue(new InstantCommand(()->
     // shooterSubsystem.));
 

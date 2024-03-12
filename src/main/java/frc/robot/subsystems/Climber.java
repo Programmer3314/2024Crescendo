@@ -89,7 +89,7 @@ public class Climber extends SubsystemBase {
     climbMotorVelocityLog = new DoubleLogEntry(log, "/my/climber/velocity");
     climbMotorPositionLog = new DoubleLogEntry(log, "/my/climber/position");
 
-    climbMotor = new TalonFX(18, "CANIVORE");
+    climbMotor = new TalonFX(19, "CANIVORE");
 
     configClimbMotor();
     configCanCoders();
@@ -285,6 +285,9 @@ public class Climber extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runClimbSlow();
+        rc.shooterSubsystem.runElevatorBottomBeltUpSlow();
+        rc.shooterSubsystem.runElevatorTopBeltUpSlow();
+
       }
 
       @Override
@@ -297,11 +300,36 @@ public class Climber extends SubsystemBase {
       };
 
       @Override
+      public void doState(){
+        if(rc.shooterSubsystem.elevatorBreakBeam.get()){
+        rc.shooterSubsystem.stopElevatorBelts();
+        }
+      }
+
+      @Override
       public void transitionFrom(MMStateMachineState NextState) {
       }
     };
 
-    MMStateMachineState RaiseElevator = new MMStateMachineState("Raise Elevator ") {
+    MMStateMachineState CheckRaiseElevator = new MMStateMachineState("Check Raise Elevator") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (rc.shooterSubsystem.elevatorBreakBeam.get()) {
+          return RaiseElevator;
+        }
+        return this;
+      };
+
+      @Override
+      public void transitionFrom(MMStateMachineState NextState) {
+      }
+    };
+
+    MMStateMachineState RaiseElevator = new MMStateMachineState("Raise Elevator") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         rc.shooterSubsystem.setElevatorUpTrap();
@@ -357,7 +385,7 @@ public class Climber extends SubsystemBase {
       public MMStateMachineState calcNextState() {
         if (rc.shooterSubsystem.isInMargin(rc.shooterSubsystem.getElevatorPosition(),
             rc.shooterSubsystem.elevatorTrapPosition, rc.shooterSubsystem.elevatorPositionMargin)) {
-          return ElevatorPassNoteAbove;
+          return ElevatorShoot;
         }
         return this;
       };
@@ -371,7 +399,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        rc.shooterSubsystem.runElevatorBeltUpSlow();
+        rc.shooterSubsystem.runElevatorBottomBeltUpSlow();
       }
 
       @Override
@@ -400,7 +428,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState nextState) {
-        rc.shooterSubsystem.stopElevatorBelt();
+        rc.shooterSubsystem.stopElevatorBelts();
         rc.shooterSubsystem.setElevatorUpTrapShot();
       }
     };

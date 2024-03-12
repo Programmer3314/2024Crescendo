@@ -146,7 +146,8 @@ public class Shooter extends SubsystemBase {
   private TalonFX leftMotor = new TalonFX(14, "CANIVORE");
   private TalonFX rightMotor = new TalonFX(15, "CANIVORE");
   private TalonFX elevatorMotor = new TalonFX(16, "CANIVORE");
-  private TalonFX elevatorBelt = new TalonFX(17, "CANIVORE");
+  private TalonFX elevatorBottomBelt = new TalonFX(17, "CANIVORE");
+  private TalonFX elevatorTopBelt = new TalonFX(18, "CANIVORE");
 
   CANcoder intakeRotateCanCoder = new CANcoder(5, "CANIVORE");
   CANcoder shooterRotateCanCoder = new CANcoder(6, "CANIVORE");
@@ -156,7 +157,7 @@ public class Shooter extends SubsystemBase {
   DigitalInput elevatorHomeSensor = new DigitalInput(0);
   DigitalInput elevatorBreakBeam = new DigitalInput(3);
 
-  double intakeTop = .775;
+  double intakeTop = .823;
   double intakeUpPos = intakeTop - .005;
   double intakeDownPos = intakeTop - .74;// .76
 
@@ -166,7 +167,7 @@ public class Shooter extends SubsystemBase {
   double elevatorInPerRev = 5.125 / 30;
   double elevatorDownPosition = .1;
   double elevatorAmpPosition = 47.2;
-  double elevatorTrapShootPosition = 52;
+  double elevatorTrapShootPosition = 46;
   double elevatorTrapPosition = 67.0;
 
   double shooterAngleDownPos = .38;
@@ -197,7 +198,7 @@ public class Shooter extends SubsystemBase {
   private MotionMagicVelocityVoltage rightMMVelVol = new MotionMagicVelocityVoltage(0);
   private VelocityVoltage rightVelVol = new VelocityVoltage(0);
   private VelocityVoltage intakeBeltVelVol = new VelocityVoltage(0);
-  private VoltageOut elevatorvoVoltageOut = new VoltageOut(0);
+  private VoltageOut elevatorVoltageOut = new VoltageOut(0);
   private VelocityVoltage elevatorVelVol = new VelocityVoltage(0);
 
   StructPublisher<Pose2d> currentPosePublisher = NetworkTableInstance.getDefault()
@@ -256,14 +257,14 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putData("Run Diagnostic",
         new InstantCommand(() -> this.setRunDiagnosticFlag(true)));
-    SmartDashboard.putData("Run Belt Up Fast",
-        new InstantCommand(() -> this.runElevatorBeltUpFast()));
-    SmartDashboard.putData("Run Belt Up Slow",
-        new InstantCommand(() -> this.runElevatorBeltUpSlow()));
-    SmartDashboard.putData("Run Belt Down Fast",
-        new InstantCommand(() -> this.runElevatorBeltDownFast()));
-    SmartDashboard.putData("Run Belt Down Slow",
-        new InstantCommand(() -> this.runElevatorBeltDownSlow()));
+    // SmartDashboard.putData("Run Belt Up Fast",
+    //     new InstantCommand(() -> this.runElevatorBeltUpFast()));
+    // SmartDashboard.putData("Run Belt Up Slow",
+    //     new InstantCommand(() -> this.runElevatorBeltUpSlow()));
+    // SmartDashboard.putData("Run Belt Down Fast",
+    //     new InstantCommand(() -> this.runElevatorBeltDownFast()));
+    // SmartDashboard.putData("Run Belt Down Slow",
+    //     new InstantCommand(() -> this.runElevatorBeltDownSlow()));
     DataLog log = DataLogManager.getLog();
     shooterStateLog = new StringLogEntry(log, "/my/state/shooter");
     intakeFlagLog = new BooleanLogEntry(log, "my/flag/intake");
@@ -415,16 +416,17 @@ public class Shooter extends SubsystemBase {
         stopShooterMotors();
         stopIntake();
         setRunDiagnosticFlag(false);
-        stopElevatorBelt();
+        stopElevatorBelts();
         setElevatorDown();
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
         setAbortIntakeFlag(false);
         setReverseIntakeFlag(false);
-        setChuckFlag(false);
+        setChuckLowFlag(false);
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
+        setElevatorIndexFlag(false);
 
         // abortIntakeCounter=0;
         idleCounter++;
@@ -511,13 +513,14 @@ public class Shooter extends SubsystemBase {
         stopIndexers();
         setIntakeFlag(false);
         // setAimFlag(true); BB
-        stopElevatorBelt();
+        stopElevatorBelts();
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
-        setChuckFlag(false);
+        setChuckLowFlag(false);
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
+        setElevatorIndexFlag(false);
         indexCounter++;
       }
 
@@ -630,7 +633,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runElevatorBeltUpFast();
+        runElevatorBottomBeltUpFast();
         runIntakeOut();
         runIndexOut();
         stopShooterMotors();
@@ -639,7 +642,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (!elevatorBreakBeam.get()) {
-          return ElevatorPassNoteAbove2;
+          return ElevatorIndexed;//ElevatorPassNoteAbove2
         }
         return this;
       }
@@ -650,13 +653,13 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        rev = elevatorBelt.getPosition().getValue();
-        runElevatorBeltUpSlow();
+        rev = elevatorBottomBelt.getPosition().getValue();
+        runElevatorBottomBeltUpSlow();
       }
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (Math.abs(elevatorBelt.getPosition().getValue() - rev) > 4.5) {
+        if (Math.abs(elevatorBottomBelt.getPosition().getValue() - rev) > 4.5) {
           return ElevatorIndexed;
         }
         return this;
@@ -667,7 +670,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setElevatorIndexFlag(false);
-        stopElevatorBelt();
+        stopElevatorBelts();
         stopIndexers();
         stopIntake();
       }
@@ -675,12 +678,34 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (runShoot) {
-          return SetElevatorHeight;
+          return ElevatorPassNoteAbove;
         }
         if (runIntake) {
           return ElevatorDownAbort;
         }
         return this;
+      }
+    };
+
+    MMStateMachineState ElevatorPassNoteAbove = new MMStateMachineState("ElevatorPassNoteAbove") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBottomBeltUpSlow();
+        runElevatorTopBeltUpSlow();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (elevatorBreakBeam.get()) {
+          return SetElevatorHeight;
+        }
+        return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nexState) {
+        stopElevatorBelts();
       }
     };
 
@@ -694,22 +719,6 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin)) {
-          return ElevatorPassNoteAbove;
-        }
-        return this;
-      }
-    };
-
-    MMStateMachineState ElevatorPassNoteAbove = new MMStateMachineState("ElevatorPassNoteAbove") {
-
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        runElevatorBeltUpSlow();
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (elevatorBreakBeam.get()) {
           return ElevatorShoot;
         }
         return this;
@@ -752,7 +761,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runElevatorBeltDownFast();
+        runElevatorBottomBeltDownFast();
         runIntakeIn();
       }
 
@@ -810,14 +819,14 @@ public class Shooter extends SubsystemBase {
       }
     };
 
-    MMStateMachineState ChuckShoot = new MMStateMachineState("ChuckShoot") {
+    MMStateMachineState ChuckShoot = new MMStateMachineState("ChuckLow") {
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runIntakeIn();
         runIndexShoot();
         setShootFlag(false);
-        setChuckFlag(false);
+        setChuckLowFlag(false);
         setShotStartTime();
       }
 
@@ -1402,7 +1411,7 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
-  public Shooter setChuckFlag(boolean isChuck) {
+  public Shooter setChuckLowFlag(boolean isChuck) {
     runChuck = isChuck;
     if (isChuck) {
       runAim = false;
@@ -1668,8 +1677,11 @@ public class Shooter extends SubsystemBase {
         .withKD(0);
     // MMConfigure.configureDevice(leftMotor, genericConfig);
 
-    MMConfigure.configureDevice(elevatorBelt, genericConfig);
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
+    MMConfigure.configureDevice(elevatorBottomBelt, genericConfig);
+    MMConfigure.configureDevice(elevatorTopBelt, genericConfig);
+
+
     // MMConfigure.configureDevice(rightMotor, genericConfig);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
@@ -1882,35 +1894,52 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorToHome() {
-    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(-.5));
+    elevatorMotor.setControl(elevatorVoltageOut.withOutput(-.5));
   }
 
-  public void runElevatorBeltUpFast() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(intakeVelOut * 3));
+  public void runElevatorBottomBeltUpFast() {
+    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(intakeVelOut * 3));
   }
 
-  public void runElevatorBeltDownFast() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(intakeVelIn * 3));
+  public void runElevatorTopBeltUpFast() {
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(intakeVelOut * 3));
   }
 
-  public void runElevatorBeltUpSlow() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(-20));
+  public void runElevatorBottomBeltDownFast() {
+    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(intakeVelIn * 3));
   }
 
-  public void runElevatorBeltDownSlow() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(20));
+  public void runElevatorTopBeltDownFast() {
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(intakeVelIn * 3));
+  }
+
+  public void runElevatorBottomBeltUpSlow() {
+    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(-20));
+  }
+
+public void runElevatorTopBeltUpSlow() {
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(-20));
+  }
+
+  public void runElevatorBottomBeltDownSlow() {
+    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(20));
+  }
+
+  public void runElevatorTopBeltDownSlow() {
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(20));
   }
 
   public void runElevatorBeltShoot() {
-    elevatorBelt.setControl(elevatorVelVol.withVelocity(60));
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(60));
   }
 
   public void stopElevator() {
-    elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
+    elevatorMotor.setControl(elevatorVoltageOut.withOutput(0));
   }
 
-  public void stopElevatorBelt() {
-    elevatorBelt.setControl(elevatorvoVoltageOut.withOutput(0));
+  public void stopElevatorBelts() {
+    elevatorBottomBelt.setControl(elevatorVoltageOut.withOutput(0));
+    elevatorTopBelt.setControl(elevatorVoltageOut.withOutput(0));
   }
 
   public void logUpdate() {

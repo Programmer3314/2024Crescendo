@@ -22,6 +22,6 @@ public class FullChuck extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
         new InstantCommand(() -> rc.shooterSubsystem.aimToWall()),
-        new InstantCommand(() -> rc.shooterSubsystem.setChuckFlag(true)));
+        new InstantCommand(() -> rc.shooterSubsystem.setChuckLowFlag(true)));
   }
 }
