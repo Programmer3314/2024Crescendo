@@ -68,7 +68,7 @@ public class Shooter extends SubsystemBase {
   double WallTurnRate;
 
   // TODO: Review the followign margins
-  public double shooterAngleMargin = .0025;
+  public double shooterAngleMargin = .002;
   double shooterVelocityMargin = 2;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .24;
@@ -243,12 +243,12 @@ public class Shooter extends SubsystemBase {
 
     firingSolution = new MMFiringSolution(
         rc,
-        new MMWaypoint(1.3, .45, 32, 48, 40),
-        new MMWaypoint(2.12, .425, 37, 53, 45),
-        new MMWaypoint(2.81, 0.394, 37, 53, 45),
-        new MMWaypoint(3.55, .39, 37, 53, 45),
-        new MMWaypoint(4.5, .38, 37, 53, 45),
-        new MMWaypoint(4.78, .379, 47, 63, 55));
+        new MMWaypoint(1.3, .45, 32, 48, 48),
+        new MMWaypoint(2.12, .425, 37, 53, 53),
+        new MMWaypoint(2.81, 0.394, 37, 53, 53),
+        new MMWaypoint(3.55, .39, 37, 53, 53),
+        new MMWaypoint(4.5, .38, 47, 63, 63),
+        new MMWaypoint(4.78, .379, 47, 63, 63));
     configShooterRotateCanCoder();
     configShooterRotateMotor();
     configIntakeRotateCanCoder();
@@ -314,7 +314,7 @@ public class Shooter extends SubsystemBase {
     Translation2d transformRightBoundarySpeaker = MMField.currentRightBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
-
+    //TODO: fix abort intake
     if (intakeRotateMotor.getSupplyCurrent().getValue() > 4) {
       // abortIntake = true;
       abortIntakeCounter++;
