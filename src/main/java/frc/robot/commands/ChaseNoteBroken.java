@@ -33,7 +33,7 @@ public class ChaseNoteBroken extends Command {
     rc.shooterSubsystem.setIntakeFlag(true);
     rotationPIDController = new MMPIDController(1.0 / 150, 0, 0, 3.0 / 2.0, 10, false);
     rotationPIDController.initialize(targetX);
-    yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);
+    yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);//100
     yPIDController.initialize(targetY);
   }
 

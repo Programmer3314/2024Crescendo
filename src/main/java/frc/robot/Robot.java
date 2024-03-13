@@ -105,6 +105,7 @@ public class Robot extends TimedRobot {
     Navigation.visionUpdate = 0;
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_robotContainer.navigation.setAutoVisionOn(false);
 
     // pdh.setSwitchableChannel(true);
 
@@ -142,6 +143,7 @@ public class Robot extends TimedRobot {
     DataLogManager.start();
     // Record both DS control and joystick data
     DriverStation.startDataLog(DataLogManager.getLog());
+    m_robotContainer.navigation.setAutoVisionOn(true);
     Navigation.visionUpdate = 0;
 
   }

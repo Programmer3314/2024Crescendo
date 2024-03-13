@@ -30,6 +30,7 @@ public class Navigation extends SubsystemBase {
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
+  public boolean useVision = true;
 
   Pigeon2 pigeon;
   double hitAcceleration;
@@ -212,7 +213,7 @@ public class Navigation extends SubsystemBase {
     // limelightMeasurement.timestampSeconds);
     // }
 
-    if (true) {
+    if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
       var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
       SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
 
@@ -237,7 +238,7 @@ public class Navigation extends SubsystemBase {
       }
     }
 
-    if (true) {
+    if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
       var lastResult = LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
       SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
 
@@ -285,6 +286,20 @@ public class Navigation extends SubsystemBase {
     return leftNoteX;
   }
 
+  // public double getScaledLeftX(){
+  // double scaleValue = 1;
+  // if(leftNoteY>400){
+  // scaleValue = 4;
+  // }
+  // else if(leftNoteY>300){
+  // scaleValue = 3;
+  // }
+  // else if(leftNoteY>200){
+  // scaleValue = 2;
+  // }
+  // return leftNoteX/
+  // }
+
   public double getLeftNoteY() {
     return leftNoteY;
   }
@@ -312,6 +327,9 @@ public class Navigation extends SubsystemBase {
     return distance;
   }
 
+  public void setAutoVisionOn(boolean isUpdate) {
+    useVision = isUpdate;
+  }
   // public double getPredictedDistanceToSpeaker() {
   // Pose2d currentPose = predictedPose;
   // Translation2d target = MMField.currentSpeakerPose().getTranslation();

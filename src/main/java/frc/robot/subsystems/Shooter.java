@@ -76,9 +76,9 @@ public class Shooter extends SubsystemBase {
   double leftShooterChuckLowVelocity = 30;
   double rightShooterChuckLowVelocity = 40;
   double shooterChuckLowRotation = .38;
-  double leftShooterChuckHighVelocity = 35;
-  double rightShooterChuckHighVelocity = 45;
-  double shooterChuckHighRotation = .45;
+  double leftShooterChuckHighVelocity = 25;
+  double rightShooterChuckHighVelocity = 35;
+  double shooterChuckHighRotation = .4;
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;
@@ -233,8 +233,8 @@ public class Shooter extends SubsystemBase {
     determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));
     determineShot.put("pony_3", new MMWaypoint(0, .396, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
-    determineShot.put("thoroughbred_3", new MMWaypoint(0, .39, 37, 53, 40));
-    determineShot.put("thoroughbred_4", new MMWaypoint(0, .39, 37, 53, 40));
+    determineShot.put("thoroughbred_3", new MMWaypoint(0, .387, 37, 53, 40));
+    determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
@@ -262,13 +262,13 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putData("Run Diagnostic",
         new InstantCommand(() -> this.setRunDiagnosticFlag(true)));
     // SmartDashboard.putData("Run Belt Up Fast",
-    //     new InstantCommand(() -> this.runElevatorBeltUpFast()));
+    // new InstantCommand(() -> this.runElevatorBeltUpFast()));
     // SmartDashboard.putData("Run Belt Up Slow",
-    //     new InstantCommand(() -> this.runElevatorBeltUpSlow()));
+    // new InstantCommand(() -> this.runElevatorBeltUpSlow()));
     // SmartDashboard.putData("Run Belt Down Fast",
-    //     new InstantCommand(() -> this.runElevatorBeltDownFast()));
+    // new InstantCommand(() -> this.runElevatorBeltDownFast()));
     // SmartDashboard.putData("Run Belt Down Slow",
-    //     new InstantCommand(() -> this.runElevatorBeltDownSlow()));
+    // new InstantCommand(() -> this.runElevatorBeltDownSlow()));
     DataLog log = DataLogManager.getLog();
     shooterStateLog = new StringLogEntry(log, "/my/state/shooter");
     intakeFlagLog = new BooleanLogEntry(log, "my/flag/intake");
@@ -431,7 +431,7 @@ public class Shooter extends SubsystemBase {
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
         setElevatorIndexFlag(false);
-
+        shooterDown();
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -543,8 +543,8 @@ public class Shooter extends SubsystemBase {
         if (runChuckLow) {
           return PrepareToChuckLow;
         }
-        if(runChuckHigh) {
-        return PrepareToChuckHigh;
+        if (runChuckHigh) {
+          return PrepareToChuckHigh;
         }
         if (runWooferSlam) {
           return PrepareToWooferSlam;
@@ -595,7 +595,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToChuck() && runChuckLow) {// TODO: is this really needed, the flag should already be on
+        if (readyToChuckHigh() && runChuckHigh) {
           return ChuckShoot;
         }
         return this;
@@ -665,7 +665,7 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (!elevatorBreakBeam.get()) {
-          return ElevatorIndexed;//ElevatorPassNoteAbove2
+          return ElevatorIndexed;// ElevatorPassNoteAbove2
         }
         return this;
       }
@@ -1449,7 +1449,7 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
-public Shooter setChuckHighFlag(boolean isChuck) {
+  public Shooter setChuckHighFlag(boolean isChuck) {
     runChuckHigh = isChuck;
     if (isChuck) {
       runAim = false;
@@ -1689,6 +1689,12 @@ public Shooter setChuckHighFlag(boolean isChuck) {
         isInMargin(getShooterAngle(), shooterChuckLowRotation, shooterAngleMargin);
   }
 
+  public boolean readyToChuckHigh() {
+    return isInMargin(getLeftShooterVelocity(), leftShooterChuckHighVelocity, shooterVelocityMargin) &&
+        isInMargin(getRightShooterVelocity(), rightShooterChuckHighVelocity, shooterVelocityMargin) &&
+        isInMargin(getShooterAngle(), shooterChuckHighRotation, shooterAngleMargin);
+  }
+
   public boolean readyToWooferSlam() {
     return isInMargin(getLeftShooterVelocity(), leftShooterWooferSlamVelocity, shooterVelocityMargin) &&
         isInMargin(getRightShooterVelocity(), rightShooterWooferSlamVelocity, shooterVelocityMargin) &&
@@ -1718,7 +1724,6 @@ public Shooter setChuckHighFlag(boolean isChuck) {
     genericConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive);
     MMConfigure.configureDevice(elevatorBottomBelt, genericConfig);
     MMConfigure.configureDevice(elevatorTopBelt, genericConfig);
-
 
     // MMConfigure.configureDevice(rightMotor, genericConfig);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
@@ -1955,7 +1960,7 @@ public Shooter setChuckHighFlag(boolean isChuck) {
     elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(-20));
   }
 
-public void runElevatorTopBeltUpSlow() {
+  public void runElevatorTopBeltUpSlow() {
     elevatorTopBelt.setControl(elevatorVelVol.withVelocity(-20));
   }
 

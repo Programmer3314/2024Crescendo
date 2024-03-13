@@ -49,19 +49,18 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
         // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
         // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
         new FollowPathFile(rc, "comp_tb_2"),
-        new ChaseAndIntakeBroken(rc),
+        new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "thoroughbred_3"),
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_tb_3"),
         new Delay(rc, 15, true),
         new ShootAndWait(rc),
         new FollowPathFile(rc, "comp_tb_4"),
-        new ChaseAndIntakeBroken(rc)
-    // new SpinUpForAutoShot(rc, "thoroughbred_4"),
-    // // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-    // new FollowPathFile(rc, "comp_tb_5"),
-    // new ShootAndWait(rc)
-    );
+        new ChaseAndIntakeBroken(rc, true),
+        new SpinUpForAutoShot(rc, "thoroughbred_4"),
+        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+        new FollowPathFile(rc, "comp_tb_5"),
+        new ShootAndWait(rc));
     cmd.initialize();
   }
 }
