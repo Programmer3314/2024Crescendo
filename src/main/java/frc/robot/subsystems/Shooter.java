@@ -315,7 +315,7 @@ public class Shooter extends SubsystemBase {
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
     //TODO: fix abort intake
-    if (intakeRotateMotor.getSupplyCurrent().getValue() > 4) {
+    if (intakeRotateMotor.getSupplyCurrent().getValue() > 2.1) {
       // abortIntake = true;
       abortIntakeCounter++;
     }
@@ -1246,7 +1246,10 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         stopIntake();
         setIntakeUp();
-        // rc.joystick.setRumble
+        // setIntakeFlag(false);
+        // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        rc.aBlinkin.error();
       }
 
       @Override

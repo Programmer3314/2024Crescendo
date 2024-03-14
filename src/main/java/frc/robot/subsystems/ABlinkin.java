@@ -16,6 +16,7 @@ public class ABlinkin extends SubsystemBase {
   public double shootBlinkValue = -.17;
   public double gimmeNoteValue = -.68;
   public double normalValue = 0;
+  public double errorValue = -.85 ;
 
   /** Creates a new spark. */
   public ABlinkin(RobotContainer rc) {
@@ -37,5 +38,10 @@ public class ABlinkin extends SubsystemBase {
 
   public void gotNote() {
     sparkblinkin.set(normalValue);
+  }
+
+  public void error() {
+        sparkblinkin.set(errorValue);
+
   }
 }
