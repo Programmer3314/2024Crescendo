@@ -131,19 +131,19 @@ public class Climber extends SubsystemBase {
       }
 
       public void doState() {
-        if ((leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-            && leftCanCoder.getAbsolutePosition().getValue() >= .2)
-            && (rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-                && rightCanCoder.getAbsolutePosition().getValue() >= .2)) {
-          rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
+        // if ((leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+        //     && leftCanCoder.getAbsolutePosition().getValue() >= .2)
+        //     && (rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+        //         && rightCanCoder.getAbsolutePosition().getValue() >= .2)) {
+          // rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
           // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
           // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
-        } else {
+        // } else {
 
-          rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
+          // rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
           // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
           // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
-        }
+        // }
       }
 
       @Override
@@ -174,7 +174,7 @@ public class Climber extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         // runClimbSlow();
         clawsUpTrapMove();
-        //
+        
       }
 
       @Override
@@ -205,6 +205,8 @@ public class Climber extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         // runClimbSlow();
         clawsUpFastMove();
+        rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
+
         //
       }
 
@@ -264,6 +266,8 @@ public class Climber extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         rc.drivetrain.setControl(drive.withVelocityX(-.25).withVelocityY(0).withRotationalRate(0));
+        rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
+
       }
 
       @Override
