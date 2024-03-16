@@ -13,16 +13,17 @@ import frc.robot.RobotContainer;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class FullClimb extends SequentialCommandGroup {
   RobotContainer rc;
-  
+
   /** Creates a new FieldSideClimb. */
-  public FullClimb(RobotContainer rc,Pose2d approachPose) {
+  public FullClimb(RobotContainer rc, Pose2d approachPose) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-        new GoClimb(rc,approachPose),
+        new ClawsUpAndIndex(rc),
+        new GoClimb(rc, approachPose),
+        new DriveForwardDist(rc, 0.25, -.75),
         new StartClimb(rc));
   }
 }
-

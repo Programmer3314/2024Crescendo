@@ -127,18 +127,7 @@ public class RobotContainer {
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
 
-    // TODO: Low Priority Driver Controller Layout
-    // Needs:
-    // -Shoot : RT
-    // -Eject
-    // -Intake
-    // -Aim
-    // -Reset State Machine
-    // -Reset Position
-    // -Aim
-    // -Climb / StopClimb
-    // -RequestAmp(shoot/ eject are the same thing)
-    // -Clean up comments please
+    
 
     // driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->
@@ -227,6 +216,32 @@ public class RobotContainer {
     // drivetrain.registerTelemetry(logger::telemeterize);
 
     // Final CONTROLS:
+
+    // TODO: Low Priority Driver Controller Layout
+    // Needs:
+    // A: ReverseIntake
+    // B: Intake
+    // X: Index Elevator
+    // Y: GoAmp
+    // RB: ChaseIntake
+    // RT: ChuckHigh
+    // LB: SignalNote
+    // LT: ChuckLow
+
+    //Operator Controller Layout:
+    // A: Aim
+    // B: ResetVision
+    // X: ManualClimb
+    // Y: ClawsUp
+    // RB: chucklow
+    // RT: shoot
+    // LB: aimToWall
+    // LT: woofer
+    //Start: Reset Hooks
+    //Menu: Diagnostics
+    // Right Joystick Click: Reset SSM
+
+
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)));
     driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
@@ -261,11 +276,11 @@ public class RobotContainer {
     oppController.button(7).onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
 
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
-    oppController.povUp().whileTrue(new FullClimb(this,
+    oppController.povUp().whileTrue(new GoClimb(this,
         MMField.getBlueStageFieldPose()));
-    oppController.povLeft().whileTrue(new FullClimb(this,
+    oppController.povLeft().whileTrue(new GoClimb(this,
         MMField.getBlueStageSpeakerSidePose()));
-    oppController.povRight().whileTrue(new FullClimb(this,
+    oppController.povRight().whileTrue(new GoClimb(this,
         MMField.getBlueStageNonSpeakerSidePose()));
     oppController.leftBumper().whileTrue(new AimToWall(this));
     oppController.button(10)

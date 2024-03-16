@@ -133,6 +133,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.climber.setClimbFlag(false);
     m_robotContainer.climber.setClimbUnwindFlag(false);
     m_robotContainer.climber.setClimbPos();
+    m_robotContainer.shooterSubsystem.setAutoForce(false);
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();

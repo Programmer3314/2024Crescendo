@@ -76,9 +76,9 @@ public class Shooter extends SubsystemBase {
   double leftShooterChuckLowVelocity = 30;
   double rightShooterChuckLowVelocity = 40;
   double shooterChuckLowRotation = .38;
-  double leftShooterChuckHighVelocity = 25;
-  double rightShooterChuckHighVelocity = 35;
-  double shooterChuckHighRotation = .4;
+  double leftShooterChuckHighVelocity = 45;
+  double rightShooterChuckHighVelocity = 55;
+  double shooterChuckHighRotation = .43;
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;
@@ -431,6 +431,7 @@ public class Shooter extends SubsystemBase {
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
         setElevatorIndexFlag(false);
+        setAutoForce(false);
         shooterDown();
         // abortIntakeCounter=0;
         idleCounter++;
