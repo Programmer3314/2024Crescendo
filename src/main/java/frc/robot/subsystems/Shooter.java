@@ -222,6 +222,8 @@ public class Shooter extends SubsystemBase {
   BooleanLogEntry atTargetAngleLog;
   BooleanLogEntry atSpeedLog;
   BooleanLogEntry atShooterAngleLog;
+  BooleanLogEntry autoForceLog;
+  BooleanLogEntry autoShootLog;
   String diagnosticState = "None";
 
   /** Creates a new Shooter. */
@@ -231,7 +233,7 @@ public class Shooter extends SubsystemBase {
     determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
     determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .396, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .387, 37, 53, 40));
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
@@ -285,6 +287,8 @@ public class Shooter extends SubsystemBase {
     atTargetAngleLog = new BooleanLogEntry(log, "my/shooterCondition/targetAngle");
     atSpeedLog = new BooleanLogEntry(log, "my/shooterCondition/motorSpeed");
     atShooterAngleLog = new BooleanLogEntry(log, "my/shooterCondition/shooterAngle");
+    autoForceLog = new BooleanLogEntry(log, "my/autoShooterCondition/forceShot");
+    autoShootLog = new BooleanLogEntry(log, "my/autoShooterCondition/shoot");
 
     // var status = orchestra.loadMusic("rickroll.chrp");
     // orchestra.addInstrument(rc.climber.climbMotor);
@@ -314,13 +318,17 @@ public class Shooter extends SubsystemBase {
     Translation2d transformRightBoundarySpeaker = MMField.currentRightBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
-    //TODO: fix abort intake
+    // TODO: fix abort intake
     if (intakeRotateMotor.getSupplyCurrent().getValue() > 2.1) {
       // abortIntake = true;
       abortIntakeCounter++;
     }
 
     SmartDashboard.putNumber("changed angle", MMFiringSolution.manualChangeAngle);
+
+    SmartDashboard.putString("Check NonSpeakerApproach", MMField.currentStageNonSpeakerPose().toString());
+    SmartDashboard.putString("Check SpeakerApproach", MMField.currentStageSpeakerSidePose().toString());
+    SmartDashboard.putString("Check FieldApproach", MMField.currentStagePose().toString());
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
 
@@ -2003,6 +2011,7 @@ public class Shooter extends SubsystemBase {
     shooterRotatePositionLog.append(getShooterAngle());
     leftIndexVelocityLog.append(index2.getVelocity().getValue());
     intakeBreakBeamLog.append(intakeBreakBeam.get());
+    shooterBreakBeamLog.append(shooterBreakBeam.get());
 
   }
 

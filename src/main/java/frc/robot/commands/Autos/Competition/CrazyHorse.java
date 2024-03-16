@@ -68,7 +68,7 @@ public class CrazyHorse extends MMDeferredCommand<SequentialCommandGroup> {
         new ShootAndWaitForced(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new SpinUpForAutoShot(rc, "crazyhorse_4"),
-        new DriveForwardDistBroken(rc, .5, -1),
+        new DriveForwardDistBroken(rc, .75, -1),
         new WaitToIndexed(rc),
         new ShootAndWaitForced(rc),
 

@@ -132,17 +132,17 @@ public class Climber extends SubsystemBase {
 
       public void doState() {
         // if ((leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-        //     && leftCanCoder.getAbsolutePosition().getValue() >= .2)
-        //     && (rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-        //         && rightCanCoder.getAbsolutePosition().getValue() >= .2)) {
-          // rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
-          // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
-          // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
+        // && leftCanCoder.getAbsolutePosition().getValue() >= .2)
+        // && (rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+        // && rightCanCoder.getAbsolutePosition().getValue() >= .2)) {
+        // rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
+        // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 1);
+        // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 1);
         // } else {
 
-          // rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
-          // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
-          // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        // rc.aBlinkin.controlBlink(rc.aBlinkin.normalValue);
+        // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
         // }
       }
 
@@ -174,7 +174,7 @@ public class Climber extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         // runClimbSlow();
         clawsUpTrapMove();
-        
+
       }
 
       @Override
@@ -304,9 +304,9 @@ public class Climber extends SubsystemBase {
       };
 
       @Override
-      public void doState(){
-        if(rc.shooterSubsystem.elevatorBreakBeam.get()){
-        rc.shooterSubsystem.stopElevatorBelts();
+      public void doState() {
+        if (rc.shooterSubsystem.elevatorBreakBeam.get()) {
+          rc.shooterSubsystem.stopElevatorBelts();
         }
       }
 
@@ -381,7 +381,7 @@ public class Climber extends SubsystemBase {
       }
 
       @Override
-      public void doState(){
+      public void doState() {
 
       }
 
@@ -415,7 +415,8 @@ public class Climber extends SubsystemBase {
       }
     };
 
-    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {//transition to shoot, run the elevator down a little
+    MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {// transition to shoot, run the
+                                                                                  // elevator down a little
 
       @Override
       public void transitionTo(MMStateMachineState previousState) {
@@ -424,7 +425,7 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (timeInState >= 2.5) {//started @ .5
+        if (timeInState >= 2.5) {// started @ .5
           return Idle;//
         }
         return this;
@@ -625,6 +626,12 @@ public class Climber extends SubsystemBase {
     rightClimberPositionLog.append(rightCanCoder.getAbsolutePosition().getValue());
     climbMotorVelocityLog.append(climbMotor.getVelocity().getValue());
     climbMotorPositionLog.append(climbMotor.getVelocity().getValue());
+  }
+
+  public boolean climbEngaged() {
+    return leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
+        || rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged;
+
   }
 
 }

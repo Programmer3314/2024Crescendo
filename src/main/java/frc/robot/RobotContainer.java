@@ -34,6 +34,7 @@ import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
+import frc.robot.commands.RobotCentricDriveCmd;
 import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.SignalForNote;
@@ -126,8 +127,6 @@ public class RobotContainer {
             .withVelocityX(driverController.getLeftYSmoothed() * Robot.resetDriverValue)
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
-
-    
 
     // driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->
@@ -228,7 +227,7 @@ public class RobotContainer {
     // LB: SignalNote
     // LT: ChuckLow
 
-    //Operator Controller Layout:
+    // Operator Controller Layout:
     // A: Aim
     // B: ResetVision
     // X: ManualClimb
@@ -237,10 +236,9 @@ public class RobotContainer {
     // RT: shoot
     // LB: aimToWall
     // LT: woofer
-    //Start: Reset Hooks
-    //Menu: Diagnostics
+    // Start: Reset Hooks
+    // Menu: Diagnostics
     // Right Joystick Click: Reset SSM
-
 
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)));
@@ -249,6 +247,7 @@ public class RobotContainer {
     driverController.povDown()
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
+    driverController.povRight().whileTrue(new RobotCentricDriveCmd(this));
 
     driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this, true));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->

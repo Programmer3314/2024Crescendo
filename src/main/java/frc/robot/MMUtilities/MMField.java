@@ -8,6 +8,7 @@ import com.pathplanner.lib.util.GeometryUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Robot;
@@ -18,7 +19,22 @@ public class MMField {
   static Pose2d rightBoundarySpeaker = new Pose2d(0, 5.5 + .356, new Rotation2d());
   public static double fieldX = 16.54;
   public static double fieldY = 8.23;
-  
+  private static Pose2d speakerTagPose = new Pose2d(4.64, 4.508, Rotation2d.fromDegrees(120));// x: fieldX/2 - 3.629, y:
+                                                                                              // fieldY
+  // + .393
+  private static Pose2d nonSpeakerTagPose = new Pose2d(4.64, 3.722, Rotation2d.fromDegrees(-120));// x: fieldX/2 - 3.63
+                                                                                                  // y:
+  // fieldY/2-.392
+  private static Pose2d fieldTagPose = new Pose2d(5.32, 4.115, Rotation2d.fromDegrees(0));// x:fieldx/2 -2.95, y:
+                                                                                          // fieldy/2
+
+  private static Transform2d distanceToStage = new Transform2d(1, 0, Rotation2d.fromDegrees(0));
+
+  private static Pose2d blueSpeakerApproachPosition = speakerTagPose.plus(distanceToStage);
+
+  private static Pose2d blueNonSpeakerApproachPosition = nonSpeakerTagPose.plus(distanceToStage);
+
+  private static Pose2d blueFieldApproachPosition = fieldTagPose.plus(distanceToStage);
 
   public static Translation2d getBlueTranslation(Translation2d translation) {
     if (Robot.alliance.equals(DriverStation.Alliance.Red)) {
@@ -108,7 +124,9 @@ public class MMField {
     return blueAmpPose;
   }
 
-  private static Pose2d blueStageFieldSide = new Pose2d(6.70, 4.0, Rotation2d.fromDegrees(0));
+  // private static Pose2d blueStageFieldSide = new Pose2d(6.70, 4.0,
+  // Rotation2d.fromDegrees(0));
+  private static Pose2d blueStageFieldSide = blueFieldApproachPosition;
 
   public static Pose2d currentStagePose() {
     return getBluePose(blueStageFieldSide);
@@ -120,7 +138,9 @@ public class MMField {
 
   // private static Pose2d blueStageSpeakerSide = new Pose2d(3.056, 5.29,
   // Rotation2d.fromDegrees(210));
-  private static Pose2d blueStageSpeakerSide = new Pose2d(4.03, 5.59, Rotation2d.fromDegrees(120));
+  // private static Pose2d blueStageSpeakerSide = new Pose2d(4.07, 5.63,
+  // Rotation2d.fromDegrees(120));// 4.03, 5.59
+  private static Pose2d blueStageSpeakerSide = blueSpeakerApproachPosition;
 
   public static Pose2d currentStageSpeakerSidePose() {
     return getBluePose(blueStageSpeakerSide);
@@ -132,7 +152,9 @@ public class MMField {
 
   // private static Pose2d blueStageNonSpeakerSide = new Pose2d(3.056, 2.924,
   // Rotation2d.fromDegrees(150));
-  private static Pose2d blueStageNonSpeakerSide = new Pose2d(4.09, 2.67, Rotation2d.fromDegrees(-120));
+  // private static Pose2d blueStageNonSpeakerSide = new Pose2d(4.09, 2.67,
+  // Rotation2d.fromDegrees(-120));
+  private static Pose2d blueStageNonSpeakerSide = blueNonSpeakerApproachPosition;
 
   public static Pose2d currentStageNonSpeakerPose() {
     return getBluePose(blueStageNonSpeakerSide);

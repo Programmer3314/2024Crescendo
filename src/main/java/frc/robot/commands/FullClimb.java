@@ -23,7 +23,7 @@ public class FullClimb extends SequentialCommandGroup {
     addCommands(
         new ClawsUpAndIndex(rc),
         new GoClimb(rc, approachPose),
-        new DriveForwardDist(rc, 0.25, -.75),
+        new DriveForwardDistEngaged(rc, 0.25, -.75),
         new StartClimb(rc));
   }
 }
