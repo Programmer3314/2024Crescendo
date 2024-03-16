@@ -31,6 +31,7 @@ public class Navigation extends SubsystemBase {
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
   public boolean useVision = true;
+  public boolean oneTargetBack = false;
 
   Pigeon2 pigeon;
   double hitAcceleration;
@@ -220,14 +221,16 @@ public class Navigation extends SubsystemBase {
       if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
         llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
-        if (lastResult.valid && lastResult.targets_Fiducials.length >= 1) {
+        if (lastResult.valid && ((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
+            || lastResult.targets_Fiducials.length > 1)) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
           // double margin = pose.minus(llPose).getTranslation().getNorm();
           double margin = 0;
           if (visionUpdate < 50
               || margin < .25
-              || (lastResult.targets_Fiducials.length >= 1 && margin < 1)) {
+              || (((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
+                  || lastResult.targets_Fiducials.length > 1) && margin < 1)) {
             // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
@@ -329,6 +332,10 @@ public class Navigation extends SubsystemBase {
 
   public void setAutoVisionOn(boolean isUpdate) {
     useVision = isUpdate;
+  }
+
+  public void setOneTargetBack(boolean isOneTarget) {
+    oneTargetBack = isOneTarget;
   }
   // public double getPredictedDistanceToSpeaker() {
   // Pose2d currentPose = predictedPose;

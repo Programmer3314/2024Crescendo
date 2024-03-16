@@ -33,6 +33,7 @@ public class GoAmp extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    rc.navigation.setOneTargetBack(true);
     Pose2d currentPose = MMField.getBluePose(rc.drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(.75, 1.5, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
@@ -61,7 +62,9 @@ public class GoAmp extends Command {
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
     SmartDashboard.putString("goAmpStatus", interrupted ? "interrupted" : "not interrupted");
-    rc.shooterSubsystem.setShootFlag(!interrupted); 
+    rc.shooterSubsystem.setShootFlag(!interrupted);
+    rc.navigation.setOneTargetBack(false);
+
   }
 
   // Returns true when the command should end.

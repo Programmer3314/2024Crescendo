@@ -37,6 +37,7 @@ public class GoClimb extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    rc.navigation.setOneTargetBack(true);
     Pose2d currentPose = MMField.getBluePose(rc.drivetrain.getState().Pose);
     PathConstraints trajectoryConstraints = new PathConstraints(.5, 1, 2 * Math.PI, 4 * Math.PI);
     List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(
@@ -65,6 +66,7 @@ public class GoClimb extends Command {
   public void end(boolean interrupted) {
     pathCommand.end(interrupted);
     SmartDashboard.putString("goClimbStatus", interrupted ? "interrupted" : "not interrupted");
+    rc.navigation.setOneTargetBack(false);
 
   }
 

@@ -36,8 +36,8 @@ public class RobotCentricDriveCmd extends Command {
   @Override
   public void execute() {
     rc.drivetrain.setControl(drive
-        .withVelocityX(rc.driverController.getLeftYSmoothed())
-        .withVelocityY(rc.driverController.getLeftXSmoothed())
+        .withVelocityX(-rc.driverController.getLeftYSmoothed())
+        .withVelocityY(-rc.driverController.getLeftXSmoothed())
         .withRotationalRate(rc.driverController.getRightXSmoothed()));
 
     SmartDashboard.putNumber("XVelocity: ", rc.driverController.getLeftYSmoothed());
