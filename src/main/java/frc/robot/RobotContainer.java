@@ -26,6 +26,7 @@ import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
 import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
+import frc.robot.commands.AngledDriveToChain;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.ClawsUpAndIndex;
@@ -248,6 +249,7 @@ public class RobotContainer {
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
     driverController.povRight().whileTrue(new RobotCentricDriveCmd(this));
+    driverController.povLeft().whileTrue(new AngledDriveToChain(this));
 
     driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this, true));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->
