@@ -1554,7 +1554,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runIntakeInSlow() {
-    intakeBeltMotor.setControl(intakeBeltVelVol.withVelocity(.4 * intakeVelIn));
+    intakeBeltMotor.setControl(intakeBeltVelVol.withVelocity(.6 * intakeVelIn));
   }
 
   public void runIntakeIn() {
