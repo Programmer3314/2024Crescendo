@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.517435320584927,
-        "y": 4.603069777568127
+        "x": 4.488116404804239,
+        "y": 4.661707609129505
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.646213578141443,
-        "y": 4.207264414528829
+        "x": 5.616894662360754,
+        "y": 4.265902246090207
       },
       "isLocked": false,
-      "linkedName": "pony_shoot"
+      "linkedName": null
     },
     {
       "anchor": {

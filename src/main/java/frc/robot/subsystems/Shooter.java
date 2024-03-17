@@ -232,8 +232,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .389, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .389, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .387, 37, 53, 40));
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
@@ -490,7 +490,8 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setIntakeDown();
-        runIntakeIn();
+        // runIntakeIn();
+        runIntakeInSlow();
         // setAimFlag(true); Changed to stop battery bleed
         rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
         rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
@@ -1424,6 +1425,12 @@ public class Shooter extends SubsystemBase {
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
+  public MMWaypoint calcManualFiringSolution(Pose2d position) {
+    Translation2d target = MMField.currentSpeakerPose().getTranslation();
+    double distanceToSpeaker = position.getTranslation().minus(target).getNorm();
+    return firingSolution.calcSolution(distanceToSpeaker);
+  }
+
   // public void calcPredictedFiringSolution() {
   // distanceToSpeaker = rc.navigation.getPredictedDistanceToSpeaker();
   // desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
@@ -1541,6 +1548,10 @@ public class Shooter extends SubsystemBase {
 
   public boolean getRunDiagnosticFlag(boolean runTest) {
     return runDiagnosticTest;
+  }
+
+  public void runIntakeInSlow() {
+    intakeBeltMotor.setControl(intakeBeltVelVol.withVelocity(.4 * intakeVelIn));
   }
 
   public void runIntakeIn() {

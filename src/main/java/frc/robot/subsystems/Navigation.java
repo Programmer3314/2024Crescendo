@@ -225,8 +225,8 @@ public class Navigation extends SubsystemBase {
             || lastResult.targets_Fiducials.length > 1)) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
-          // double margin = pose.minus(llPose).getTranslation().getNorm();
-          double margin = 0;
+          double margin = pose.minus(llPose).getTranslation().getNorm();
+          // double margin = 0;
           if (visionUpdate < 50
               || margin < .25
               || (((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
@@ -251,11 +251,11 @@ public class Navigation extends SubsystemBase {
         if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
-          // double margin = pose.minus(llPose).getTranslation().getNorm();
-          double margin = 0;
+          double margin = pose.minus(llPose).getTranslation().getNorm();
+          // double margin = 0;
           if (visionUpdate < 50
               || margin < .25
-              || (lastResult.targets_Fiducials.length > 1 && margin < 1)) {
+              || (lastResult.targets_Fiducials.length > 1 && margin < 2)) {
             // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)

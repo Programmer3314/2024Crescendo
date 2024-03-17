@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.MMUtilities.MMWaypoint;
 import frc.robot.subsystems.Navigation;
 
 public class Robot extends TimedRobot {
@@ -169,6 +171,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
+    Pose2d testPosition = new Pose2d(7.14, 3.14, Rotation2d.fromDegrees(171.38));
+    MMWaypoint waypoint = m_robotContainer.shooterSubsystem.calcManualFiringSolution(testPosition);
+    System.out.println("Angle: " + waypoint.getAngle());
+    System.out.println("Left: " + waypoint.getLeftVelocity());
+    System.out.println("Right: " + waypoint.getRightVelocity());
+    System.out.println("Velocity: " + waypoint.getVelocity());
 
   }
 
