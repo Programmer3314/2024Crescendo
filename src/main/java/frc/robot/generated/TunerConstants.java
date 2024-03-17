@@ -94,8 +94,10 @@ public class TunerConstants {
     private static final int kFrontLeftEncoderId = 1;
     private static final double kFrontLeftEncoderOffset = -0.19287109375;
 
-    private static final double kFrontLeftXPosInches = 15;
-    private static final double kFrontLeftYPosInches = 15;
+    private static double driveRadius = 23.5/2.0;
+
+    private static final double kFrontLeftXPosInches = driveRadius;//15
+    private static final double kFrontLeftYPosInches = driveRadius;//15
 
     // Front Right
     private static final int kFrontRightDriveMotorId = 3;
@@ -103,8 +105,10 @@ public class TunerConstants {
     private static final int kFrontRightEncoderId = 2;
     private static final double kFrontRightEncoderOffset = 0.025390625;
 
-    private static final double kFrontRightXPosInches = 15;
-    private static final double kFrontRightYPosInches = -15;
+     
+
+    private static final double kFrontRightXPosInches = driveRadius;//15
+    private static final double kFrontRightYPosInches = -driveRadius;//-15
 
     // Back Left
     private static final int kBackLeftDriveMotorId = 8;
@@ -112,8 +116,8 @@ public class TunerConstants {
     private static final int kBackLeftEncoderId = 4;
     private static final double kBackLeftEncoderOffset = -0.3017578125;
 
-    private static final double kBackLeftXPosInches = -15;
-    private static final double kBackLeftYPosInches = 15;
+    private static final double kBackLeftXPosInches = -driveRadius;//-15
+    private static final double kBackLeftYPosInches = driveRadius;//15
 
     // Back Right
     private static final int kBackRightDriveMotorId = 5;
@@ -121,8 +125,8 @@ public class TunerConstants {
     private static final int kBackRightEncoderId = 3;
     private static final double kBackRightEncoderOffset = -0.320068359375;
 
-    private static final double kBackRightXPosInches = -15;
-    private static final double kBackRightYPosInches = -15;
+    private static final double kBackRightXPosInches = -driveRadius;//-15
+    private static final double kBackRightYPosInches = -driveRadius;//-15
 
 
     private static final SwerveModuleConstants FrontLeft = ConstantCreator.createModuleConstants(

@@ -232,8 +232,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .389, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .389, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .391, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .387, 37, 53, 40));
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
@@ -452,6 +452,9 @@ public class Shooter extends SubsystemBase {
         }
         if (runDiagnosticTest) {
           return DiagnosticSetIntakeDown;
+        }
+        if (runOutTake) {
+          return IntakeReverse;
         }
         return this;
       }
