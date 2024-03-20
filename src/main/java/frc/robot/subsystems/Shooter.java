@@ -67,7 +67,6 @@ public class Shooter extends SubsystemBase {
   double speakerTurnRate;
   double WallTurnRate;
 
-  // TODO: Review the followign margins
   public double shooterAngleMargin = .002;
   double shooterVelocityMargin = 2;
   double intakeVelocityMargin = 20;
@@ -430,6 +429,7 @@ public class Shooter extends SubsystemBase {
         setRunDiagnosticFlag(false);
         stopElevatorBelts();
         setElevatorDown();
+        setIntakeFlag(false);
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);

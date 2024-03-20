@@ -33,11 +33,6 @@ public class CrazyHorse extends MMDeferredCommand<SequentialCommandGroup> {
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
@@ -79,6 +74,11 @@ public class CrazyHorse extends MMDeferredCommand<SequentialCommandGroup> {
         new FollowPathFile(rc, "comp_ch_5"),
         new Delay(rc, 20),
         new ShootAndWaitForced(rc));
+
+  }
+
+  @Override
+  public void initialize() {
     cmd.initialize();
   }
 }

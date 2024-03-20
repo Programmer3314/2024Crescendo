@@ -17,6 +17,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.MMUtilities.MMWaypoint;
+import frc.robot.commands.Autos.Competition.Arabian;
+import frc.robot.commands.Autos.Competition.CrazyHorse;
+import frc.robot.commands.Autos.Competition.HorseShoe;
+import frc.robot.commands.Autos.Competition.HorseShoeTwo;
+import frc.robot.commands.Autos.Competition.Pony;
+import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.subsystems.Navigation;
 
 public class Robot extends TimedRobot {
@@ -55,6 +61,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.climber.setClimbFlag(false);
     m_robotContainer.climber.setClimbUnwindFlag(false);
     pdh.setSwitchableChannel(true);
+    SmartDashboard.putBoolean("AutosConfigured", false);
     // Shuffleboard.getTab("Field").addString("pose", () ->
     // m_robotContainer.drivetrain.getState().Pose.toString())
     // .withWidget(BuiltInWidgets.kField);
@@ -86,7 +93,15 @@ public class Robot extends TimedRobot {
           resetDriverValue = 1;
           allianceSpeakerRotation = Rotation2d.fromDegrees(180);
         }
+
         // TODO: Build Autos Here...
+        m_robotContainer.pony = new Pony(m_robotContainer);
+        m_robotContainer.arabian = new Arabian(m_robotContainer);
+        m_robotContainer.crazyHorse = new CrazyHorse(m_robotContainer);
+        m_robotContainer.horseshoe = new HorseShoe(m_robotContainer);
+        m_robotContainer.horseShoeTwo = new HorseShoeTwo(m_robotContainer);
+        m_robotContainer.thoroughbred = new Thoroughbred(m_robotContainer);
+        SmartDashboard.putBoolean("AutosConfigured", true);
         SmartDashboard.putString("alliance", alliance.toString());
       }
     }

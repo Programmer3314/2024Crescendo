@@ -27,10 +27,6 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
     this.rc = rc;
     addRequirements(rc.drivetrain);
 
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
@@ -54,12 +50,16 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_horseshoe2_4"),
         new ChaseAndIntakeBroken(rc)
-        // new SpinUpForAutoShot(rc, "Horseshoe2_5"),
-        // // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        // new FollowPathFile(rc, "comp_hs2_5Alt"),
-        // new Delay(rc, 50, true),
-        // new ShootAndWait(rc)
-        );
+    // new SpinUpForAutoShot(rc, "Horseshoe2_5"),
+    // // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
+    // new FollowPathFile(rc, "comp_hs2_5Alt"),
+    // new Delay(rc, 50, true),
+    // new ShootAndWait(rc)
+    );
+  }
+
+  @Override
+  public void initialize() {
     cmd.initialize();
   }
 }

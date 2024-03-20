@@ -24,10 +24,6 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
     this.rc = rc;
     addRequirements(rc.drivetrain);
 
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
@@ -57,9 +53,11 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_4"),
         new Delay(rc, 50, true),
-        new ShootAndWait(rc)
+        new ShootAndWait(rc));
+  }
 
-    );
+  @Override
+  public void initialize() {
     cmd.initialize();
   }
 }

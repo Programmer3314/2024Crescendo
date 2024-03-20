@@ -24,10 +24,6 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
     this.rc = rc;
     addRequirements(rc.drivetrain);
 
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
@@ -59,6 +55,11 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
         new ShootAndWait(rc)
 
     );
-    cmd.initialize();
+
+  }
+
+  @Override
+  public void initialize() {
+        cmd.initialize();
   }
 }

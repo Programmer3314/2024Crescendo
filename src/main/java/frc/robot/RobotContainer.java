@@ -51,6 +51,7 @@ import frc.robot.commands.Autos.Competition.HorseShoeTwo;
 import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
+import frc.robot.enums.AutoEnum;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ABlinkin;
 import frc.robot.subsystems.Climber;
@@ -109,7 +110,7 @@ public class RobotContainer {
   public Climber climber = new Climber(this);
   public ABlinkin aBlinkin = new ABlinkin(this);
 
-  private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<AutoEnum> autoChooser;
   public static SendableChooser<Pose2d> startPoseChooser;
   public static SendableChooser<Pose2d> noteChooser0;
   public static SendableChooser<Pose2d> shootChooser0;
@@ -119,6 +120,14 @@ public class RobotContainer {
   public static SendableChooser<Pose2d> shootChooser2;
   public static SendableChooser<Pose2d> noteChooser3;
   public static SendableChooser<Pose2d> shootChooser3;
+
+  // Auto variables
+  public Pony pony; //= new Pony(this);
+  public Arabian arabian; //= new Arabian(this);
+  public CrazyHorse crazyHorse; //= new CrazyHorse(this);
+  public HorseShoe horseshoe; //= new HorseShoe(this);
+  public HorseShoeTwo horseShoeTwo; // = new HorseShoeTwo(this);
+  public Thoroughbred thoroughbred; //= new Thoroughbred(this);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {
@@ -304,21 +313,21 @@ public class RobotContainer {
     // Default auto will be `Commands.none()`
     // autoChooser = AutoBuilder.buildAutoChooser();
     autoChooser = new SendableChooser<>();
-    autoChooser.addOption("none", Commands.none());
-    autoChooser.addOption("FourNoteAuto-Shop", new FourNoteAuto(this));
-    autoChooser.addOption("ShootSmove-Shop", new AutoSamplerShootSmove(this));
-    autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
-    autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
-    autoChooser.addOption("ArabianAuto-Comp", new Arabian(this));
-    autoChooser.addOption("Thoroughbred-Comp", new Thoroughbred(this));
-    autoChooser.addOption("Horseshoe2-Comp", new HorseShoeTwo(this));
-    autoChooser.addOption("Pony-Comp", new Pony(this));
-    autoChooser.addOption("CrazyHorse-Comp", new CrazyHorse(this));
+    autoChooser.addOption("none", AutoEnum.none);
+    // autoChooser.addOption("FourNoteAuto-Shop", new FourNoteAuto(this));
+    // autoChooser.addOption("ShootSmove-Shop", new AutoSamplerShootSmove(this));
+    // autoChooser.addOption("MustangAuto-Shop", new MustangAuto(this));
+    // autoChooser.addOption("StageSideAuto-Shop", new StageSideAuto(this));
+    autoChooser.addOption("ArabianAuto-Comp", AutoEnum.Arabian);
+    autoChooser.addOption("Thoroughbred-Comp", AutoEnum.Thoroughbred);
+    autoChooser.addOption("Horseshoe2-Comp", AutoEnum.HorseshoeTwo);
+    autoChooser.addOption("Pony-Comp", AutoEnum.Pony);
+    autoChooser.addOption("CrazyHorse-Comp", AutoEnum.CrazyHorse);
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
 
-    autoChooser.addOption("HorseShoeAuto-Comp", new HorseShoe(this));
-    autoChooser.setDefaultOption("none", Commands.none());
+    autoChooser.addOption("HorseShoeAuto-Comp", AutoEnum.HorseShoe);
+    autoChooser.setDefaultOption("none", AutoEnum.none);
     SmartDashboard.putData("Auto Mode", autoChooser);
 
     // noteChooser0 = new SendableChooser<Pose2d>();
@@ -367,9 +376,25 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    switch(autoChooser.getSelected()){
+      case Arabian:
+      return arabian;
+      case CrazyHorse:
+      return crazyHorse;
+      case HorseShoe:
+      return horseshoe;
+      case HorseshoeTwo:
+      return horseShoeTwo;
+      case Pony:
+      return pony;
+      case Thoroughbred:
+      return thoroughbred;
+      case none:
+      default: 
+      return Commands.none();      
+    }
   }
-
+  
   // Removed as Unused Code...
   // // strip this down to use none of our code...
   // // hard code the poses, etc.

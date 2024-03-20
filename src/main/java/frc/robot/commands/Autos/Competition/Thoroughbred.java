@@ -30,10 +30,6 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
 
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.getCurrentWooferHumanPlayerPose())
@@ -61,6 +57,10 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_tb_5"),
         new ShootAndWait(rc));
+  }
+
+  @Override
+  public void initialize() {
     cmd.initialize();
   }
 }

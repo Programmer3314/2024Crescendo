@@ -27,11 +27,6 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-
-  }
-
-  @Override
-  public void initialize() {
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
         new StandardAutoInit(rc, MMField.currentWooferPose())
@@ -54,8 +49,12 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_3"),
         new WaitToIndexed(rc),
-        new Delay(rc,15),
+        new Delay(rc, 15),
         new ShootAndWait(rc));
+  }
+
+  @Override
+  public void initialize() {
     cmd.initialize();
   }
 }

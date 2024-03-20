@@ -42,13 +42,14 @@ public class Climber extends SubsystemBase {
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
   private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
-  double climbDownPosition = 0.056;
-  double climbUpPosition = .275;
-  double climbEngaged = .27;
-  double climbSlowPos = .15;
-  double elevatorSafety = .20;
+  double climbAbsoluteBottom = .1;
+  double climbDownPosition = 0.015 + climbAbsoluteBottom;
+  double climbUpPosition = .235 + climbAbsoluteBottom;
+  double climbEngaged = .227 + climbAbsoluteBottom;
+  double climbSlowPos = .145 + climbAbsoluteBottom;
+  double elevatorSafety = .203 + climbAbsoluteBottom;
   double climbPositionMargin = 0;
-  double emergencyStopClimber = .051;
+  double emergencyStopClimber = .013 + climbAbsoluteBottom;
 
   int idleCounter = 0;
 
@@ -447,11 +448,12 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (leftCanCoder.getAbsolutePosition().getValue() >= .24) {
+        if (leftCanCoder.getAbsolutePosition().getValue() >= climbSlowPos) {
           return ResetClimb;
         }
         if (climberEmergency()
-            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
+            && (leftCanCoder.getVelocity().getValue() < emergencyStopClimber
+                || rightCanCoder.getVelocity().getValue() < emergencyStopClimber)) {
           return Idle;
         }
         return this;
@@ -462,8 +464,8 @@ public class Climber extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (leftCanCoder.getAbsolutePosition().getValue() <= .05
-            || rightCanCoder.getAbsolutePosition().getValue() <= .05) {
+        if (leftCanCoder.getAbsolutePosition().getValue() <= climbDownPosition
+            || rightCanCoder.getAbsolutePosition().getValue() <= climbDownPosition) {
           return Idle;
         }
         return this;
@@ -539,13 +541,13 @@ public class Climber extends SubsystemBase {
     rightCanConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)// one of them s
-        .withMagnetOffset(-0.7);
+        .withMagnetOffset(-0.47998046875);
 
     CANcoderConfiguration leftCanConfig = new CANcoderConfiguration();
     leftCanConfig.MagnetSensor
         .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
         .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-        .withMagnetOffset(0.023);
+        .withMagnetOffset(0.074);
     MMConfigure.configureDevice(leftCanCoder, leftCanConfig);
     MMConfigure.configureDevice(rightCanCoder, rightCanConfig);
   }
