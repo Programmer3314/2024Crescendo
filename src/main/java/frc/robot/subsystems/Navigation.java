@@ -222,7 +222,7 @@ public class Navigation extends SubsystemBase {
         llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
         if (lastResult.valid && ((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
-            || lastResult.targets_Fiducials.length > 1)) {
+            || lastResult.targets_Fiducials.length > 1||visionUpdate<50)) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           SmartDashboard.putString("llPose", llPose.toString());
           double margin = pose.minus(llPose).getTranslation().getNorm();

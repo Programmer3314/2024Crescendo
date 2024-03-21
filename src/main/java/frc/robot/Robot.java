@@ -182,17 +182,18 @@ public class Robot extends TimedRobot {
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
     m_robotContainer.shooterSubsystem.stopMotors();
-
-  }
-
-  @Override
-  public void testPeriodic() {
-    Pose2d testPosition = new Pose2d(7.14, 3.14, Rotation2d.fromDegrees(171.38));
+    Pose2d testPosition = new Pose2d(4.75, 6.14, Rotation2d.fromDegrees(171.38));
     MMWaypoint waypoint = m_robotContainer.shooterSubsystem.calcManualFiringSolution(testPosition);
     System.out.println("Angle: " + waypoint.getAngle());
     System.out.println("Left: " + waypoint.getLeftVelocity());
     System.out.println("Right: " + waypoint.getRightVelocity());
     System.out.println("Velocity: " + waypoint.getVelocity());
+
+  }
+
+  @Override
+  public void testPeriodic() {
+    
 
   }
 

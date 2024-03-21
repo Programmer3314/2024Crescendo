@@ -297,6 +297,7 @@ public class RobotContainer {
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
 
+            
   }
 
   public RobotContainer() {

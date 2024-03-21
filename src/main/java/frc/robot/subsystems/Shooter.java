@@ -229,18 +229,18 @@ public class Shooter extends SubsystemBase {
   public Shooter(RobotContainer rc) {
     this.rc = rc;
     // sets up our targets for the auto shots
-    determineShot.put("arabian_2", new MMWaypoint(0, .392, 37, 53, 40));
-    determineShot.put("arabian_3", new MMWaypoint(0, .392, 37, 53, 40));
+    determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
+    determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("pony_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("pony_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("Horseshoe2_5", new MMWaypoint(0, .39, 37, 53, 40));
-    determineShot.put("thoroughbred_3", new MMWaypoint(0, .387, 37, 53, 40));
-    determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
+    determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
+    determineShot.put("thoroughbred_3", new MMWaypoint(0, .378, 37, 53, 40));
+    determineShot.put("thoroughbred_4", new MMWaypoint(0, .378, 37, 53, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_4", new MMWaypoint(0, .404, 37, 53, 40));
-    determineShot.put("crazyhorse_5", new MMWaypoint(0, .379, 47, 63, 55));
+    determineShot.put("crazyhorse_5", new MMWaypoint(0, .378, 47, 63, 55));
 
     firingSolution = new MMFiringSolution(
         rc,
