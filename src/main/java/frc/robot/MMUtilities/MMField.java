@@ -19,22 +19,22 @@ public class MMField {
   static Pose2d rightBoundarySpeaker = new Pose2d(0, 5.5 + .356, new Rotation2d());
   public static double fieldX = 16.54;
   public static double fieldY = 8.23;
-  private static Pose2d speakerTagPose = new Pose2d(4.64, 4.508, Rotation2d.fromDegrees(120));// x: fieldX/2 - 3.629, y:
+  private static Pose2d speakerStageTagPose = new Pose2d(4.641, 4.508, Rotation2d.fromDegrees(120));// x: fieldX/2 - 3.629, y:
                                                                                               // fieldY
   // + .393
-  private static Pose2d nonSpeakerTagPose = new Pose2d(4.64, 3.722, Rotation2d.fromDegrees(-120));// x: fieldX/2 - 3.63
+  private static Pose2d nonSpeakerStageTagPose = new Pose2d(4.641, 3.722, Rotation2d.fromDegrees(-120));// x: fieldX/2 - 3.63
                                                                                                   // y:
   // fieldY/2-.392
-  private static Pose2d fieldTagPose = new Pose2d(5.32, 4.115, Rotation2d.fromDegrees(0));// x:fieldx/2 -2.95, y:
+  private static Pose2d fieldStageTagPose = new Pose2d(5.32, 4.05, Rotation2d.fromDegrees(0));// x:fieldx/2 -2.95, y:
                                                                                           // fieldy/2
 
-  private static Transform2d distanceToStage = new Transform2d(1, 0, Rotation2d.fromDegrees(0));
+  private static Transform2d distanceToStage = new Transform2d(1.5, 0, Rotation2d.fromDegrees(0));
 
-  private static Pose2d blueSpeakerApproachPosition = speakerTagPose.plus(distanceToStage);
+  private static Pose2d blueSpeakerApproachPosition = speakerStageTagPose.plus(distanceToStage);
 
-  private static Pose2d blueNonSpeakerApproachPosition = nonSpeakerTagPose.plus(distanceToStage);
+  private static Pose2d blueNonSpeakerApproachPosition = nonSpeakerStageTagPose.plus(distanceToStage);
 
-  private static Pose2d blueFieldApproachPosition = fieldTagPose.plus(distanceToStage);
+  private static Pose2d blueFieldApproachPosition = fieldStageTagPose.plus(distanceToStage);
 
   public static Translation2d getBlueTranslation(Translation2d translation) {
     if (Robot.alliance.equals(DriverStation.Alliance.Red)) {
