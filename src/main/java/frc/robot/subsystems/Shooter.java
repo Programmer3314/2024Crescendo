@@ -162,7 +162,7 @@ public class Shooter extends SubsystemBase {
 
   double intakeTop = .823;
   double intakeUpPos = intakeTop - .005;
-  double intakeDownPos = intakeTop - .74;// .76
+  double intakeDownPos = intakeTop - .76;// .74
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
@@ -413,14 +413,14 @@ public class Shooter extends SubsystemBase {
         // setIntakeFlag(false);
         // setShootFlag(false);
         // setAimFlag(false);
+        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
       }
     };
 
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
-        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
         setReadyToAutoShoot(false);
         setIntakeUp();
         stopIndexers();
@@ -496,8 +496,6 @@ public class Shooter extends SubsystemBase {
         // runIntakeIn();
         runIntakeInSlow();
         // setAimFlag(true); Changed to stop battery bleed
-        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
-        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
 
         rc.aBlinkin.controlBlink(0.77);
       }
@@ -539,6 +537,9 @@ public class Shooter extends SubsystemBase {
         setWooferSlamFlag(false);
         setElevatorIndexFlag(false);
         indexCounter++;
+
+        rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
+        rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
       }
 
       @Override

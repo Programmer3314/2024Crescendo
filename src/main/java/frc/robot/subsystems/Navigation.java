@@ -12,6 +12,13 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.datalog.BooleanLogEntry;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.IntegerLogEntry;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,6 +39,15 @@ public class Navigation extends SubsystemBase {
   private String limelightBackUpName = "limelight-backup";
   public boolean useVision = true;
   public boolean oneTargetBack = false;
+
+  StructPublisher<Pose2d> backLimelightPose = NetworkTableInstance.getDefault()
+      .getStructTopic("backLimelightPose4", Pose2d.struct).publish();
+  StructPublisher<Pose2d> frontLimelightPose = NetworkTableInstance.getDefault()
+      .getStructTopic("frontLimelightPose4", Pose2d.struct).publish();
+  BooleanLogEntry useVisionBoolean;
+  DoubleLogEntry visionCounterLog;
+  BooleanLogEntry updatedVisionFront;
+  BooleanLogEntry updatedVisionBack;
 
   Pigeon2 pigeon;
   double hitAcceleration;
@@ -181,13 +197,19 @@ public class Navigation extends SubsystemBase {
     pigeon = rc.drivetrain.getPigeon2();
     // aprilThread = new AprilThread();
     // aprilThread.start();
-
+    DataLog log = DataLogManager.getLog();
+    visionCounterLog = new DoubleLogEntry(log, "my/vision/counter");
+    updatedVisionBack = new BooleanLogEntry(log, "my/vision/updateBack");
+    updatedVisionFront = new BooleanLogEntry(log, "my/vision/updateFront");
   }
 
   @Override
   public void periodic() {
     Pose2d pose = rc.drivetrain.getState().Pose;
     currentPose = pose;
+    visionCounterLog.append(visionUpdate);
+    updatedVisionBack.append(false);
+    updatedVisionFront.append(false);
 
     if (Math.abs(pigeon.getAccelerationX().getValue()) > hitAcceleration
         || Math.abs(pigeon.getAccelerationY().getValue()) > hitAcceleration) {
@@ -222,8 +244,9 @@ public class Navigation extends SubsystemBase {
         llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
 
         if (lastResult.valid && ((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
-            || lastResult.targets_Fiducials.length > 1 || visionUpdate<50)) {
+            || lastResult.targets_Fiducials.length > 1 || visionUpdate < 50)) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+          backLimelightPose.accept(llPose);
           SmartDashboard.putString("llPose", llPose.toString());
           double margin = pose.minus(llPose).getTranslation().getNorm();
           // double margin = 0;
@@ -236,6 +259,8 @@ public class Navigation extends SubsystemBase {
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
                 - (lastResult.latency_jsonParse / 1000.0));
             visionUpdate++;
+            updatedVisionBack.append(true);
+
           }
         }
       }
@@ -250,6 +275,7 @@ public class Navigation extends SubsystemBase {
 
         if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+          frontLimelightPose.accept(llPose);
           SmartDashboard.putString("llPose", llPose.toString());
           double margin = pose.minus(llPose).getTranslation().getNorm();
           // double margin = 0;
@@ -261,6 +287,8 @@ public class Navigation extends SubsystemBase {
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
                 - (lastResult.latency_jsonParse / 1000.0));
             visionUpdate++;
+            updatedVisionFront.append(true);
+
           }
         }
       }
@@ -386,5 +414,9 @@ public class Navigation extends SubsystemBase {
   public void resetVision() {
     visionUpdate = 0;
     // aprilThread.ResetVisionUpdate();
+  }
+
+  public void updateLog() {
+
   }
 }
