@@ -21,6 +21,7 @@ import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.CrazyHorse;
 import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.HorseShoeTwo;
+import frc.robot.commands.Autos.Competition.PeddiePony;
 import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.subsystems.Navigation;
@@ -101,6 +102,7 @@ public class Robot extends TimedRobot {
         m_robotContainer.horseshoe = new HorseShoe(m_robotContainer);
         m_robotContainer.horseShoeTwo = new HorseShoeTwo(m_robotContainer);
         m_robotContainer.thoroughbred = new Thoroughbred(m_robotContainer);
+        m_robotContainer.peddiePony = new PeddiePony(m_robotContainer);
         SmartDashboard.putBoolean("AutosConfigured", true);
         SmartDashboard.putString("alliance", alliance.toString());
       }
@@ -146,6 +148,7 @@ public class Robot extends TimedRobot {
     // if (alliance != null) {
     // resetDriverValue = alliance.equals(Alliance.Red) ? -1 : 1;
     // }
+    m_robotContainer.shooterSubsystem.setAutoStartForceAngle(false);
 
     m_robotContainer.climber.resetStateMachine();
     m_robotContainer.shooterSubsystem.resetStateMachine();
@@ -193,7 +196,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    
 
   }
 

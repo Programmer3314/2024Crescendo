@@ -10,8 +10,10 @@ import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.Delay;
+import frc.robot.commands.DriveForwardDistBroken;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SitShootAndWait;
 import frc.robot.commands.WaitToIndexed;
 import frc.robot.commands.Autos.StandardAutoInit;
 
@@ -32,23 +34,25 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new ShootAndWait(rc),
+        new SitShootAndWait(rc),
         // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_1"),
-        new WaitToIndexed(rc),
+        new DriveForwardDistBroken(rc, .5, -1),
+
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_2"),
-        new WaitToIndexed(rc),
+        new DriveForwardDistBroken(rc, .5, -1),
         new Delay(rc, 15),
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_hs_3"),
-        new WaitToIndexed(rc),
+        new DriveForwardDistBroken(rc, .5, -1),
+
         new Delay(rc, 15),
         new ShootAndWait(rc));
   }

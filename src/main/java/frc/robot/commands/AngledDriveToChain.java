@@ -13,7 +13,7 @@ import frc.robot.RobotContainer;
 public class AngledDriveToChain extends Command {
   RobotContainer rc;
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
-  double distanceBetweenWheelsInches = 23.5;
+  double distanceBetweenWheelsInches = 19;
   double driveTrainRadius = Math
       .sqrt((distanceBetweenWheelsInches / 2)*(distanceBetweenWheelsInches / 2) +(distanceBetweenWheelsInches / 2)*(distanceBetweenWheelsInches / 2));
   double driveTrainRadiusMeters = Units.inchesToMeters(driveTrainRadius);
@@ -47,8 +47,8 @@ public class AngledDriveToChain extends Command {
     //     .withRotationalRate(turnRate));
     rc.drivetrain.setControl(drive
         .withVelocityX(0*(-Math.abs(turnRate)*driveVector))
-        .withVelocityY(.6*(turnRate*driveVector))
-        .withRotationalRate(1.5*turnRate));
+        .withVelocityY(.3*(turnRate*driveVector))
+        .withRotationalRate(2*turnRate));
   }
 
   // Called once the command ends or is interrupted.

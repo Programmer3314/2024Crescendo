@@ -13,6 +13,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SitShootAndWait;
 import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
@@ -29,7 +30,7 @@ public class Arabian extends MMDeferredCommand<SequentialCommandGroup> {
         new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new ShootAndWait(rc),
+        new SitShootAndWait(rc),
         // new ReignChain(rc, "comp_ab_1", "comp_ab_2"),
         // new ReignChain(rc, "comp_ab_3", "comp_ab_4")
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),

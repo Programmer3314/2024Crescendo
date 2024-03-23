@@ -58,7 +58,7 @@ public class DriveForwardDistBroken extends Command {
   @Override
   public boolean isFinished() {
     distanceTraveled = rc.drivetrain.getState().Pose.getTranslation().minus(initialPosition).getNorm();
-    return distance <= distanceTraveled || !rc.shooterSubsystem.getIntakeBreakbeam();
+    return distance <= distanceTraveled || !rc.shooterSubsystem.getIntakeBreakbeam()||!rc.shooterSubsystem.getShooterBreakBeam();
   }
   
 }

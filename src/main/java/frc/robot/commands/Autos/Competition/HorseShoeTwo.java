@@ -14,6 +14,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.SitShootAndWait;
 import frc.robot.commands.SpinUpForAutoShot;
 import frc.robot.commands.Autos.StandardAutoInit;
 
@@ -32,7 +33,7 @@ public class HorseShoeTwo extends MMDeferredCommand<SequentialCommandGroup> {
         new StandardAutoInit(rc, MMField.currentWooferPose())
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new ShootAndWait(rc),
+        new SitShootAndWait(rc),
         // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),

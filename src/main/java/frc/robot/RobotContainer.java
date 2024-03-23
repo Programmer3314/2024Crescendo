@@ -48,6 +48,7 @@ import frc.robot.commands.Autos.Competition.Arabian;
 import frc.robot.commands.Autos.Competition.CrazyHorse;
 import frc.robot.commands.Autos.Competition.HorseShoe;
 import frc.robot.commands.Autos.Competition.HorseShoeTwo;
+import frc.robot.commands.Autos.Competition.PeddiePony;
 import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
@@ -61,7 +62,7 @@ import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
-  public final double MaxAngularRate = Math.PI; // Half a rotation per second max angular velocity
+  public final double MaxAngularRate = 2*Math.PI; // a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
   private Pose2d[] startPoseList = {
@@ -128,6 +129,7 @@ public class RobotContainer {
   public HorseShoe horseshoe; //= new HorseShoe(this);
   public HorseShoeTwo horseShoeTwo; // = new HorseShoeTwo(this);
   public Thoroughbred thoroughbred; //= new Thoroughbred(this);
+  public PeddiePony peddiePony;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {
@@ -324,6 +326,7 @@ public class RobotContainer {
     autoChooser.addOption("Horseshoe2-Comp", AutoEnum.HorseshoeTwo);
     autoChooser.addOption("Pony-Comp", AutoEnum.Pony);
     autoChooser.addOption("CrazyHorse-Comp", AutoEnum.CrazyHorse);
+    autoChooser.addOption("PeddiePony-Comp", AutoEnum.PeddiePony);
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
 

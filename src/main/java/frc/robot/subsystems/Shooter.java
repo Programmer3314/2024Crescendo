@@ -113,6 +113,7 @@ public class Shooter extends SubsystemBase {
   double DiagnosticElevatorBeltVel = 10;
   double DiagnosticElevatorBeltMargin = 5;
   double autoShooterAngle;
+  double autoShotChange = .004;
   double autoShooterLeftVelocity;
   double autoShooterRightVelocity;
 
@@ -130,7 +131,9 @@ public class Shooter extends SubsystemBase {
   boolean diagnosticDesiredElevatorBeltDown;
   boolean diagnosticDesiredLeftShooterVel;
   boolean autoForceShot;
+  boolean autoStartForceAngle;
   boolean shootAutoShot;
+  boolean intakeOverNote;
 
   double elevatorHomingVelocity = -20;
   boolean hasHomedElevator;
@@ -162,7 +165,7 @@ public class Shooter extends SubsystemBase {
 
   double intakeTop = .823;
   double intakeUpPos = intakeTop - .005;
-  double intakeDownPos = intakeTop - .76;// .74
+  double intakeDownPos = intakeTop - .75;// - .74
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
@@ -231,8 +234,10 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .391, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .390, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .390, 37, 53, 40));
+     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
+    determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .378, 37, 53, 40));
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .378, 37, 53, 40));
@@ -421,6 +426,7 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        setAutoStartForceAngle(false);
         setReadyToAutoShoot(false);
         setIntakeUp();
         stopIndexers();
@@ -429,7 +435,11 @@ public class Shooter extends SubsystemBase {
         setRunDiagnosticFlag(false);
         stopElevatorBelts();
         setElevatorDown();
-        setIntakeFlag(false);
+        if (!intakeOverNote) {
+          setIntakeFlag(false);
+        } else {
+          intakeOverNote = false;
+        }
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
@@ -717,10 +727,18 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return ElevatorPassNoteAbove;
         }
+        if (runOutTake) {
+          return ElevatorDownToIndex;
+        }
         if (runIntake) {
           return ElevatorDownAbort;
         }
         return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState nexState) {
+        setReverseIntakeFlag(false);
       }
     };
 
@@ -1147,7 +1165,6 @@ public class Shooter extends SubsystemBase {
         }
         return this;
       }
-
     };
     MMStateMachineState DiagnosticReverseToIndex = new MMStateMachineState("DiagnosticReverseToIndex") {
       @Override
@@ -1170,6 +1187,105 @@ public class Shooter extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (!intakeBreakBeam.get()) {
+
+          return DiagnosticMoveToElevatorIndex;
+        }
+        if (timeInState >= diagnosticTimeOut) {
+          return Idle;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticMoveToElevatorIndex = new MMStateMachineState("DiagnosticMoveToElevatorIndex") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBottomBeltUpSlow();
+        runIntakeOut();
+        stopShooterMotors();
+        runIndexOut();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!elevatorBreakBeam.get()) {
+          return DiagnosticMoveToElevatorUp;// ElevatorPassNoteAbove2
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticMoveToElevatorUp = new MMStateMachineState("DiagnosticMoveToElevatorUp") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorUp();
+        stopElevatorBelts();
+        runIndexOut();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin)) {
+          return DiagnosticMoveToElevatorDown;// ElevatorPassNoteAbove2
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticMoveToElevatorDown = new MMStateMachineState("DiagnosticMoveToElevatorDown") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        setElevatorDown();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition, elevatorPositionMargin)) {
+          return DiagnosticMoveToIndexed;// ElevatorPassNoteAbove2
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticMoveToIndexed = new MMStateMachineState("DiagnosticMoveToIndexed") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runElevatorBottomBeltDownSlow();
+        runIntakeInSlow();
+        runIndexIn();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return DiagnosticReverseToIndexFinal;// ElevatorPassNoteAbove2
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState DiagnosticReverseToIndexFinal = new MMStateMachineState("DiagnosticReverseToIndexFinal") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIndexOut();
+        runIntakeOut();
+        // runIntakeOut();
+        // TODO: make fifth noise
+        diagnosticState = "DiagnosticReverseToIndex";
+      }
+
+      @Override
+      public void doState() {
+        double actualvel1 = getIndex1Vel();
+        double actualvel2 = getIndex2Vel();
+        diagnosticMoveToIndex = isInMargin(index1OutVel, actualvel1, intakeVelocityMargin)
+            && isInMargin(index1OutVel, actualvel2, intakeVelocityMargin);
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!intakeBreakBeam.get()) {
+
           return DiagnosticSetIntakeDownEnd;
         }
         if (timeInState >= diagnosticTimeOut) {
@@ -1264,6 +1380,7 @@ public class Shooter extends SubsystemBase {
         // rc.oppController.getHID().setRumble(RumbleType.kBothRumble, 0);
         // rc.driverController.getHID().setRumble(RumbleType.kBothRumble, 0);
         rc.aBlinkin.error();
+        intakeOverNote = true;
       }
 
       @Override
@@ -1493,6 +1610,11 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setAutoStartForceAngle(boolean value) {
+    autoStartForceAngle = value;
+    return this;
+  }
+
   public Shooter setAimFlag(boolean aim) {
     if (runAim && !aim) {
       stopShooterMotors();
@@ -1707,7 +1829,7 @@ public class Shooter extends SubsystemBase {
     return leftShooterAtVelocity
         && rightShooterAtVelocity
         && shooterAtAngle
-        && bingo;
+        && (bingo || autoStartForceAngle);
   }
 
   public boolean readyToChuck() {
@@ -1799,15 +1921,6 @@ public class Shooter extends SubsystemBase {
 
   }
 
-  private void configIntakeRotateCanCoder() {
-    CANcoderConfiguration canConfig = new CANcoderConfiguration();
-    canConfig.MagnetSensor
-        .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
-        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.165);
-    MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
-  }
-
   private void configShooterRotateCanCoder() {
     CANcoderConfiguration canConfig = new CANcoderConfiguration();
     canConfig.MagnetSensor
@@ -1815,6 +1928,15 @@ public class Shooter extends SubsystemBase {
         .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
         .withMagnetOffset(0.1904296875);
     MMConfigure.configureDevice(shooterRotateCanCoder, canConfig);
+  }
+
+  private void configIntakeRotateCanCoder() {
+    CANcoderConfiguration canConfig = new CANcoderConfiguration();
+    canConfig.MagnetSensor
+        .withAbsoluteSensorRange(AbsoluteSensorRangeValue.Unsigned_0To1)
+        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+        .withMagnetOffset(-0.165);
+    MMConfigure.configureDevice(intakeRotateCanCoder, canConfig);
   }
 
   private void configIntakeRotateMotor() {
@@ -2072,13 +2194,18 @@ public class Shooter extends SubsystemBase {
     autoShooterLeftVelocity = v;
   }
 
+  public void getRidOfNote() {
+    runLeftMotor(leftShooterChuckLowVelocity);
+    runRightMotor(rightShooterChuckLowVelocity);
+  }
+
   public void setRightAutoShooterVelocity(double v) {
     autoShooterRightVelocity = v;
 
   }
 
   public void setAutoShooterAngle(double v) {
-    autoShooterAngle = v;
+    autoShooterAngle = v + autoShotChange;
 
   }
 
