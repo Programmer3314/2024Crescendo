@@ -74,6 +74,8 @@ public class Shooter extends SubsystemBase {
   double elevatorPositionMargin = 1;
   double leftShooterChuckLowVelocity = 30;
   double rightShooterChuckLowVelocity = 40;
+  double leftShooterRidLowVelocity = 10;
+  double rightShooterRidLowVelocity = 15;
   double shooterChuckLowRotation = .38;
   double leftShooterChuckHighVelocity = 45;
   double rightShooterChuckHighVelocity = 55;
@@ -234,9 +236,9 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .390, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .390, 37, 53, 40));
-     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .395, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .395, 37, 53, 40));
+    determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .378, 37, 53, 40));
@@ -669,10 +671,16 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition, elevatorPositionMargin)) {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorDownPosition, elevatorPositionMargin)
+            || !elevatorHomeSensor.get()) {
           return ElevatorIndex;
         }
         return this;
+      }
+
+      @Override
+      public void transitionFrom(MMStateMachineState previousState) {
+        setElevatorZero();
       }
     };
 
@@ -1677,7 +1685,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runIntakeInSlow() {
-    intakeBeltMotor.setControl(intakeBeltVelVol.withVelocity(.6 * intakeVelIn));
+    intakeBeltMotor.setControl(intakeBeltVelVol.withVelocity(.4 * intakeVelIn));// .6
   }
 
   public void runIntakeIn() {
@@ -1875,6 +1883,7 @@ public class Shooter extends SubsystemBase {
     MMConfigure.configureDevice(elevatorTopBelt, genericConfig);
 
     // MMConfigure.configureDevice(rightMotor, genericConfig);
+    genericConfig.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
     MMConfigure.configureDevice(intakeBeltMotor, genericConfig);
 
   }
@@ -2089,6 +2098,10 @@ public class Shooter extends SubsystemBase {
     elevatorMotor.setControl(elevatorVoltageOut.withOutput(-.5));
   }
 
+  public void setElevatorZero() {
+    elevatorMotor.setPosition(elevatorDownPosition);
+  }
+
   public void runElevatorBottomBeltUpFast() {
     elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(intakeVelOut * 3));
   }
@@ -2195,8 +2208,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void getRidOfNote() {
-    runLeftMotor(leftShooterChuckLowVelocity);
-    runRightMotor(rightShooterChuckLowVelocity);
+    runLeftMotor(leftShooterRidLowVelocity);
+    runRightMotor(rightShooterRidLowVelocity);
   }
 
   public void setRightAutoShooterVelocity(double v) {

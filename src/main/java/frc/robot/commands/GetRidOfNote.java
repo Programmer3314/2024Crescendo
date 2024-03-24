@@ -16,19 +16,19 @@ public class GetRidOfNote extends Command {
   public GetRidOfNote(RobotContainer rc) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.rc = rc;
-    addRequirements(rc.shooterSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     startTime = Timer.getFPGATimestamp();
-    rc.shooterSubsystem.getRidOfNote();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
+    rc.shooterSubsystem.getRidOfNote();
   }
 
   // Called once the command ends or is interrupted.

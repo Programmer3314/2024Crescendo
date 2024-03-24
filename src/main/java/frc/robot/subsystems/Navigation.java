@@ -253,7 +253,7 @@ public class Navigation extends SubsystemBase {
           if (visionUpdate < 50
               || margin < .25
               || (((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
-                  || lastResult.targets_Fiducials.length > 1) && margin < 1)) {
+                  || lastResult.targets_Fiducials.length > 1) && margin < .75)) {
             // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
@@ -281,7 +281,7 @@ public class Navigation extends SubsystemBase {
           // double margin = 0;
           if (visionUpdate < 50
               || margin < .25
-              || (lastResult.targets_Fiducials.length > 1 && margin < 2)) {
+              || (lastResult.targets_Fiducials.length > 1 && margin < .75)) {
             // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
             rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
                 - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)

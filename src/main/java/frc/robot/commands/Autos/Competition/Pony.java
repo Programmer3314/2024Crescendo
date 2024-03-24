@@ -53,7 +53,7 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
         new SpinUpForAutoShot(rc, "pony_3"),
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_4"),
-        new Delay(rc, 50, true),
+        // new Delay(rc, 50, true),
         new ShootAndWait(rc));
   }
 

@@ -29,7 +29,8 @@ public class PeddiePony extends MMDeferredCommand<SequentialCommandGroup> {
 
     cmd = new SequentialCommandGroup();
     cmd.addCommands(
-        new StandardAutoInit(rc, MMField.getCurrentWooferNonHumanPlayerPose())
+        new InstantCommand(() -> rc.navigation.setAutoVisionOn(false)),
+        new StandardAutoInit(rc, MMField.getCurrentPeddiePonyPose())
             .setPipeLine(0, 0, 0),
         new ParallelCommandGroup(
             new GetRidOfNote(rc),

@@ -393,6 +393,8 @@ public class RobotContainer {
       return pony;
       case Thoroughbred:
       return thoroughbred;
+      case PeddiePony:
+      return peddiePony;
       case none:
       default: 
       return Commands.none();      

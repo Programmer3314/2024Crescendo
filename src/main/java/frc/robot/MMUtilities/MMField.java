@@ -66,6 +66,8 @@ public class MMField {
 
   private static Pose2d blueWooferPose = new Pose2d(1.4, 5.5, Rotation2d.fromDegrees(180));
 
+  private static Pose2d peddiePonyPose = new Pose2d(.46, 2.46, Rotation2d.fromDegrees(180));
+
   private static Pose2d blueWooferHumanPlayerPose = new Pose2d(0.74, 6.68, Rotation2d.fromDegrees(-120));// -120
 
   private static Pose2d blueWooferNonHumanPlayerPose = new Pose2d(0.74, 4.29, Rotation2d.fromDegrees(120));// -120
@@ -78,8 +80,16 @@ public class MMField {
     return blueWooferHumanPlayerPose;
   }
 
+  public static Pose2d getPeddiePonyPose(){
+    return peddiePonyPose;
+  }
+
   public static Pose2d getCurrentWooferHumanPlayerPose() {
     return getBluePose(blueWooferHumanPlayerPose);
+  }
+
+  public static Pose2d getCurrentPeddiePonyPose(){
+    return getBluePose(peddiePonyPose);
   }
 
   public static Pose2d getBlueWooferNonHumanPlayerPose() {

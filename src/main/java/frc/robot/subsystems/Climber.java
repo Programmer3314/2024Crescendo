@@ -47,7 +47,7 @@ public class Climber extends SubsystemBase {
   double climbUpPosition = .235 + climbAbsoluteBottom;
   double climbEngaged = .227 + climbAbsoluteBottom;
   double climbSlowPos = .145 + climbAbsoluteBottom;
-  double elevatorSafety = .203 + climbAbsoluteBottom;
+  double elevatorSafety = .172 + climbAbsoluteBottom;//.203
   double climbPositionMargin = 0;
   double emergencyStopClimber = .013 + climbAbsoluteBottom;
 
@@ -128,6 +128,7 @@ public class Climber extends SubsystemBase {
         setTrapFlag(false);
         setClimbUnwindFlag(false);
         setMoveHooksUp(false);
+        stopClimb();
         idleCounter++;
       }
 
@@ -274,7 +275,7 @@ public class Climber extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (leftCanCoder.getAbsolutePosition().getValue() <= climbEngaged
-            || rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged) {
+            && rightCanCoder.getAbsolutePosition().getValue() <= climbEngaged) {
           return Climb;
         }
         return this;
@@ -452,8 +453,9 @@ public class Climber extends SubsystemBase {
           return ResetClimb;
         }
         if (climberEmergency()
-            && (leftCanCoder.getVelocity().getValue() < emergencyStopClimber
-                || rightCanCoder.getVelocity().getValue() < emergencyStopClimber)) {
+            && (leftCanCoder.getPosition().getValue() < emergencyStopClimber
+                || rightCanCoder.getPosition().getValue() < emergencyStopClimber
+                || rightCanCoder.getVelocity().getValue() < -.01 || leftCanCoder.getVelocity().getValue() < -.01)) {
           return Idle;
         }
         return this;
