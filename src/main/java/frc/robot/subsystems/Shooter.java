@@ -732,7 +732,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (runShoot) {
+        if (runAim) {
           return ElevatorPassNoteAbove;
         }
         if (runOutTake) {
@@ -781,7 +781,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin)) {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin) && runShoot) {
           return ElevatorShoot;
         }
         return this;
