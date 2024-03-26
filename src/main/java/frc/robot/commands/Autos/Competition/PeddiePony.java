@@ -38,7 +38,6 @@ public class PeddiePony extends MMDeferredCommand<SequentialCommandGroup> {
         // new ChaseAndIntakeBroken(rc),
         new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "peddie_pony_2"),
-
         // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_2"),
