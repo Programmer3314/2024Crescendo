@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.SteerRequestType;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
+import frc.robot.MMUtilities.MMSwerveRequest;
 import frc.robot.commands.Aim;
 import frc.robot.commands.AimToWall;
 import frc.robot.commands.AngledDriveToChain;
@@ -101,6 +104,12 @@ public class RobotContainer {
 
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
+  // EXPERIMENTAL!!!! 
+  MMSwerveRequest.FieldCentricSlewRateLimitted driveControlled = new MMSwerveRequest.FieldCentricSlewRateLimitted(4)
+    .withDriveRequestType(DriveRequestType.Velocity)
+    .withSteerRequestType(SteerRequestType.MotionMagic)
+    .withAngleSlewRate(Rotation2d.fromDegrees(180))
+    .withSpeedSlewRate(100);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   // Telemetry logger = new Telemetry(MaxSpeed);
