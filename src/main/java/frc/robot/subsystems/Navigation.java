@@ -11,7 +11,9 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.datalog.BooleanLogEntry;
@@ -37,13 +39,20 @@ public class Navigation extends SubsystemBase {
   private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
+  private String limelightBackDownName = "limelight-bd";
   public boolean useVision = true;
   public boolean oneTargetBack = false;
+
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable backUpLimelight = inst.getTable(limelightBackUpName);
+  private final NetworkTable backDownLimelight = inst.getTable(limelightBackUpName);
+  private final NetworkTable frontLimelight = inst.getTable(limelightFrontName);
 
   StructPublisher<Pose2d> backLimelightPose = NetworkTableInstance.getDefault()
       .getStructTopic("backLimelightPose4", Pose2d.struct).publish();
   StructPublisher<Pose2d> frontLimelightPose = NetworkTableInstance.getDefault()
       .getStructTopic("frontLimelightPose4", Pose2d.struct).publish();
+
   BooleanLogEntry useVisionBoolean;
   DoubleLogEntry visionCounterLog;
   BooleanLogEntry updatedVisionFront;
@@ -51,7 +60,9 @@ public class Navigation extends SubsystemBase {
 
   Pigeon2 pigeon;
   double hitAcceleration;
-  private double llHeartBeat = 0;
+  private double llFrontHeartBeat = 0;
+  private double llBackUpHeartBeat = 0;
+
   // private ArrayList<Double> xVelocity = new ArrayList<Double>();
   // private ArrayList<Double> yVelocity = new ArrayList<Double>();
   // private ArrayList<Double> angVelocity = new ArrayList<Double>();
@@ -239,41 +250,59 @@ public class Navigation extends SubsystemBase {
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
       var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
       SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
+      double currentHB = frontLimelight.getEntry("hb").getDouble(0);
 
-      if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
-        llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+      boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-        if (lastResult.valid && ((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
-            || lastResult.targets_Fiducials.length > 1 || visionUpdate < 50)) {
-          Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-          backLimelightPose.accept(llPose);
-          SmartDashboard.putString("llPose", llPose.toString());
-          double margin = pose.minus(llPose).getTranslation().getNorm();
-          // double margin = 0;
-          if (visionUpdate < 50
-              || margin < .25
-              || (((lastResult.targets_Fiducials.length >= 1 && oneTargetBack)
-                  || lastResult.targets_Fiducials.length > 1) && margin < .75)) {
-            // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
-            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
-                - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
-                - (lastResult.latency_jsonParse / 1000.0));
-            visionUpdate++;
-            updatedVisionBack.append(true);
+      if (currentHB != llFrontHeartBeat) {
+        // llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+        llFrontHeartBeat = currentHB;
 
+        double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
+        double[] bp = backUpLimelight.getEntry("botpose").getDoubleArray(def);
+        if (bp.length > 6) {
+          double numberOfTargets = bp[6];
+
+          if (hasFrontTarget && ((numberOfTargets >= 1 && oneTargetBack)
+              || numberOfTargets > 1 || visionUpdate < 50)) {
+            // Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
+            Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
+            backLimelightPose.accept(llPose);
+            SmartDashboard.putString("llBackUpPose", llPose.toString());
+            double margin = pose.minus(llPose).getTranslation().getNorm();
+            // double margin = 0;
+            if (visionUpdate < 50
+                || margin < .25
+                || (((numberOfTargets >= 1 && oneTargetBack)
+                    || numberOfTargets > 1) && margin < .75)) {
+              // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
+
+              double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
+              double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
+                            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
+                  - (latency_capture / 1000.0) - (latency_pipeline / 1000.0));
+              visionUpdate++;
+              updatedVisionBack.append(true);
+
+            }
           }
         }
       }
-    }
+    }//TODO: Make Like Above ^^
 
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
       var lastResult = LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
-      SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
+      double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
+      // SmartDashboard.putNumber("LL Heartbeat",
+      // lastResult.timestamp_LIMELIGHT_publish);
 
-      if (lastResult.timestamp_LIMELIGHT_publish != llHeartBeat) {
-        llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+      boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-        if (lastResult.valid && lastResult.targets_Fiducials.length > 1) {
+      if (currentHB != llBackUpHeartBeat) {
+        // llBackUpHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
+        llBackUpHeartBeat = currentHB;
+
+        if (hasBackUpTarget && lastResult.targets_Fiducials.length > 1) {
           Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
           frontLimelightPose.accept(llPose);
           SmartDashboard.putString("llPose", llPose.toString());
