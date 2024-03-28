@@ -25,18 +25,16 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMField;
 
 public class Navigation extends SubsystemBase {
   RobotContainer rc;
   public static int visionUpdate = 0;
-  private boolean hasLeftNoteTarget;
+  private boolean hasNoteTarget;
   private double leftNoteX;
   private double leftNoteY;
-  private LimelightTarget_Detector[] leftLimelightDetector;
+//  private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
   private String limelightBackDownName = "limelight-bd";
@@ -45,7 +43,7 @@ public class Navigation extends SubsystemBase {
 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable backUpLimelight = inst.getTable(limelightBackUpName);
-  private final NetworkTable backDownLimelight = inst.getTable(limelightBackUpName);
+  private final NetworkTable backDownLimelight = inst.getTable(limelightBackDownName);
   private final NetworkTable frontLimelight = inst.getTable(limelightFrontName);
 
   StructPublisher<Pose2d> backLimelightPose = NetworkTableInstance.getDefault()
@@ -202,9 +200,9 @@ public class Navigation extends SubsystemBase {
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
-    LimelightHelpers.setPipelineIndex("limelight-bd", 0);
-    LimelightHelpers.setPipelineIndex("limelight-backup", 0);
-    LimelightHelpers.setPipelineIndex("limelight-front", 0);
+    // LimelightHelpers.setPipelineIndex("limelight-bd", 0);
+    // LimelightHelpers.setPipelineIndex("limelight-backup", 0);
+    // LimelightHelpers.setPipelineIndex("limelight-front", 0);
     pigeon = rc.drivetrain.getPigeon2();
     // aprilThread = new AprilThread();
     // aprilThread.start();
@@ -248,25 +246,26 @@ public class Navigation extends SubsystemBase {
     // }
 
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
-      var lastResult = LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
-      SmartDashboard.putNumber("LL Heartbeat", lastResult.timestamp_LIMELIGHT_publish);
-      double currentHB = frontLimelight.getEntry("hb").getDouble(0);
+      // var lastResult =
+      // LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
+      // SmartDashboard.putNumber("LL Heartbeat",
+      // lastResult.timestamp_LIMELIGHT_publish);
+      double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
+      boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-      boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
-
-      if (currentHB != llFrontHeartBeat) {
+      if (currentHB != llBackUpHeartBeat) {
         // llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
-        llFrontHeartBeat = currentHB;
+        llBackUpHeartBeat = currentHB;
 
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
         double[] bp = backUpLimelight.getEntry("botpose").getDoubleArray(def);
-        if (bp.length > 6) {
-          double numberOfTargets = bp[6];
+        if (bp.length > 7) {
+          double numberOfTargets = bp[7];
 
-          if (hasFrontTarget && ((numberOfTargets >= 1 && oneTargetBack)
+          if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
               || numberOfTargets > 1 || visionUpdate < 50)) {
             // Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-            Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
+            Pose2d llPose = new Pose2d(bp[0]+8.27, bp[1]+4.115, Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
             double margin = pose.minus(llPose).getTranslation().getNorm();
@@ -279,7 +278,7 @@ public class Navigation extends SubsystemBase {
 
               double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
               double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
-                            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
+              rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
                   - (latency_capture / 1000.0) - (latency_pipeline / 1000.0));
               visionUpdate++;
               updatedVisionBack.append(true);
@@ -288,36 +287,43 @@ public class Navigation extends SubsystemBase {
           }
         }
       }
-    }//TODO: Make Like Above ^^
+    }
 
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
-      var lastResult = LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
-      double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
+      // var lastResult =
+      // LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
+      double currentHB = frontLimelight.getEntry("hb").getDouble(0);
       // SmartDashboard.putNumber("LL Heartbeat",
       // lastResult.timestamp_LIMELIGHT_publish);
 
-      boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
+      boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-      if (currentHB != llBackUpHeartBeat) {
+      if (currentHB != llFrontHeartBeat) {
         // llBackUpHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
-        llBackUpHeartBeat = currentHB;
+        llFrontHeartBeat = currentHB;
+        double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
+        double[] bp = frontLimelight.getEntry("botpose").getDoubleArray(def);
+        if (bp.length > 7) {
+          double numberOfTargets = bp[7];
 
-        if (hasBackUpTarget && lastResult.targets_Fiducials.length > 1) {
-          Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-          frontLimelightPose.accept(llPose);
-          SmartDashboard.putString("llPose", llPose.toString());
-          double margin = pose.minus(llPose).getTranslation().getNorm();
-          // double margin = 0;
-          if (visionUpdate < 50
-              || margin < .25
-              || (lastResult.targets_Fiducials.length > 1 && margin < .75)) {
-            // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
-            rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
-                - (lastResult.latency_capture / 1000.0) - (lastResult.latency_pipeline / 1000.0)
-                - (lastResult.latency_jsonParse / 1000.0));
-            visionUpdate++;
-            updatedVisionFront.append(true);
+          if (hasFrontTarget && numberOfTargets > 1) {
+            Pose2d llPose = new Pose2d(bp[0]+8.27, bp[1]+4.115, Rotation2d.fromDegrees(bp[5]));
+            frontLimelightPose.accept(llPose);
+            SmartDashboard.putString("llFrontPose", llPose.toString());
+            double margin = pose.minus(llPose).getTranslation().getNorm();
+            // double margin = 0;
+            if (visionUpdate < 50
+                || margin < .25
+                || (numberOfTargets > 1 && margin < .75)) {
+              // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
+              double latency_capture = frontLimelight.getEntry("cl").getDouble(0);
+              double latency_pipeline = frontLimelight.getEntry("tl").getDouble(0);
+              rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
 
+                  - (latency_capture / 1000.0) - (latency_pipeline / 1000.0));
+              visionUpdate++;
+              updatedVisionFront.append(true);
+            }
           }
         }
       }
@@ -330,16 +336,20 @@ public class Navigation extends SubsystemBase {
     // hasLeftNoteTarget = llpython[0] > .5;
     // leftNoteX = llpython[1];
     // leftNoteY = llpython[2];
-    hasLeftNoteTarget = false;
-    leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
-    if (leftLimelightDetector.length > 0) {
-      hasLeftNoteTarget = true;
-      leftNoteX = leftLimelightDetector[0].tx_pixels;
-      leftNoteY = leftLimelightDetector[0].ty_pixels;
-    }
+    hasNoteTarget = false;
+   // leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
+   double tv = backDownLimelight.getEntry("tv").getDouble(0);
 
-    SmartDashboard.putNumber("TX:", leftNoteX);
-    SmartDashboard.putNumber("TY", leftNoteY);
+    if (tv > 0) {
+      hasNoteTarget = true;
+
+
+      leftNoteX = backDownLimelight.getEntry("tx").getDouble(0);
+      leftNoteY = backDownLimelight.getEntry("ty").getDouble(0);
+    }
+    SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
+    SmartDashboard.putNumber("NOTE TX:", leftNoteX);
+    SmartDashboard.putNumber("NOTE TY", leftNoteY);
   }
 
   public double getLeftNoteX() {
@@ -360,12 +370,13 @@ public class Navigation extends SubsystemBase {
   // return leftNoteX/
   // }
 
+
   public double getLeftNoteY() {
     return leftNoteY;
   }
 
   public boolean hasLeftNoteTarget() {
-    return hasLeftNoteTarget;
+    return hasNoteTarget;
   }
 
   public String autoLeftOrRight() {

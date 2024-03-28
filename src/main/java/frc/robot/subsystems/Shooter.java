@@ -87,6 +87,7 @@ public class Shooter extends SubsystemBase {
   int abortIntakeCounter;
 
   boolean runAim;
+  boolean liftAmp;
   boolean runWallAim;
   boolean runIntake;
   boolean abortIntake;
@@ -337,6 +338,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putString("Check FieldApproach", MMField.currentStagePose().toString());
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
+    SmartDashboard.putBoolean("RunAim", runAim);
 
     // TODO: finish below diagnostic (null)
     SmartDashboard.putString("DGState", diagnosticState);
@@ -390,7 +392,7 @@ public class Shooter extends SubsystemBase {
     }
     SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
     SmartDashboard.putBoolean(" Not Move Intake Beam", intakeBreakBeam.get());
-    SmartDashboard.putString("State Machine State", currentStateName());
+    SmartDashboard.putString("State Machine State", getCurrentStateName());
     SmartDashboard.putBoolean("AbortIntakeFlag", abortIntake);
     SmartDashboard.putNumber("AbortIntakeCounter", abortIntakeCounter);
     SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
@@ -781,7 +783,8 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin) && runShoot) {
+        if (isInMargin(elevatorMotor.getPosition().getValue(), elevatorAmpPosition, elevatorPositionMargin)
+            && runShoot) {
           return ElevatorShoot;
         }
         return this;
@@ -1635,6 +1638,11 @@ public class Shooter extends SubsystemBase {
     return this;
   }
 
+  public Shooter setAmpFlag(boolean runAmp) {
+    liftAmp = runAmp;
+    return this;
+  }
+
   public Shooter setAimWallFlag(boolean aim) {
     if (runWallAim && !aim) {
       stopShooterMotors();
@@ -1862,7 +1870,7 @@ public class Shooter extends SubsystemBase {
     return Math.abs(value1 - value2) <= margin;
   }
 
-  public String currentStateName() {
+  public String getCurrentStateName() {
     return ssm.currentState.getName();
   }
 
@@ -2226,6 +2234,10 @@ public class Shooter extends SubsystemBase {
     autoShooterLeftVelocity = determineShot.get(shotName).getLeftVelocity();
     autoShooterRightVelocity = determineShot.get(shotName).getRightVelocity();
     autoShooterAngle = determineShot.get(shotName).getAngle();
+  }
+
+  public double getIntakeDownPosition() {
+    return intakeDownPos;
   }
 
   // MMStateMachineState DiagnosticRunIndexIn = new

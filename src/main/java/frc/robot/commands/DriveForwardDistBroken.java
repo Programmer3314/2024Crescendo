@@ -18,12 +18,23 @@ public class DriveForwardDistBroken extends Command {
   double distanceTraveled;
   Translation2d initialPosition;
   boolean robotStop = true;
+  boolean isChasing = false;
 
   public DriveForwardDistBroken(RobotContainer rc, double distance, double velocity) {
     this.rc = rc;
     this.distance = distance;
     this.drive = new SwerveRequest.RobotCentric();
     this.velocity = velocity;
+
+    addRequirements(rc.drivetrain);
+  }
+
+  public DriveForwardDistBroken(RobotContainer rc, double distance, double velocity, boolean isChasing) {
+    this.rc = rc;
+    this.distance = distance;
+    this.drive = new SwerveRequest.RobotCentric();
+    this.velocity = velocity;
+    this.isChasing = isChasing;
 
     addRequirements(rc.drivetrain);
   }
@@ -58,7 +69,8 @@ public class DriveForwardDistBroken extends Command {
   @Override
   public boolean isFinished() {
     distanceTraveled = rc.drivetrain.getState().Pose.getTranslation().minus(initialPosition).getNorm();
-    return distance <= distanceTraveled || !rc.shooterSubsystem.getIntakeBreakbeam()||!rc.shooterSubsystem.getShooterBreakBeam();
+    return distance <= distanceTraveled || !rc.shooterSubsystem.getIntakeBreakbeam()
+        || !rc.shooterSubsystem.getShooterBreakBeam()||(isChasing && ChaseAndIntakeBroken.abortDrive);
   }
-  
+
 }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Map;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
@@ -23,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.MMUtilities.MMController;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.MMUtilities.MMFiringSolution;
@@ -65,7 +68,7 @@ import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
   public final double MaxSpeed = 6; // 6 meters per second desired top speed
-  public final double MaxAngularRate = 2*Math.PI; // a rotation per second max angular velocity
+  public final double MaxAngularRate = 2 * Math.PI; // a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
   private Pose2d[] startPoseList = {
@@ -104,12 +107,12 @@ public class RobotContainer {
 
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
-  // EXPERIMENTAL!!!! 
+  // EXPERIMENTAL!!!!
   MMSwerveRequest.FieldCentricSlewRateLimitted driveControlled = new MMSwerveRequest.FieldCentricSlewRateLimitted(4)
-    .withDriveRequestType(DriveRequestType.Velocity)
-    .withSteerRequestType(SteerRequestType.MotionMagic)
-    .withAngleSlewRate(Rotation2d.fromDegrees(180))
-    .withSpeedSlewRate(100);
+      .withDriveRequestType(DriveRequestType.Velocity)
+      .withSteerRequestType(SteerRequestType.MotionMagic)
+      .withAngleSlewRate(Rotation2d.fromDegrees(180))
+      .withSpeedSlewRate(100);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   // Telemetry logger = new Telemetry(MaxSpeed);
@@ -132,12 +135,12 @@ public class RobotContainer {
   public static SendableChooser<Pose2d> shootChooser3;
 
   // Auto variables
-  public Pony pony; //= new Pony(this);
-  public Arabian arabian; //= new Arabian(this);
-  public CrazyHorse crazyHorse; //= new CrazyHorse(this);
-  public HorseShoe horseshoe; //= new HorseShoe(this);
+  public Pony pony; // = new Pony(this);
+  public Arabian arabian; // = new Arabian(this);
+  public CrazyHorse crazyHorse; // = new CrazyHorse(this);
+  public HorseShoe horseshoe; // = new HorseShoe(this);
   public HorseShoeTwo horseShoeTwo; // = new HorseShoeTwo(this);
-  public Thoroughbred thoroughbred; //= new Thoroughbred(this);
+  public Thoroughbred thoroughbred; // = new Thoroughbred(this);
   public PeddiePony peddiePony;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -278,7 +281,13 @@ public class RobotContainer {
     driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckHighFlag(true)));
     driverController.leftBumper().onTrue(new SignalForNote(this));
 
-    oppController.a().whileTrue(new Aim(this));
+    // Trigger aimTrigger = new Trigger(() -> shooterSubsystem.getCurrentStateName() == "ElevatorIndexed");
+    // oppController.a().whileTrue(new Aim(this)).and(aimTrigger);
+    oppController.a().whileTrue(Commands.select(Map.ofEntries(
+        Map.entry(true, new InstantCommand(() -> shooterSubsystem.setAimFlag(true))),
+        Map.entry(false, new Aim(this))),
+        () -> shooterSubsystem.getCurrentStateName() == "Elevator Indexed"));
+
     oppController.y().onTrue(new ClawsUpAndIndex(this));
     oppController.x().onTrue(new StartClimbManual(this));
     oppController.b().onTrue(new InstantCommand(() -> navigation.resetVision()));
@@ -308,7 +317,6 @@ public class RobotContainer {
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
 
-            
   }
 
   public RobotContainer() {
@@ -389,27 +397,27 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    switch(autoChooser.getSelected()){
+    switch (autoChooser.getSelected()) {
       case Arabian:
-      return arabian;
+        return arabian;
       case CrazyHorse:
-      return crazyHorse;
+        return crazyHorse;
       case HorseShoe:
-      return horseshoe;
+        return horseshoe;
       case HorseshoeTwo:
-      return horseShoeTwo;
+        return horseShoeTwo;
       case Pony:
-      return pony;
+        return pony;
       case Thoroughbred:
-      return thoroughbred;
+        return thoroughbred;
       case PeddiePony:
-      return peddiePony;
+        return peddiePony;
       case none:
-      default: 
-      return Commands.none();      
+      default:
+        return Commands.none();
     }
   }
-  
+
   // Removed as Unused Code...
   // // strip this down to use none of our code...
   // // hard code the poses, etc.
