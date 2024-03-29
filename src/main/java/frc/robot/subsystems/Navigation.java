@@ -32,7 +32,7 @@ public class Navigation extends SubsystemBase {
   RobotContainer rc;
   public static int visionUpdate = 0;
   private boolean hasNoteTarget;
-  private double leftNoteX;
+  private double noteX;
   private double noteY;
   // private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
@@ -200,9 +200,6 @@ public class Navigation extends SubsystemBase {
   public Navigation(RobotContainer rc) {
     this.rc = rc;
     SmartDashboard.putData("FieldX", rc.field);
-    // LimelightHelpers.setPipelineIndex("limelight-bd", 0);
-    // LimelightHelpers.setPipelineIndex("limelight-backup", 0);
-    // LimelightHelpers.setPipelineIndex("limelight-front", 0);
     pigeon = rc.drivetrain.getPigeon2();
     // aprilThread = new AprilThread();
     // aprilThread.start();
@@ -246,25 +243,20 @@ public class Navigation extends SubsystemBase {
     // }
 
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
-      // var lastResult =
-      // LimelightHelpers.getLatestResults(limelightBackUpName).targetingResults;
-      // SmartDashboard.putNumber("LL Heartbeat",
-      // lastResult.timestamp_LIMELIGHT_publish);
       double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
       boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
       if (currentHB != llBackUpHeartBeat) {
-        // llHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
         llBackUpHeartBeat = currentHB;
 
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
+        // TODO: change following to botpose_wpiblue and remove math below
         double[] bp = backUpLimelight.getEntry("botpose").getDoubleArray(def);
         if (bp.length > 7) {
           double numberOfTargets = bp[7];
 
           if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
               || numberOfTargets > 1 || visionUpdate < 50)) {
-            // Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
             Pose2d llPose = new Pose2d(bp[0] + 8.27, bp[1] + 4.115, Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
@@ -274,8 +266,7 @@ public class Navigation extends SubsystemBase {
                 || margin < .25
                 || (((numberOfTargets >= 1 && oneTargetBack)
                     || numberOfTargets > 1) && margin < .75)) {
-              // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
-
+              // TODO: Use total latency from bp[5]        
               double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
               double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
               rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
@@ -290,18 +281,14 @@ public class Navigation extends SubsystemBase {
     }
 
     if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
-      // var lastResult =
-      // LimelightHelpers.getLatestResults(limelightFrontName).targetingResults;
       double currentHB = frontLimelight.getEntry("hb").getDouble(0);
-      // SmartDashboard.putNumber("LL Heartbeat",
-      // lastResult.timestamp_LIMELIGHT_publish);
 
       boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
       if (currentHB != llFrontHeartBeat) {
-        // llBackUpHeartBeat = lastResult.timestamp_LIMELIGHT_publish;
         llFrontHeartBeat = currentHB;
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
+        // TODO: change following to botpose_wpiblue and remove math below
         double[] bp = frontLimelight.getEntry("botpose").getDoubleArray(def);
         if (bp.length > 7) {
           double numberOfTargets = bp[7];
@@ -315,7 +302,7 @@ public class Navigation extends SubsystemBase {
             if (visionUpdate < 50
                 || margin < .25
                 || (numberOfTargets > 1 && margin < .75)) {
-              // rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp());
+              // TODO: Use total latency from bp[5]        
               double latency_capture = frontLimelight.getEntry("cl").getDouble(0);
               double latency_pipeline = frontLimelight.getEntry("tl").getDouble(0);
               rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
@@ -332,43 +319,21 @@ public class Navigation extends SubsystemBase {
     rc.field.setRobotPose(pose);
     SmartDashboard.putString("MMpose", pose.toString());
 
-    // var llpython = LimelightHelpers.getPythonScriptData("limelight-bd");
-    // hasLeftNoteTarget = llpython[0] > .5;
-    // leftNoteX = llpython[1];
-    // leftNoteY = llpython[2];
     hasNoteTarget = false;
-    // leftLimelightDetector =
-    // LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
     double tv = backDownLimelight.getEntry("tv").getDouble(0);
-
     if (tv > 0) {
       hasNoteTarget = true;
-
-      leftNoteX = backDownLimelight.getEntry("tx").getDouble(0);
+      noteX = backDownLimelight.getEntry("tx").getDouble(0);
       noteY = backDownLimelight.getEntry("ty").getDouble(0);
     }
     SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
-    SmartDashboard.putNumber("NOTE TX:", leftNoteX);
+    SmartDashboard.putNumber("NOTE TX", noteX);
     SmartDashboard.putNumber("NOTE TY", noteY);
   }
 
-  public double getLeftNoteX() {
-    return leftNoteX;
+  public double getNoteX() {
+    return noteX;
   }
-
-  // public double getScaledLeftX(){
-  // double scaleValue = 1;
-  // if(leftNoteY>400){
-  // scaleValue = 4;
-  // }
-  // else if(leftNoteY>300){
-  // scaleValue = 3;
-  // }
-  // else if(leftNoteY>200){
-  // scaleValue = 2;
-  // }
-  // return leftNoteX/
-  // }
 
   public double getNoteY() {
     return noteY;
@@ -383,7 +348,7 @@ public class Navigation extends SubsystemBase {
   }
 
   public String autoLeftOrRight() {
-    if (leftNoteX > 300) {
+    if (noteX > 300) {
       return "NoteRight";
     } else {
       return "NoteStraight";
@@ -393,7 +358,6 @@ public class Navigation extends SubsystemBase {
   public double getDistanceToSpeaker() {
     Pose2d currentPose = rc.drivetrain.getState().Pose;
     Translation2d target = MMField.currentSpeakerPose().getTranslation();
-    // double distance = currentPose.getTranslation().minus(target).getX();
     double distance = currentPose.getTranslation().minus(target).getNorm();
     // if (rc.shooterSubsystem.targetAngleSpeaker != null) {
     // distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
@@ -477,7 +441,5 @@ public class Navigation extends SubsystemBase {
     backDownLimelight.getEntry("pipeline").setNumber(pipeline);
     return this;
   }
-
-
 
 }

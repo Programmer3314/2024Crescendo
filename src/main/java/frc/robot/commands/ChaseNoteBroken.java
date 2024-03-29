@@ -49,7 +49,7 @@ public class ChaseNoteBroken extends Command {
     } else {
       cyclesWithoutNote++;
     }
-    double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftNoteX());
+    double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getNoteX());
     double driveYVelocity = yPIDController.execute(rc.navigation.getNoteY());
 
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
@@ -71,7 +71,7 @@ public class ChaseNoteBroken extends Command {
     ChaseAndIntakeBroken.abortDrive = !hasHadNote;
 
     return (Math.abs(rc.navigation.getNoteY() - targetY) < 15
-        && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15)
+        && Math.abs(rc.navigation.getNoteX() - targetX) < 15)
         || !rc.shooterSubsystem.getIntakeBreakbeam()
         || cyclesWithoutNote > 15;
   }
