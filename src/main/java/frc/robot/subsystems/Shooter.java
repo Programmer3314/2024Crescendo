@@ -169,7 +169,7 @@ public class Shooter extends SubsystemBase {
 
   double intakeTop = .823;
   double intakeUpPos = intakeTop - .005;
-  double intakeDownPos = intakeTop - .75;// - .74
+  double intakeDownPos = intakeTop - .75;// .073
 
   double intakeVelIn = 30;
   double intakeVelOut = -20;
@@ -330,7 +330,7 @@ public class Shooter extends SubsystemBase {
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
     // TODO: fix abort intake
-    if (intakeRotateMotor.getSupplyCurrent().getValue() > 2.1) {
+    if (intakeRotateMotor.getSupplyCurrent().getValue() > 2.1 && intakeBeltMotor.getSupplyCurrent().getValue() > 25) {
       // abortIntake = true;
       abortIntakeCounter++;
     }
@@ -435,6 +435,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("AbortIntakeCounter", abortIntakeCounter);
     SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
     SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
+    SmartDashboard.putBoolean("IntakeBreakbeam", intakeBreakBeam.get());
   }
 
   public class ShooterStateMachine extends MMStateMachine {

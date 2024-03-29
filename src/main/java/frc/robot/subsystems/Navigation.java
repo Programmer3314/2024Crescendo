@@ -340,7 +340,7 @@ public class Navigation extends SubsystemBase {
   }
 
   public boolean noteBelowThreshold() {
-    return noteY < 4;
+    return noteY < 8;
   }
 
   public boolean hasNoteTarget() {

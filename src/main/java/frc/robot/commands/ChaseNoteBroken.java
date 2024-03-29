@@ -26,6 +26,13 @@ public class ChaseNoteBroken extends Command {
   public ChaseNoteBroken(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
+    rotationPIDController = new MMPIDController(.15, 0, 0.005, 3.0 / 2.0, 0.25, false);
+  }
+
+  public ChaseNoteBroken(RobotContainer rc, boolean noteBelowThreshold) {
+    this.rc = rc;
+    addRequirements(rc.drivetrain);
+    rotationPIDController = new MMPIDController(noteBelowThreshold ? .05 : .15, 0, 0.005, 3.0 / 2.0, 0.25, false);
   }
 
   // Called when the command is initially scheduled.
@@ -33,7 +40,6 @@ public class ChaseNoteBroken extends Command {
   public void initialize() {
     cyclesWithoutNote = 0;
     rc.shooterSubsystem.setIntakeFlag(true);
-    rotationPIDController = new MMPIDController(.1, 0, 0.005, 3.0 / 2.0, 0.25, false);
     rotationPIDController.initialize(targetX);
     yPIDController = new MMPIDController(1.0 / 5, 0, 0, 3.0 / 2.0, 0.25, false);// 100
     yPIDController.initialize(targetY);

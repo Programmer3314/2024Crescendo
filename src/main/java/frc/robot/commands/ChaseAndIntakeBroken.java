@@ -25,7 +25,7 @@ public class ChaseAndIntakeBroken extends SequentialCommandGroup {
                                       // afar we need to prioritize speed
             Map.entry(true, new LowerIntakeChase(rc))),
             () -> rc.navigation.noteBelowThreshold()),
-        new ChaseNoteBroken(rc),
+        new ChaseNoteBroken(rc, rc.navigation.noteBelowThreshold()),
         new DriveForwardDistBroken(rc, 0.5, -0.75, true));
   }
 
@@ -34,7 +34,7 @@ public class ChaseAndIntakeBroken extends SequentialCommandGroup {
         Commands.select(Map.ofEntries(
             Map.entry(true, new LowerIntakeChase(rc))),
             () -> rc.navigation.noteBelowThreshold()),
-        new ChaseNoteBroken(rc),
+        new ChaseNoteBroken(rc, rc.navigation.noteBelowThreshold()),
         new DriveForwardDistBroken(rc, 0.5, isFast ? -2 : -.75, true));
   }
 }
