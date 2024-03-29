@@ -50,6 +50,7 @@ import frc.robot.MMUtilities.MMStateMachineState;
 import frc.robot.MMUtilities.MMTurnPIDController;
 import frc.robot.MMUtilities.MMWaypoint;
 import frc.robot.commands.SetColor;
+import frc.robot.enums.HomingEnum;
 
 public class Shooter extends SubsystemBase {
   RobotContainer rc;
@@ -139,7 +140,7 @@ public class Shooter extends SubsystemBase {
   boolean intakeOverNote;
 
   double elevatorHomingVelocity = -20;
-  boolean hasHomedElevator;
+  boolean firstElevatorHomeCheck;
 
   // public Orchestra orchestra = new Orchestra();
 
@@ -230,9 +231,12 @@ public class Shooter extends SubsystemBase {
   BooleanLogEntry autoForceLog;
   BooleanLogEntry autoShootLog;
   String diagnosticState = "None";
+  HomingEnum elevatorHomingEnum;
+  boolean transitioningHomeStates = false;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
+    elevatorHomingEnum = HomingEnum.Start;
     this.rc = rc;
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
@@ -339,18 +343,52 @@ public class Shooter extends SubsystemBase {
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
     SmartDashboard.putBoolean("RunAim", runAim);
+    SmartDashboard.putString("Elevator Home State", elevatorHomingEnum.toString());
 
     // TODO: finish below diagnostic (null)
     SmartDashboard.putString("DGState", diagnosticState);
-    // if (!hasHomedElevator) {
-    // runElevatorToHome();
-    // }
-    // if (!elevatorHomeSensor.get()) {
-    // // elevatorMotor.setControl(elevatorvoVoltageOut.withOutput(0));
-    // elevatorMotor.setPosition(0);
-    // hasHomedElevator = true;
-    // }
-    // }
+
+    if (!firstElevatorHomeCheck) {
+      if (!elevatorHomeSensor.get()) {// on the sensor and never homed
+        elevatorHomingEnum = HomingEnum.MovingUp;
+        transitioningHomeStates = true;
+        firstElevatorHomeCheck = true;
+      } else {
+        elevatorHomingEnum = HomingEnum.MovingDown;
+        transitioningHomeStates = true;
+        firstElevatorHomeCheck = true;
+      }
+    }
+
+    if (elevatorHomingEnum != HomingEnum.Homed || transitioningHomeStates) {
+      if (elevatorHomingEnum == HomingEnum.MovingUp) {
+        if (transitioningHomeStates) {
+          runElevatorUpHome();
+          transitioningHomeStates = false;
+        }
+        if (elevatorHomeSensor.get()) {// nothing on the sensor
+          elevatorHomingEnum = HomingEnum.MovingDown;
+          transitioningHomeStates = true;
+        }
+      }
+      if (elevatorHomingEnum == HomingEnum.MovingDown) {
+        if (transitioningHomeStates) {
+          runElevatorDownHome();
+          transitioningHomeStates = false;
+        }
+        if (!elevatorHomeSensor.get()) {// hitting the sensor
+          elevatorHomingEnum = HomingEnum.Homed;
+          transitioningHomeStates = true;
+        }
+      }
+      if (elevatorHomingEnum == HomingEnum.Homed) {
+        if (transitioningHomeStates) {
+          elevatorMotor.setControl(elevatorVoltageOut.withOutput(0));
+          elevatorMotor.setPosition(1.65);
+          transitioningHomeStates = false;
+        }
+      }
+    }
 
     logUpdate();
 
@@ -438,7 +476,9 @@ public class Shooter extends SubsystemBase {
         stopIntake();
         setRunDiagnosticFlag(false);
         stopElevatorBelts();
-        setElevatorDown();
+        if (elevatorHomingEnum == HomingEnum.Homed) {
+          setElevatorDown();
+        }
         if (!intakeOverNote) {
           setIntakeFlag(false);
         } else {
@@ -637,7 +677,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToWooferSlam() && runWooferSlam) {// TODO: is this really needed, the flag should already be on
+        if (readyToWooferSlam()) {
           return WooferSlam;
         }
         return this;
@@ -2102,8 +2142,12 @@ public class Shooter extends SubsystemBase {
     elevatorMotor.setControl(elevatorMotorMotionMagicVoltage.withPosition(elevatorDownPosition));
   }
 
-  public void runElevatorToHome() {
+  public void runElevatorDownHome() {
     elevatorMotor.setControl(elevatorVoltageOut.withOutput(-.5));
+  }
+
+  public void runElevatorUpHome() {
+    elevatorMotor.setControl(elevatorVoltageOut.withOutput(2));
   }
 
   public void setElevatorZero() {
@@ -2238,6 +2282,10 @@ public class Shooter extends SubsystemBase {
 
   public double getIntakeDownPosition() {
     return intakeDownPos;
+  }
+
+  public void resetElevatorHome() {
+    firstElevatorHomeCheck = false;
   }
 
   // MMStateMachineState DiagnosticRunIndexIn = new

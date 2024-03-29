@@ -33,8 +33,8 @@ public class Navigation extends SubsystemBase {
   public static int visionUpdate = 0;
   private boolean hasNoteTarget;
   private double leftNoteX;
-  private double leftNoteY;
-//  private LimelightTarget_Detector[] leftLimelightDetector;
+  private double noteY;
+  // private LimelightTarget_Detector[] leftLimelightDetector;
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
   private String limelightBackDownName = "limelight-bd";
@@ -265,7 +265,7 @@ public class Navigation extends SubsystemBase {
           if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
               || numberOfTargets > 1 || visionUpdate < 50)) {
             // Pose2d llPose = lastResult.getBotPose2d_wpiBlue();
-            Pose2d llPose = new Pose2d(bp[0]+8.27, bp[1]+4.115, Rotation2d.fromDegrees(bp[5]));
+            Pose2d llPose = new Pose2d(bp[0] + 8.27, bp[1] + 4.115, Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
             double margin = pose.minus(llPose).getTranslation().getNorm();
@@ -307,7 +307,7 @@ public class Navigation extends SubsystemBase {
           double numberOfTargets = bp[7];
 
           if (hasFrontTarget && numberOfTargets > 1) {
-            Pose2d llPose = new Pose2d(bp[0]+8.27, bp[1]+4.115, Rotation2d.fromDegrees(bp[5]));
+            Pose2d llPose = new Pose2d(bp[0] + 8.27, bp[1] + 4.115, Rotation2d.fromDegrees(bp[5]));
             frontLimelightPose.accept(llPose);
             SmartDashboard.putString("llFrontPose", llPose.toString());
             double margin = pose.minus(llPose).getTranslation().getNorm();
@@ -337,19 +337,19 @@ public class Navigation extends SubsystemBase {
     // leftNoteX = llpython[1];
     // leftNoteY = llpython[2];
     hasNoteTarget = false;
-   // leftLimelightDetector = LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
-   double tv = backDownLimelight.getEntry("tv").getDouble(0);
+    // leftLimelightDetector =
+    // LimelightHelpers.getLatestResults("limelight-bd").targetingResults.targets_Detector;
+    double tv = backDownLimelight.getEntry("tv").getDouble(0);
 
     if (tv > 0) {
       hasNoteTarget = true;
 
-
       leftNoteX = backDownLimelight.getEntry("tx").getDouble(0);
-      leftNoteY = backDownLimelight.getEntry("ty").getDouble(0);
+      noteY = backDownLimelight.getEntry("ty").getDouble(0);
     }
     SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
     SmartDashboard.putNumber("NOTE TX:", leftNoteX);
-    SmartDashboard.putNumber("NOTE TY", leftNoteY);
+    SmartDashboard.putNumber("NOTE TY", noteY);
   }
 
   public double getLeftNoteX() {
@@ -370,12 +370,15 @@ public class Navigation extends SubsystemBase {
   // return leftNoteX/
   // }
 
-
-  public double getLeftNoteY() {
-    return leftNoteY;
+  public double getNoteY() {
+    return noteY;
   }
 
-  public boolean hasLeftNoteTarget() {
+  public boolean noteBelowThreshold() {
+    return noteY < 4;
+  }
+
+  public boolean hasNoteTarget() {
     return hasNoteTarget;
   }
 

@@ -42,7 +42,7 @@ public class ChaseNote extends Command {
   public void execute() {
 
     double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftNoteX());
-    double driveYVelocity = -yPIDController.execute(rc.navigation.getLeftNoteY());
+    double driveYVelocity = -yPIDController.execute(rc.navigation.getNoteY());
 
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
     rc.drivetrain.setControl(drive
@@ -59,9 +59,9 @@ public class ChaseNote extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return (Math.abs(rc.navigation.getLeftNoteY() - targetY) < 15
+    return (Math.abs(rc.navigation.getNoteY() - targetY) < 15
         && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15) 
-        || !rc.navigation.hasLeftNoteTarget();
+        || !rc.navigation.hasNoteTarget();
     // || !rc.navigation.hasLeftConeTarget();
   }
 }

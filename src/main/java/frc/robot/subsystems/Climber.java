@@ -46,7 +46,7 @@ public class Climber extends SubsystemBase {
   double climbDownPosition = 0.015 + climbAbsoluteBottom;
   double climbUpPosition = .235 + climbAbsoluteBottom;
   double climbEngaged = .227 + climbAbsoluteBottom;
-  double climbSlowPos = .145 + climbAbsoluteBottom;
+  double climbSlowPos = .083 + climbAbsoluteBottom;//.145
   double elevatorSafety = .172 + climbAbsoluteBottom;//.203
   double climbPositionMargin = 0;
   double emergencyStopClimber = .013 + climbAbsoluteBottom;
@@ -72,6 +72,7 @@ public class Climber extends SubsystemBase {
 
   // Should the pigeon be owned in the navigation or here
   // it's only used in climber(for now), so this makes sense(for now)
+  //TODO: Clean up the entire climb subsystem (please)
 
   public Climber(RobotContainer rc) {
     this.rc = rc;
@@ -208,8 +209,6 @@ public class Climber extends SubsystemBase {
         // runClimbSlow();
         clawsUpFastMove();
         rc.aBlinkin.controlBlink(rc.aBlinkin.gottemBlinkValue);
-
-        //
       }
 
       @Override
@@ -290,7 +289,8 @@ public class Climber extends SubsystemBase {
     MMStateMachineState Climb = new MMStateMachineState("Climb") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        runClimbSlow();
+        runClimbSlow(); // 20, now 40
+
         rc.shooterSubsystem.runElevatorBottomBeltUpSlow();
         rc.shooterSubsystem.runElevatorTopBeltUpSlow();
 
@@ -339,7 +339,7 @@ public class Climber extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         rc.shooterSubsystem.setElevatorUpTrap();
-        runClimbFast();
+        runClimbMiddle(); //40
       }
 
       @Override
@@ -490,8 +490,12 @@ public class Climber extends SubsystemBase {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(20));
   }
 
-  public void runClimbFast() {
+  public void runClimbMiddle() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(40));
+  }
+
+  public void runClimbFast() {
+    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(80));
   }
 
   public void clawsUpSlowMove() {

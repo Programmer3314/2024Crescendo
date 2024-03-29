@@ -53,8 +53,10 @@ public class DriveForwardDistBroken extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    if (Math.abs(rc.shooterSubsystem.getIntakePos() -
+    rc.shooterSubsystem.getIntakeDownPosition()) < .05) {
     rc.drivetrain.setControl(drive.withVelocityX(velocity));
-
+    }
   }
 
   // Called once the command ends or is interrupted.
@@ -70,7 +72,7 @@ public class DriveForwardDistBroken extends Command {
   public boolean isFinished() {
     distanceTraveled = rc.drivetrain.getState().Pose.getTranslation().minus(initialPosition).getNorm();
     return distance <= distanceTraveled || !rc.shooterSubsystem.getIntakeBreakbeam()
-        || !rc.shooterSubsystem.getShooterBreakBeam()||(isChasing && ChaseAndIntakeBroken.abortDrive);
+        || !rc.shooterSubsystem.getShooterBreakBeam() || (isChasing && ChaseAndIntakeBroken.abortDrive);
   }
 
 }

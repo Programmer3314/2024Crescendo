@@ -43,14 +43,10 @@ public class Robot extends TimedRobot {
   // TODO: Before Weekend - get autos in place (roughed out)
   // TODO: Get HS2 in place with attempt at 5th Note
   // TODO: Split the can bus
-  // TODO: Control Documentation
   // TODO: Climb with Trap (controller button) - Add AbortClimb
-  // TODO: Investigate raising drivetrain current limitting to 80 (or above)
   // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
   // clear
   // TODO: Catch Dual note intake, and reverse
-  // TODO: intake failure make sure that if a state machine reset is need that it
-  // is automatic.
   // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
   // title screens.
   // TODO: Extended Diagnostics
@@ -157,6 +153,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.climber.setClimbUnwindFlag(false);
     m_robotContainer.climber.setClimbPos();
     m_robotContainer.shooterSubsystem.setAutoForce(false);
+    m_robotContainer.shooterSubsystem.resetElevatorHome();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();

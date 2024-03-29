@@ -4,6 +4,10 @@
 
 package frc.robot.commands;
 
+import java.util.Map;
+
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 
@@ -16,18 +20,20 @@ public class ChaseAndIntakeBroken extends SequentialCommandGroup {
 
   /** Creates a new ChaseAndIntake. */
   public ChaseAndIntakeBroken(RobotContainer rc) {
-    this.rc = rc;
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new LowerIntakeChase(rc),
+        Commands.select(Map.ofEntries(// If we are below a certain point, we need to lower the intake first, but from
+                                      // afar we need to prioritize speed
+            Map.entry(true, new LowerIntakeChase(rc))),
+            () -> rc.navigation.noteBelowThreshold()),
         new ChaseNoteBroken(rc),
         new DriveForwardDistBroken(rc, 0.5, -0.75, true));
   }
 
   public ChaseAndIntakeBroken(RobotContainer rc, boolean isFast) {
     addCommands(
-        new LowerIntakeChase(rc),
+        Commands.select(Map.ofEntries(
+            Map.entry(true, new LowerIntakeChase(rc))),
+            () -> rc.navigation.noteBelowThreshold()),
         new ChaseNoteBroken(rc),
         new DriveForwardDistBroken(rc, 0.5, isFast ? -2 : -.75, true));
   }

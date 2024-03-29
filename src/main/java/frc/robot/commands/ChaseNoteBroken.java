@@ -33,7 +33,7 @@ public class ChaseNoteBroken extends Command {
   public void initialize() {
     cyclesWithoutNote = 0;
     rc.shooterSubsystem.setIntakeFlag(true);
-    rotationPIDController = new MMPIDController(1.0 / 5, 0, .02, 3.0 / 2.0, 0.25, false);
+    rotationPIDController = new MMPIDController(.1, 0, 0.005, 3.0 / 2.0, 0.25, false);
     rotationPIDController.initialize(targetX);
     yPIDController = new MMPIDController(1.0 / 5, 0, 0, 3.0 / 2.0, 0.25, false);// 100
     yPIDController.initialize(targetY);
@@ -43,14 +43,14 @@ public class ChaseNoteBroken extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (rc.navigation.hasLeftNoteTarget()) {
+    if (rc.navigation.hasNoteTarget()) {
       hasHadNote = true;
       cyclesWithoutNote = 0;
     } else {
       cyclesWithoutNote++;
     }
     double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getLeftNoteX());
-    double driveYVelocity = yPIDController.execute(rc.navigation.getLeftNoteY());
+    double driveYVelocity = yPIDController.execute(rc.navigation.getNoteY());
 
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
     rc.drivetrain.setControl(drive
@@ -70,9 +70,9 @@ public class ChaseNoteBroken extends Command {
 
     ChaseAndIntakeBroken.abortDrive = !hasHadNote;
 
-    return (Math.abs(rc.navigation.getLeftNoteY() - targetY) < 15
+    return (Math.abs(rc.navigation.getNoteY() - targetY) < 15
         && Math.abs(rc.navigation.getLeftNoteX() - targetX) < 15)
         || !rc.shooterSubsystem.getIntakeBreakbeam()
-        || cyclesWithoutNote > 5;
+        || cyclesWithoutNote > 15;
   }
 }

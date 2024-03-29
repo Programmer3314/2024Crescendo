@@ -42,34 +42,18 @@ public class SitShootAndWait extends Command {
   @Override
   public void initialize() {
     startShootCounter = rc.shooterSubsystem.getShotCounter();
-    // rc.shooterSubsystem.setShootFlag(true);
-    // rc.shooterSubsystem.setAimFlag(true);
-    rc.shooterSubsystem.setReadyToAutoShoot(true);
-    rc.shooterSubsystem.setAutoStartForceAngle(true);
-
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    rc.shooterSubsystem.setAimFlag(true);
-    rc.shooterSubsystem.setShootFlag(true);
-    if (aim) {
-      rc.drivetrain.setControl(drive
-          .withVelocityX(0)
-          .withVelocityY(0)
-          .withRotationalRate(0));
-    }
+    rc.shooterSubsystem.setWooferSlamFlag(true);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    rc.shooterSubsystem.setReadyToAutoShoot(false);
-    rc.shooterSubsystem.setAutoForce(false);
-    rc.shooterSubsystem.setAimFlag(false);
-    rc.shooterSubsystem.setShootFlag(false);
-    rc.shooterSubsystem.setAutoStartForceAngle(false);
+    rc.shooterSubsystem.setWooferSlamFlag(false);
   }
 
   // Returns true when the command should end.
