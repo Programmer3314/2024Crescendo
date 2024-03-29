@@ -6,14 +6,14 @@ package frc.robot.commands.Autos;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.LimelightHelpers;
+//import frc.robot.LimelightHelpers;
 import frc.robot.RobotContainer;
 
 public class StandardAutoInit extends Command {
   RobotContainer rc;
   Pose2d initialPose;
   int pipeLineFront = 0;
-  int pipeLinebd = 0;
+  int pipeLineBackDown = 0;
   int pipeLineBackUp = 0;
 
   public StandardAutoInit(RobotContainer rc, Pose2d initialPose) {
@@ -21,9 +21,9 @@ public class StandardAutoInit extends Command {
     this.initialPose = initialPose;
   }
 
-  public StandardAutoInit setPipeLine(int pipeLineFront, int pipeLineBackUp, int pipeLinebd) {
+  public StandardAutoInit setPipeLine(int pipeLineFront, int pipeLineBackUp, int pipeLineBackDown) {
     this.pipeLineFront = pipeLineFront;
-    this.pipeLinebd = pipeLinebd;
+    this.pipeLineBackDown = pipeLineBackDown;
     this.pipeLineBackUp = pipeLineBackUp;
     return this;
   }
@@ -31,9 +31,12 @@ public class StandardAutoInit extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    LimelightHelpers.setPipelineIndex("limelight-front", pipeLineFront);
-    LimelightHelpers.setPipelineIndex("limelight-bd", pipeLinebd);
-    LimelightHelpers.setPipelineIndex("limelight-backup", pipeLineBackUp);
+    // LimelightHelpers.setPipelineIndex("limelight-front", pipeLineFront);
+    // LimelightHelpers.setPipelineIndex("limelight-bd", pipeLinebd);
+    // LimelightHelpers.setPipelineIndex("limelight-backup", pipeLineBackUp);
+    rc.navigation.setFrontLimelightPipeline(pipeLineFront);
+    rc.navigation.setBackDownLimelightPipeline(pipeLineBackDown);
+    rc.navigation.setBackUpLimelightPipeline(pipeLineBackUp);
     rc.drivetrain.seedFieldRelative(initialPose);
   }
 

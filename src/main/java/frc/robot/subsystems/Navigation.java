@@ -462,4 +462,22 @@ public class Navigation extends SubsystemBase {
   public void updateLog() {
 
   }
+
+  public Navigation setFrontLimelightPipeline(int pipeline) {
+    frontLimelight.getEntry("pipeline").setNumber(pipeline);
+    return this;
+  }
+
+  public Navigation setBackUpLimelightPipeline(int pipeline) {
+    backUpLimelight.getEntry("pipeline").setNumber(pipeline);
+    return this;
+  }
+
+  public Navigation setBackDownLimelightPipeline(int pipeline) {
+    backDownLimelight.getEntry("pipeline").setNumber(pipeline);
+    return this;
+  }
+
+
+
 }
