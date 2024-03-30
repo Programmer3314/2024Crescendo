@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -254,21 +255,7 @@ public class Navigation extends SubsystemBase {
         pose.getY() < 0 || pose.getY() > 8.23) {
       resetVision();
     }
-    // TODO: try a couple of latency approaches
-    // a.
-    // Timer.getFPGATimestamp() - (result.latency_capture / 1000.0) -
-    // (result.latency_pipeline / 1000.0)
-    // and maybe also subtract latency_jsonParse/1000.0
-    // b.
-    // LimelightHelpers.PoseEstimate limelightMeasurement =
-    // LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-    // if(limelightMeasurement.tagCount >= 2)
-    // {
-    // m_poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
-    // m_poseEstimator.addVisionMeasurement(
-    // limelightMeasurement.pose,
-    // limelightMeasurement.timestampSeconds);
-    // }
+   
     boolean fieldBoundsFilter = (currentPose.getX() < 4.8 || currentPose.getX() > 11.6);
 
     if (useVision) {// || fieldBoundsFilter
@@ -280,7 +267,6 @@ public class Navigation extends SubsystemBase {
 
         double[] def = new double[] { 0, 0 };
 
-        // TODO: change following to botpose_wpiblue and remove math below
         double[] bp = backUpLimelight.getEntry("botpose_wpiblue").getDoubleArray(def);
 
         double[] tp = backUpLimelight.getEntry("targetpose_robotspace").getDoubleArray(def);
@@ -298,7 +284,7 @@ public class Navigation extends SubsystemBase {
             Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
-            double margin = pose.minus(llPose).getTranslation().getNorm();
+            // double margin = pose.minus(llPose).getTranslation().getNorm();
             // double margin = 0;
             // if (visionUpdate < 50
             // || margin < .25
@@ -311,8 +297,10 @@ public class Navigation extends SubsystemBase {
               double totalLatency = bp[6];
               // double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
               // double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
-              rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
-                  - (totalLatency / 1000.0));
+              // rc.drivetrain.setVisionMeasurementStdDevs(
+              //     VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain.addVisionMeasurement(llPose, 
+                  Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionBack.append(true);
 
@@ -329,7 +317,6 @@ public class Navigation extends SubsystemBase {
       if (currentHB != llFrontHeartBeat) {
         llFrontHeartBeat = currentHB;
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
-        // TODO: change following to botpose_wpiblue and remove math below
         double[] bp = frontLimelight.getEntry("botpose_wpiblue").getDoubleArray(def);
         if (bp.length > 7) {
           double numberOfTargets = bp[7];
@@ -341,7 +328,7 @@ public class Navigation extends SubsystemBase {
             Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             frontLimelightPose.accept(llPose);
             SmartDashboard.putString("llFrontPose", llPose.toString());
-            double margin = pose.minus(llPose).getTranslation().getNorm();
+            // double margin = pose.minus(llPose).getTranslation().getNorm();
             // double margin = 0;
             // if (visionUpdate < 50
             // || margin < .25
@@ -353,9 +340,10 @@ public class Navigation extends SubsystemBase {
               // double[] stdDevArray = { .7, .7, .9 };
               // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
               // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
-              rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
-
-                  - (totalLatency / 1000.0));
+              // rc.drivetrain.setVisionMeasurementStdDevs(
+              //     VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain.addVisionMeasurement(llPose, 
+                  Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionFront.append(true);
             }

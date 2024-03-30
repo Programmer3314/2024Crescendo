@@ -335,9 +335,8 @@ public class Shooter extends SubsystemBase {
     Translation2d transformRightBoundarySpeaker = MMField.currentRightBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
     rightBoundaryAngleSpeaker = transformRightBoundarySpeaker.getAngle();
-    // TODO: fix abort intake
+
     if (intakeRotateMotor.getSupplyCurrent().getValue() > 2.1 && intakeBeltMotor.getSupplyCurrent().getValue() > 25) {
-      // abortIntake = true;
       abortIntakeCounter++;
     }
 
@@ -699,7 +698,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (readyToChuck() && runChuckLow) {// TODO: is this really needed, the flag should already be on
+        if (readyToChuck() && runChuckLow) {
           return ChuckShoot;
         }
         return this;
