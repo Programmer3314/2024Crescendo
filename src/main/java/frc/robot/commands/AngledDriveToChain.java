@@ -6,13 +6,17 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 
 public class AngledDriveToChain extends Command {
   RobotContainer rc;
-  SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
+  // TODO: Try orbit with CenterOfRotation option and alternate drive below
+  SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
+  //.withCenterOfRotation(new Translation2d(.1778, 0))
+  ;
   double distanceBetweenWheelsInches = 19;
   double driveTrainRadius = Math
       .sqrt((distanceBetweenWheelsInches / 2)*(distanceBetweenWheelsInches / 2) +(distanceBetweenWheelsInches / 2)*(distanceBetweenWheelsInches / 2));
@@ -49,6 +53,10 @@ public class AngledDriveToChain extends Command {
         .withVelocityX(0*(-Math.abs(turnRate)*driveVector))
         .withVelocityY(.3*(turnRate*driveVector))
         .withRotationalRate(2*turnRate));
+    // rc.drivetrain.setControl(drive
+    //     .withVelocityX(0)
+    //     .withVelocityY(0)
+    //     .withRotationalRate(2*turnRate));
   }
 
   // Called once the command ends or is interrupted.

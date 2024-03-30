@@ -38,18 +38,11 @@ public class Robot extends TimedRobot {
   public static Rotation2d allianceSpeakerRotation = new Rotation2d();
 
   // TODO: GLOBAL TODOs...
-  // TODO: Try Vision Threading and latency calcs
-
-  // TODO: Before Weekend - get autos in place (roughed out)
-  // TODO: Get HS2 in place with attempt at 5th Note
+  // TODO: Try Vision Threading
   // TODO: Split the can bus
-  // TODO: Climb with Trap (controller button) - Add AbortClimb
-  // TODO: Mustang Auto - extend to 4 pieces at least and add shoot in place,
-  // clear
   // TODO: Catch Dual note intake, and reverse
   // TODO: Cleanup unused Shuffleboard output, remove unused fields from screen,
   // title screens.
-  // TODO: Extended Diagnostics
 
   @Override
   public void robotInit() {
@@ -91,7 +84,6 @@ public class Robot extends TimedRobot {
           allianceSpeakerRotation = Rotation2d.fromDegrees(180);
         }
 
-        // TODO: Build Autos Here...
         m_robotContainer.pony = new Pony(m_robotContainer);
         m_robotContainer.arabian = new Arabian(m_robotContainer);
         m_robotContainer.crazyHorse = new CrazyHorse(m_robotContainer);
