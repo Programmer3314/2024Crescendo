@@ -59,7 +59,7 @@ public class Shooter extends SubsystemBase {
 
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
-  private MMTurnPIDController predictedTurnPIDController = new MMTurnPIDController();
+  private MMTurnPIDController predictedTurnPIDController = new MMTurnPIDController(true);
   private MMTurnPIDController turnWallPidController = new MMTurnPIDController(true);
   public Rotation2d targetAngleSpeaker;
   public Rotation2d predictedTargetAngleSpeaker;
@@ -411,7 +411,7 @@ public class Shooter extends SubsystemBase {
           .minus(Navigation.predictedPose.getTranslation());
       predictedTargetAngleSpeaker = predictedTransformFromSpeaker.getAngle();
       predictedTurnPIDController.initialize(predictedTargetAngleSpeaker);
-      predictedTurnRate = predictedTurnPIDController.execute(Navigation.predictedPose.getRotation());
+      predictedTurnRate = predictedTurnPIDController.execute(currentPose.getRotation());
     }
 
     // TODO: This might not work for red. We may need to
@@ -485,9 +485,9 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState Idle = new MMStateMachineState("Idle") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+        rc.navigation.setUpdatePredictedPose(true);
         setAutoStartForceAngle(false);
         setReadyToAutoShoot(false);
-        setLightBeam(false);
         setRunBeam(false);
         setIntakeUp();
         stopIndexers();
@@ -606,7 +606,6 @@ public class Shooter extends SubsystemBase {
         // setAimFlag(true); BB
         stopElevatorBelts();
         setRunBeam(false);
-        setLightBeam(false);
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
@@ -1030,6 +1029,7 @@ public class Shooter extends SubsystemBase {
         // TODO: Are the next two lines needed/used at all?
         shotEndTime = Timer.getFPGATimestamp();
         shotTotalTime = shotEndTime - shotStartTime;
+        rc.navigation.setUpdatePredictedPose(true);
         // totaltime=.1
       }
 
@@ -1615,7 +1615,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void aimForBeam() {
-    runLeftMotor(desiredWaypoint.getLeftVelocity());
+    runLeftMotor(predictedWaypoint.getLeftVelocity());
     runRightMotor(predictedWaypoint.getRightVelocity());
     setShooterPosition(predictedWaypoint.getAngle());
   }
@@ -2166,7 +2166,7 @@ public class Shooter extends SubsystemBase {
         .withKA(0) // "arbitrary" amount to provide crisp response
         .withKG(.5) // gravity can be used for elevator or arm
         .withGravityType(GravityTypeValue.Elevator_Static)
-        .withKP(330)// 330
+        .withKP(345)// 330
         .withKI(0)
         .withKD(3.3);
     cfg.Feedback
@@ -2354,22 +2354,21 @@ public class Shooter extends SubsystemBase {
         shooterVelocityMargin);
     boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), predictedWaypoint.getAngle(),
         shooterAngleMargin);
-    // Pose2d a = currentPose;
-    // currentPosePublisher.set(a);
-    // Transform2d b = new Transform2d(new
-    // Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
-    // Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
-    // boolean bingo = isInMargin(c.getY(),
-    // MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
-    // &&
-    // Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees())
-    // < 90;//TODO: gotta check angleTOTarget L8r
+    Pose2d a = currentPose;
+    currentPosePublisher.set(a);
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+    boolean bingo = isInMargin(c.getY(),
+        MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+        &&
+        Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
     SmartDashboard.putBoolean("BeamleftShooterAt", leftShooterAtVelocity);
     SmartDashboard.putBoolean("BeamrightShooterAt", rightShooterAtVelocity);
     SmartDashboard.putBoolean("BeamshooterAt", shooterAtAngle);
+    SmartDashboard.putBoolean("BeamBingo", bingo);
     // SmartDashboard.putBoolean("Autobingo", bingo);
 
-    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle;
+    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo;
   }
 
   public void setLeftAutoShooterVelocity(double v) {

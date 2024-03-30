@@ -24,6 +24,7 @@ public class LaserBeam extends Command {
 
   public LaserBeam(RobotContainer rc) {
     this.rc = rc;
+    addRequirements(rc.drivetrain);
   }
 
   // Called when the command is initially scheduled.
@@ -36,16 +37,12 @@ public class LaserBeam extends Command {
     rc.navigation.setUpdatePredictedPose(false);
     startTime = Timer.getFPGATimestamp();
     rc.shooterSubsystem.setRunBeam(true);
+    rc.shooterSubsystem.setLightBeam(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if ((Timer.getFPGATimestamp() - startTime >= totalBeamTime)
-        && startLightBeamCounter == rc.shooterSubsystem.getLightBeamCounter()) {
-      rc.shooterSubsystem.setLightBeam(true);
-    }
-
     rc.drivetrain.setControl(drive
         .withVelocityX(rc.navigation.getAveragePredictedX())
         .withVelocityY(rc.navigation.getAveragePredictedY())
@@ -56,6 +53,8 @@ public class LaserBeam extends Command {
   @Override
   public void end(boolean interrupted) {
     rc.navigation.setUpdatePredictedPose(true);
+    rc.shooterSubsystem.setLightBeam(false);
+    rc.shooterSubsystem.resetStateMachine();
   }
 
   // Returns true when the command should end.

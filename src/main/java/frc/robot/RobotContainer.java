@@ -188,7 +188,9 @@ public class RobotContainer {
 
     driverController.x().onTrue(new InstantCommand(() -> shooterSubsystem.setElevatorIndexFlag(true)));
     driverController.b().whileTrue(new InstantCommand(() -> shooterSubsystem.setIntakeFlag(true)));
-    driverController.a().onTrue(new InstantCommand(() -> shooterSubsystem.setReverseIntakeFlag(true)));
+    // driverController.a().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.setReverseIntakeFlag(true)));
+    driverController.a().whileTrue(new LaserBeam(this));
     driverController.y().whileTrue(new GoAmp(this));
     driverController.povDown()
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),

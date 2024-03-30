@@ -85,7 +85,7 @@ public class Navigation extends SubsystemBase {
   private ArrayList<Double> angVelocity = new ArrayList<Double>();
   public static Pose2d predictedPose;
   private int predictionCycles = 25;
-  double fullBeamTime = .8;
+  double fullBeamTime = .5;
   private Pose2d currentPose;
 
   double averageX = 0;

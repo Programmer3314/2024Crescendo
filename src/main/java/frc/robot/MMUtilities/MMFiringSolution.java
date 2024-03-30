@@ -91,7 +91,7 @@ public class MMFiringSolution {
         return new MMWaypoint(distance, shootAngle, res.getLeftVelocity(),
                 res.getRightVelocity(),
                 res.getVelocity());
-        // return new MMWaypoint(distance, shootAngle, 47, 63, 63);
+        // return new MMWaypoint(distance, shootAngle, 47, 13, 13);
         // return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity,
         // desiredRightVelocity, desiredVelocity);
     }
