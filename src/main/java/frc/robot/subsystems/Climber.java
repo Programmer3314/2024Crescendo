@@ -41,7 +41,6 @@ public class Climber extends SubsystemBase {
   private ClimbStateMachine csm = new ClimbStateMachine();
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
-  private final MotionMagicVoltage climbMotionMagicVoltage = new MotionMagicVoltage(0);
   double climbAbsoluteBottom = .1;
   double climbDownPosition = 0.015 + climbAbsoluteBottom;
   double climbUpPosition = .235 + climbAbsoluteBottom;
@@ -54,7 +53,6 @@ public class Climber extends SubsystemBase {
   int idleCounter = 0;
 
   boolean runClimb;
-  boolean runTrap;
   boolean unwindClimb;
   boolean runAbortClimb;
   boolean moveHooksUp;
@@ -126,7 +124,6 @@ public class Climber extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         setClimbFlag(false);
-        setTrapFlag(false);
         setClimbUnwindFlag(false);
         setMoveHooksUp(false);
         stopClimb();
@@ -157,9 +154,6 @@ public class Climber extends SubsystemBase {
         if (runClimb) {
           return Engage;
         }
-        if (runTrap) {
-          return ClawsUpTrap;
-        }
         if (moveHooksUp) {
           return ClawsUpFast;
         }
@@ -168,37 +162,6 @@ public class Climber extends SubsystemBase {
 
       @Override
       public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-
-    MMStateMachineState ClawsUpTrap = new MMStateMachineState("ClawsUpTrap") {
-
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        // runClimbSlow();
-        clawsUpTrapMove();
-
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
-            && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
-          if (moveHooksUp) {
-            return Idle;
-          }
-        }
-        if (climberEmergency()
-            && (leftCanCoder.getVelocity().getValue() < 0 || rightCanCoder.getVelocity().getValue() < 0)) {
-          return Idle;
-        }
-        return this;
-
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-        setClimbPos();
       }
     };
 
@@ -311,28 +274,6 @@ public class Climber extends SubsystemBase {
           rc.shooterSubsystem.stopElevatorBelts();
         }
       }
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-
-    MMStateMachineState CheckRaiseElevator = new MMStateMachineState("Check Raise Elevator") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (rc.shooterSubsystem.elevatorBreakBeam.get()) {
-          return RaiseElevator;
-        }
-        return this;
-      };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
     };
 
     MMStateMachineState RaiseElevator = new MMStateMachineState("Raise Elevator") {
@@ -377,15 +318,8 @@ public class Climber extends SubsystemBase {
         setClimbPos();
       }
     };
+
     MMStateMachineState CheckElevator = new MMStateMachineState("Check Elevator") {
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-      }
-
-      @Override
-      public void doState() {
-
-      }
 
       @Override
       public MMStateMachineState calcNextState() {
@@ -395,26 +329,6 @@ public class Climber extends SubsystemBase {
         }
         return this;
       };
-
-      @Override
-      public void transitionFrom(MMStateMachineState NextState) {
-      }
-    };
-
-    MMStateMachineState ElevatorPassNoteAbove = new MMStateMachineState("ElevatorPassNoteAbove") {
-
-      @Override
-      public void transitionTo(MMStateMachineState previousState) {
-        rc.shooterSubsystem.runElevatorBottomBeltUpSlow();
-      }
-
-      @Override
-      public MMStateMachineState calcNextState() {
-        if (rc.shooterSubsystem.elevatorBreakBeam.get()) {
-          return ElevatorShoot;
-        }
-        return this;
-      }
     };
 
     MMStateMachineState ElevatorShoot = new MMStateMachineState("ElevatorShoot") {// transition to shoot, run the
@@ -502,10 +416,6 @@ public class Climber extends SubsystemBase {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(20));
   }
 
-  public void clawsUpTrapMove() {
-    climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(60));
-  }
-
   public void clawsUpFastMove() {
     climbMotor.setControl(climbMagicVelocityVoltage.withVelocity(90));
   }
@@ -521,11 +431,6 @@ public class Climber extends SubsystemBase {
 
   public void setClimbPos() {
     climbMotor.setControl(climbMagicVol.withPosition(climbMotor.getPosition().getValue()));
-  }
-
-  public Climber setTrapFlag(boolean run) {
-    runTrap = run;
-    return this;
   }
 
   public Climber setAbortFlag(boolean run) {

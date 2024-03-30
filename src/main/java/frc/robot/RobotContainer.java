@@ -106,13 +106,14 @@ public class RobotContainer {
       .setScaleXRight(-MaxAngularRate);
 
   public CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
-  SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric();
+  SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+      .withDriveRequestType(DriveRequestType.Velocity);
   // EXPERIMENTAL!!!!
   MMSwerveRequest.FieldCentricSlewRateLimitted driveControlled = new MMSwerveRequest.FieldCentricSlewRateLimitted(4)
       .withDriveRequestType(DriveRequestType.Velocity)
       .withSteerRequestType(SteerRequestType.MotionMagic)
-      .withAngleSlewRate(Rotation2d.fromDegrees(180))
-      .withSpeedSlewRate(100);
+      .withAngleSlewRate(Rotation2d.fromDegrees(100))
+      .withSpeedSlewRate(100, -400);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   // Telemetry logger = new Telemetry(MaxSpeed);
@@ -147,7 +148,7 @@ public class RobotContainer {
   private void configureBindings() {
 
     drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() -> drive
+        drivetrain.applyRequest(() -> drive// drive
             .withVelocityX(driverController.getLeftYSmoothed() * Robot.resetDriverValue)
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
@@ -205,12 +206,13 @@ public class RobotContainer {
     // == "ElevatorIndexed");
     // oppController.a().whileTrue(new Aim(this)).and(aimTrigger);
     oppController.a().whileTrue(Commands.select(Map.ofEntries(
-        Map.entry(true, new InstantCommand(() -> shooterSubsystem.setAimFlag(true))),
+        Map.entry(true, new InstantCommand(() -> shooterSubsystem.setAmpFlag(true))),
         Map.entry(false, new Aim(this))),
         () -> shooterSubsystem.getCurrentStateName() == "Elevator Indexed"));
 
     oppController.y().onTrue(new ClawsUpAndIndex(this));
-    // oppController.y().onTrue(new InstantCommand(() -> shooterSubsystem.resetElevatorHome()));
+    // oppController.y().onTrue(new InstantCommand(() ->
+    // shooterSubsystem.resetElevatorHome()));
     oppController.x().onTrue(new StartClimbManual(this));
     oppController.b().onTrue(new InstantCommand(() -> navigation.resetVision()));
 

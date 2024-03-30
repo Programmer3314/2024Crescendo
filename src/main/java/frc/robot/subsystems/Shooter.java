@@ -66,6 +66,7 @@ public class Shooter extends SubsystemBase {
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
+  double predictedTurnRate = 0;
   double WallTurnRate;
 
   public double shooterAngleMargin = .002;
@@ -87,7 +88,7 @@ public class Shooter extends SubsystemBase {
 
   int abortIntakeCounter;
 
-  boolean runAim;
+  boolean runAimLogFlag;
   boolean liftAmp;
   boolean runWallAim;
   boolean runIntake;
@@ -316,6 +317,7 @@ public class Shooter extends SubsystemBase {
 
     calcFiringSolution();
     // calcPredictedFiringSolution();
+    // calcPredictedFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
 
@@ -342,7 +344,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putString("Check FieldApproach", MMField.currentStagePose().toString());
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
-    SmartDashboard.putBoolean("RunAim", runAim);
+    SmartDashboard.putBoolean("RunAim", runAimLogFlag);
     SmartDashboard.putString("Elevator Home State", elevatorHomingEnum.toString());
 
     // TODO: finish below diagnostic (null)
@@ -397,6 +399,10 @@ public class Shooter extends SubsystemBase {
     // TODO: Check this for Red.
     turnPidController.initialize(targetAngleSpeaker);
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
+    if (Navigation.predictedPose != null) {
+      predictedTurnRate = turnPidController.execute(Navigation.predictedPose.getRotation());
+
+    }
 
     // TODO: This might not work for red. We may need to
     turnWallPidController.initialize(180);
@@ -775,7 +781,7 @@ public class Shooter extends SubsystemBase {
 
       @Override
       public MMStateMachineState calcNextState() {
-        if (runAim) {
+        if (liftAmp) {
           return ElevatorPassNoteAbove;
         }
         if (runOutTake) {
@@ -1486,6 +1492,10 @@ public class Shooter extends SubsystemBase {
     return speakerTurnRate;
   }
 
+  public double getPredictedSpeakerTurnRate() {
+    return predictedTurnRate;
+  }
+
   public int getShotCounter() {
     return shotCounter;
   }
@@ -1598,6 +1608,16 @@ public class Shooter extends SubsystemBase {
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
+  public void calcPredictedFiringSolution() {
+    double distanceToSpeaker = rc.navigation.getPredictedDistanceToSpeaker();
+    if (targetAngleSpeaker != null) {
+      // distanceToSpeaker += Math.abs(.2*
+      // Math.sin(targetAngleSpeaker.getRadians()));
+      // distanceToSpeaker = distanceToSpeaker;
+    }
+    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+  }
+
   public MMWaypoint calcManualFiringSolution(Pose2d position) {
     Translation2d target = MMField.currentSpeakerPose().getTranslation();
     double distanceToSpeaker = position.getTranslation().minus(target).getNorm();
@@ -1636,7 +1656,7 @@ public class Shooter extends SubsystemBase {
   public Shooter setChuckLowFlag(boolean isChuck) {
     runChuckLow = isChuck;
     if (isChuck) {
-      runAim = false;
+      runAimLogFlag = false;
     }
     return this;
   }
@@ -1644,7 +1664,7 @@ public class Shooter extends SubsystemBase {
   public Shooter setChuckHighFlag(boolean isChuck) {
     runChuckHigh = isChuck;
     if (isChuck) {
-      runAim = false;
+      runAimLogFlag = false;
     }
     return this;
   }
@@ -1652,7 +1672,7 @@ public class Shooter extends SubsystemBase {
   public Shooter setWooferSlamFlag(boolean isSlam) {
     runWooferSlam = isSlam;
     if (isSlam) {
-      runAim = false;
+      runAimLogFlag = false;
     }
     return this;
   }
@@ -1668,14 +1688,14 @@ public class Shooter extends SubsystemBase {
   }
 
   public Shooter setAimFlag(boolean aim) {
-    if (runAim && !aim) {
+    if (runAimLogFlag && !aim) {
       stopShooterMotors();
     }
     if (aim) {
       setAimWallFlag(false);
       runChuckLow = false;
     }
-    runAim = aim;
+    runAimLogFlag = aim;
     return this;
   }
 
@@ -1722,7 +1742,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean getAimFlag() {
-    return runAim;
+    return runAimLogFlag;
   }
 
   public boolean getElevatorIndexFlag() {
@@ -2205,7 +2225,7 @@ public class Shooter extends SubsystemBase {
     shooterStateLog.append(ssm.currentState.getName());
     currentPosePublisher.accept(currentPose);
     intakeFlagLog.append(runIntake);
-    aimFlagLog.append(runAim);
+    aimFlagLog.append(runAimLogFlag);
     intakePositionLog.append(getIntakePos());
     intakeVelocityLog.append(getIntakeVel());
     leftShooterVelocityLog.append(getLeftShooterVelocity());

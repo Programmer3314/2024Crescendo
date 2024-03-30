@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Add your docs here. */
 public interface MMSwerveRequest {
@@ -69,7 +70,7 @@ public interface MMSwerveRequest {
         private boolean filterSpeed = false;
         public double speedPositiveSlewRate = 0;
         public double speedNegativeSlewRate = 0;
-        private SlewRateLimiter[] speedSlewRateLimiters=null;
+        private SlewRateLimiter[] speedSlewRateLimiters = null;
 
         /**
          * Filter angle
@@ -94,8 +95,7 @@ public interface MMSwerveRequest {
 
         public FieldCentricSlewRateLimitted(int ModuleCount) {
             // throw new Exception("Incomplete Class FieldCentricSlewRateLimitted");
-            // this.ModuleCount = ModuleCount;
-
+            this.ModuleCount = ModuleCount;
         }
 
         public StatusCode apply(SwerveControlRequestParameters parameters, SwerveModule... modulesToApply) {
@@ -121,17 +121,23 @@ public interface MMSwerveRequest {
                 this.angSlewRateLimiters = new MMSwerveAngleSlewRateFilter[ModuleCount];
                 for (int i = 0; i < ModuleCount; i++) {
                     speedSlewRateLimiters[i] = new SlewRateLimiter(speedPositiveSlewRate, speedNegativeSlewRate, 0);
-                    angSlewRateLimiters[i] = new MMSwerveAngleSlewRateFilter(this.angleSlewRate,modulesToApply[i].getCurrentState().angle);
+                    angSlewRateLimiters[i] = new MMSwerveAngleSlewRateFilter(this.angleSlewRate,
+                            modulesToApply[i].getCurrentState().angle);
                 }
             }
 
-            for (int i = 0; i < modulesToApply.length; ++i) {
+            for (int i = 0; i < modulesToApply.length; i++) {
                 SwerveModuleState sms = new SwerveModuleState(
-                    speedSlewRateLimiters[i].calculate(states[i].speedMetersPerSecond),
-                    angSlewRateLimiters[i].calculate(states[i].angle)
-                    );
+                        speedSlewRateLimiters[i].calculate(states[i].speedMetersPerSecond),
+                        // states[i].speedMetersPerSecond,
+                        angSlewRateLimiters[i].calculate(states[i].angle)
+                // states[i].angle
+                );
                 modulesToApply[i].apply(sms, DriveRequestType, SteerRequestType);
             }
+
+            SmartDashboard.putNumber("RegAngle1", states[1].angle.getDegrees());
+            SmartDashboard.putNumber("SlewAngle1", angSlewRateLimiters[1].calculate(states[1].angle).getDegrees());
 
             return StatusCode.OK;
         }

@@ -23,7 +23,7 @@ public class Aim extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // rc.shooterSubsystem.setAimFlag(true);
+    rc.shooterSubsystem.setAimFlag(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -33,6 +33,11 @@ public class Aim extends Command {
         .withVelocityX(rc.driverController.getLeftYSmoothed() * Robot.resetDriverValue)
         .withVelocityY(rc.driverController.getLeftXSmoothed() * Robot.resetDriverValue)
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
+    
+    // rc.drivetrain.setControl(drive
+    //     .withVelocityX(rc.driverController.getLeftYSmoothed() * Robot.resetDriverValue)
+    //     .withVelocityY(rc.driverController.getLeftXSmoothed() * Robot.resetDriverValue)
+    //     .withRotationalRate(rc.shooterSubsystem.getPredictedSpeakerTurnRate()));
   }
 
   // Called once the command ends or is interrupted.

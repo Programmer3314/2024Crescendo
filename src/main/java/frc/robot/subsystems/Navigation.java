@@ -4,15 +4,24 @@
 
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.ejml.simple.SimpleMatrix;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.Num;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
@@ -20,6 +29,7 @@ import edu.wpi.first.util.datalog.BooleanLogEntry;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.datalog.IntegerLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
@@ -50,23 +60,30 @@ public class Navigation extends SubsystemBase {
       .getStructTopic("backLimelightPose4", Pose2d.struct).publish();
   StructPublisher<Pose2d> frontLimelightPose = NetworkTableInstance.getDefault()
       .getStructTopic("frontLimelightPose4", Pose2d.struct).publish();
+  StructPublisher<Pose2d> predictedPosePublisher = NetworkTableInstance.getDefault()
+      .getStructTopic("predictedPosePublisher", Pose2d.struct).publish();
 
   BooleanLogEntry useVisionBoolean;
   DoubleLogEntry visionCounterLog;
   BooleanLogEntry updatedVisionFront;
   BooleanLogEntry updatedVisionBack;
+  StringLogEntry xVelocityLog;
+  StringLogEntry yVelocityLog;
+  StringLogEntry angVelocityLog;
+  StringLogEntry predictedPoseLog;
+  StringLogEntry actualPoseLog;
 
   Pigeon2 pigeon;
   double hitAcceleration;
   private double llFrontHeartBeat = 0;
   private double llBackUpHeartBeat = 0;
 
-  // private ArrayList<Double> xVelocity = new ArrayList<Double>();
-  // private ArrayList<Double> yVelocity = new ArrayList<Double>();
-  // private ArrayList<Double> angVelocity = new ArrayList<Double>();
+  private ArrayList<Double> xVelocity = new ArrayList<Double>();
+  private ArrayList<Double> yVelocity = new ArrayList<Double>();
+  private ArrayList<Double> angVelocity = new ArrayList<Double>();
   public static Pose2d predictedPose;
-  // private int predictionCycles;
-  // double timeToShoot = .1;
+  private int predictionCycles = 25;
+  double timeToShoot = .1;
   private Pose2d currentPose;
 
   // private AprilThread aprilThread;
@@ -207,6 +224,12 @@ public class Navigation extends SubsystemBase {
     visionCounterLog = new DoubleLogEntry(log, "my/vision/counter");
     updatedVisionBack = new BooleanLogEntry(log, "my/vision/updateBack");
     updatedVisionFront = new BooleanLogEntry(log, "my/vision/updateFront");
+    xVelocityLog = new StringLogEntry(log, "my/otf/xVelocity");
+    yVelocityLog = new StringLogEntry(log, "my/otf/yVelocity");
+    angVelocityLog = new StringLogEntry(log, "my/otf/angVelocity");
+    predictedPoseLog = new StringLogEntry(log, "my/otf/predictedPose");
+    actualPoseLog = new StringLogEntry(log, "my/otf/actualPose");
+
   }
 
   @Override
@@ -241,36 +264,50 @@ public class Navigation extends SubsystemBase {
     // limelightMeasurement.pose,
     // limelightMeasurement.timestampSeconds);
     // }
+    boolean fieldBoundsFilter = (currentPose.getX() < 4.8 || currentPose.getX() > 11.6);
 
-    if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
+    if (useVision) {// || fieldBoundsFilter
       double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
       boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
       if (currentHB != llBackUpHeartBeat) {
         llBackUpHeartBeat = currentHB;
 
-        double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
-        // TODO: change following to botpose_wpiblue and remove math below
-        double[] bp = backUpLimelight.getEntry("botpose").getDoubleArray(def);
-        if (bp.length > 7) {
-          double numberOfTargets = bp[7];
+        double[] def = new double[] { 0, 0 };
 
-          if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
-              || numberOfTargets > 1 || visionUpdate < 50)) {
-            Pose2d llPose = new Pose2d(bp[0] + 8.27, bp[1] + 4.115, Rotation2d.fromDegrees(bp[5]));
+        // TODO: change following to botpose_wpiblue and remove math below
+        double[] bp = backUpLimelight.getEntry("botpose_wpiblue").getDoubleArray(def);
+
+        double[] tp = backUpLimelight.getEntry("targetpose_robotspace").getDoubleArray(def);
+        if (bp.length > 7 && tp.length > 5) {
+
+          double numberOfTargets = bp[7];
+          double distanceToTarget = tp[1];
+
+          boolean robotOnFloor = Math.abs(bp[2]) <= 1;
+          boolean closeToTag = distanceToTarget <= 1.6;
+
+          // if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
+          // || numberOfTargets > 1 || visionUpdate < 50)) {
+          if (hasBackUpTarget && robotOnFloor && closeToTag) {
+            Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
             double margin = pose.minus(llPose).getTranslation().getNorm();
             // double margin = 0;
-            if (visionUpdate < 50
-                || margin < .25
-                || (((numberOfTargets >= 1 && oneTargetBack)
-                    || numberOfTargets > 1) && margin < .75)) {
-              // TODO: Use total latency from bp[5]        
-              double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
-              double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
+            // if (visionUpdate < 50
+            // || margin < .25
+            // || (((numberOfTargets >= 1 && oneTargetBack)
+            // || numberOfTargets > 1) && margin < .75)) {
+            if (true) {
+              // double[] stdDevArray = { .9, .9, .9 };
+              // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
+              // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
+              double totalLatency = bp[6];
+              // double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
+              // double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
               rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
-                  - (latency_capture / 1000.0) - (latency_pipeline / 1000.0));
+                  - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionBack.append(true);
 
@@ -280,34 +317,40 @@ public class Navigation extends SubsystemBase {
       }
     }
 
-    if (useVision || (currentPose.getX() < 4.8 || currentPose.getX() > 11.6)) {
+    if (useVision) {// fieldFilter
       double currentHB = frontLimelight.getEntry("hb").getDouble(0);
-
       boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
       if (currentHB != llFrontHeartBeat) {
         llFrontHeartBeat = currentHB;
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
         // TODO: change following to botpose_wpiblue and remove math below
-        double[] bp = frontLimelight.getEntry("botpose").getDoubleArray(def);
+        double[] bp = frontLimelight.getEntry("botpose_wpiblue").getDoubleArray(def);
         if (bp.length > 7) {
           double numberOfTargets = bp[7];
+          boolean robotOnFloor = Math.abs(bp[2]) <= 1;
 
-          if (hasFrontTarget && numberOfTargets > 1) {
-            Pose2d llPose = new Pose2d(bp[0] + 8.27, bp[1] + 4.115, Rotation2d.fromDegrees(bp[5]));
+          // if (hasFrontTarget && numberOfTargets > 1) {
+          if (hasFrontTarget && robotOnFloor) {
+
+            Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             frontLimelightPose.accept(llPose);
             SmartDashboard.putString("llFrontPose", llPose.toString());
             double margin = pose.minus(llPose).getTranslation().getNorm();
             // double margin = 0;
-            if (visionUpdate < 50
-                || margin < .25
-                || (numberOfTargets > 1 && margin < .75)) {
-              // TODO: Use total latency from bp[5]        
-              double latency_capture = frontLimelight.getEntry("cl").getDouble(0);
-              double latency_pipeline = frontLimelight.getEntry("tl").getDouble(0);
+            // if (visionUpdate < 50
+            // || margin < .25
+            // || (numberOfTargets > 1 && margin < .75)) {
+            if (true) {
+              // double latency_capture = frontLimelight.getEntry("cl").getDouble(0);
+              // double latency_pipeline = frontLimelight.getEntry("tl").getDouble(0);
+              double totalLatency = bp[6];
+              // double[] stdDevArray = { .7, .7, .9 };
+              // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
+              // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
               rc.drivetrain.addVisionMeasurement(llPose, Timer.getFPGATimestamp()
 
-                  - (latency_capture / 1000.0) - (latency_pipeline / 1000.0));
+                  - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionFront.append(true);
             }
@@ -329,6 +372,15 @@ public class Navigation extends SubsystemBase {
     SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
     SmartDashboard.putNumber("NOTE TX", noteX);
     SmartDashboard.putNumber("NOTE TY", noteY);
+    ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
+    updatePredictedPosition(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond,
+        chassisSpeeds.omegaRadiansPerSecond);
+    predictedPosePublisher.accept(predictedPose);
+    xVelocityLog.append(xVelocity.toString());
+    yVelocityLog.append(yVelocity.toString());
+    angVelocityLog.append(angVelocity.toString());
+    predictedPoseLog.append(predictedPose.toString());
+    actualPoseLog.append(currentPose.toString());
   }
 
   public double getNoteX() {
@@ -363,6 +415,7 @@ public class Navigation extends SubsystemBase {
     // distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
     // }
     return distance;
+
   }
 
   public void setAutoVisionOn(boolean isUpdate) {
@@ -372,52 +425,58 @@ public class Navigation extends SubsystemBase {
   public void setOneTargetBack(boolean isOneTarget) {
     oneTargetBack = isOneTarget;
   }
-  // public double getPredictedDistanceToSpeaker() {
-  // Pose2d currentPose = predictedPose;
-  // Translation2d target = MMField.currentSpeakerPose().getTranslation();
-  // double distance = currentPose.getTranslation().minus(target).getNorm();
-  // return distance;
-  // }
 
-  // public void updatePredictedPosition(double x, double y, double r) {
-  // xVelocity.add(x);
-  // yVelocity.add(y);
-  // angVelocity.add(r);
-  // limitArrayLists();
-  // syncPredictedPosition();
-  // }
+  public double getPredictedDistanceToSpeaker() {
+    if (predictedPose != null) {
+      Translation2d target = MMField.currentSpeakerPose().getTranslation();
+      double distance = predictedPose.getTranslation().minus(target).getNorm();
+      return distance;
+    }
 
-  // public void syncPredictedPosition() {
-  // double xVelocitySum = 0;
-  // double yVelocitySum = 0;
-  // double angVelocitySum = 0;
-  // for (int i = 0; i < xVelocity.size(); i++) {
-  // xVelocitySum += xVelocity.get(i);
-  // }
-  // for (int i = 0; i < yVelocity.size(); i++) {
-  // yVelocitySum += yVelocity.get(i);
-  // }
-  // for (int i = 0; i < angVelocity.size(); i++) {
-  // angVelocitySum += angVelocity.get(i);
-  // }
-  // double averageX = xVelocitySum / xVelocity.size();
-  // double averageY = yVelocitySum / yVelocity.size();
-  // double averageAng = angVelocitySum / angVelocity.size();
+    return 0;
+  }
 
-  // predictedPose = currentPose.plus(new Transform2d())
-  // }
+  public void updatePredictedPosition(double x, double y, double r) {
+    xVelocity.add(x);
+    yVelocity.add(y);
+    angVelocity.add(r);
+    limitArrayLists();
+    syncPredictedPosition();
+  }
 
-  // public void limitArrayLists() {
-  // if (xVelocity.size() > predictionCycles) {
-  // xVelocity.remove(xVelocity.size() - 1);
-  // }
-  // if (yVelocity.size() > predictionCycles) {
-  // yVelocity.remove(yVelocity.size() - 1);
-  // }
-  // if (angVelocity.size() > predictionCycles) {
-  // angVelocity.remove(angVelocity.size() - 1);
-  // }
-  // }
+  public void syncPredictedPosition() {
+    double xVelocitySum = 0;
+    double yVelocitySum = 0;
+    double angVelocitySum = 0;
+    for (int i = 0; i < xVelocity.size(); i++) {
+      xVelocitySum += xVelocity.get(i);
+    }
+    for (int i = 0; i < yVelocity.size(); i++) {
+      yVelocitySum += yVelocity.get(i);
+    }
+    for (int i = 0; i < angVelocity.size(); i++) {
+      angVelocitySum += angVelocity.get(i);
+    }
+    double averageX = (xVelocitySum / xVelocity.size()) * timeToShoot;
+    double averageY = (yVelocitySum / yVelocity.size()) * timeToShoot;
+    double averageAng = (angVelocitySum / angVelocity.size()) * timeToShoot;
+
+    predictedPose = currentPose
+        .plus(new Transform2d(new Translation2d(averageX, averageY), new Rotation2d(averageAng)));
+  }
+
+  public void limitArrayLists() {
+    if (xVelocity.size() > predictionCycles) {
+      xVelocity.remove(0);
+    }
+    if (yVelocity.size() > predictionCycles) {
+      yVelocity.remove(0);
+    }
+    if (angVelocity.size() > predictionCycles) {
+      angVelocity.remove(0);
+    }
+  }
+
   public void resetVision() {
     visionUpdate = 0;
     // aprilThread.ResetVisionUpdate();

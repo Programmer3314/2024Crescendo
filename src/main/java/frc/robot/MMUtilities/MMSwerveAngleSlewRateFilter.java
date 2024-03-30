@@ -10,17 +10,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 /** Add your docs here. */
 public class MMSwerveAngleSlewRateFilter {
-    private final Rotation2d slewRateLimit;
-    private Rotation2d prevValue;
-    private double prevTime;
-    private double slewRateLimitDegrees;
-  
-      /**
+  private final Rotation2d slewRateLimit;
+  private Rotation2d prevValue;
+  private double prevTime;
+  private double slewRateLimitDegrees;
+
+  /**
    * Creates a new SlewRateLimiter with the given rate limit and initial
    * value.
    *
    * @param slewRateLimit The rate-of-change limit, in units per second.
-   * @param initialValue The initial value of the input.
+   * @param initialValue  The initial value of the input.
    */
   public MMSwerveAngleSlewRateFilter(Rotation2d slewRateLimit, Rotation2d initialValue) {
     this.slewRateLimit = slewRateLimit;
@@ -49,8 +49,8 @@ public class MMSwerveAngleSlewRateFilter {
     double elapsedTime = currentTime - prevTime;
 
     // Flip previous to current to account for swerve drive optimization.
-    if(Math.abs(prevValue.minus(input).getDegrees())>90) {
-        prevValue.rotateBy(Rotation2d.fromDegrees(180));
+    if (Math.abs(prevValue.minus(input).getDegrees()) > 90) {
+      prevValue = prevValue.rotateBy(Rotation2d.fromDegrees(180));
     }
 
     prevValue = prevValue
@@ -59,9 +59,7 @@ public class MMSwerveAngleSlewRateFilter {
                 MathUtil.clamp(
                     input.minus(prevValue).getDegrees(),
                     -slewRateLimitDegrees * elapsedTime,
-                    slewRateLimitDegrees * elapsedTime)
-            )
-        );
+                    slewRateLimitDegrees * elapsedTime)));
 
     prevTime = currentTime;
     return prevValue;
@@ -77,7 +75,8 @@ public class MMSwerveAngleSlewRateFilter {
   }
 
   /**
-   * Resets the slew rate limiter to the specified value; ignores the rate limit when doing so.
+   * Resets the slew rate limiter to the specified value; ignores the rate limit
+   * when doing so.
    *
    * @param value The value to reset to.
    */
@@ -85,6 +84,5 @@ public class MMSwerveAngleSlewRateFilter {
     prevValue = value;
     prevTime = MathSharedStore.getTimestamp();
   }
-
 
 }
