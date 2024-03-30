@@ -41,6 +41,7 @@ import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
 import frc.robot.commands.GoClimb;
 import frc.robot.commands.GoShoot;
+import frc.robot.commands.LaserBeam;
 import frc.robot.commands.RobotCentricDriveCmd;
 import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
@@ -110,15 +111,15 @@ public class RobotContainer {
       .withDriveRequestType(DriveRequestType.Velocity);
   // EXPERIMENTAL!!!!
   MMSwerveRequest.FieldCentricSlewRateLimitted driveControlled = new MMSwerveRequest.FieldCentricSlewRateLimitted(4)
-      .withDriveRequestType(DriveRequestType.Velocity)
+      // .withDriveRequestType(DriveRequestType.Velocity)
       .withSteerRequestType(SteerRequestType.MotionMagic)
-      .withAngleSlewRate(Rotation2d.fromDegrees(100))
-      .withSpeedSlewRate(100, -400);
+      .withAngleSlewRate(Rotation2d.fromDegrees(180))
+      .withSpeedSlewRate(75, -100);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   // Telemetry logger = new Telemetry(MaxSpeed);
 
-  // Subsystems
+  // Subsystem
   public Shooter shooterSubsystem = new Shooter(this);
   public Navigation navigation = new Navigation(this);
   public Climber climber = new Climber(this);
@@ -148,7 +149,7 @@ public class RobotContainer {
   private void configureBindings() {
 
     drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() -> drive// drive
+        drivetrain.applyRequest(() -> driveControlled// drive
             .withVelocityX(driverController.getLeftYSmoothed() * Robot.resetDriverValue)
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
             .withRotationalRate(driverController.getRightXSmoothed())));
@@ -208,7 +209,8 @@ public class RobotContainer {
     oppController.a().whileTrue(Commands.select(Map.ofEntries(
         Map.entry(true, new InstantCommand(() -> shooterSubsystem.setAmpFlag(true))),
         Map.entry(false, new Aim(this))),
-        () -> shooterSubsystem.getCurrentStateName() == "Elevator Indexed"));
+        () -> shooterSubsystem.getCurrentStateName() == "Elevator Indexed"
+            || shooterSubsystem.getCurrentStateName() == "ElevatorPassNoteAbove"));
 
     oppController.y().onTrue(new ClawsUpAndIndex(this));
     // oppController.y().onTrue(new InstantCommand(() ->
@@ -236,6 +238,7 @@ public class RobotContainer {
         MMField.getBlueStageSpeakerSidePose()));
     oppController.povRight().whileTrue(new GoClimb(this,
         MMField.getBlueStageNonSpeakerSidePose()));
+    oppController.povDown().whileTrue(new LaserBeam(this));
     oppController.leftBumper().whileTrue(new AimToWall(this));
     oppController.button(10)
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),

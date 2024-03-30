@@ -59,8 +59,10 @@ public class Shooter extends SubsystemBase {
 
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
+  private MMTurnPIDController predictedTurnPIDController = new MMTurnPIDController();
   private MMTurnPIDController turnWallPidController = new MMTurnPIDController(true);
   public Rotation2d targetAngleSpeaker;
+  public Rotation2d predictedTargetAngleSpeaker;
   Rotation2d leftBoundaryAngleSpeaker;
   Rotation2d rightBoundaryAngleSpeaker;
   Pose2d speakerPose;
@@ -81,7 +83,7 @@ public class Shooter extends SubsystemBase {
   double shooterChuckLowRotation = .38;
   double leftShooterChuckHighVelocity = 45;
   double rightShooterChuckHighVelocity = 55;
-  double shooterChuckHighRotation = .43;
+  double shooterChuckHighRotation = .43;// .43
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;
@@ -118,7 +120,7 @@ public class Shooter extends SubsystemBase {
   double DiagnosticElevatorBeltVel = 10;
   double DiagnosticElevatorBeltMargin = 5;
   double autoShooterAngle;
-  double autoShotChange = .004;
+  double autoShotChange = 0;
   double autoShooterLeftVelocity;
   double autoShooterRightVelocity;
 
@@ -246,8 +248,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .395, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .395, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .3875, 37, 53, 40));
+    determineShot.put("pony_3", new MMWaypoint(0, .385, 37, 53, 40));
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
@@ -264,7 +266,7 @@ public class Shooter extends SubsystemBase {
         new MMWaypoint(1.3, .45, 32, 48, 48),
         new MMWaypoint(2.12, .425, 37, 53, 53),
         new MMWaypoint(2.81, 0.394, 37, 53, 53),
-        new MMWaypoint(3.55, .39, 37, 53, 53),
+        new MMWaypoint(3.55, .39, 47, 63, 53), // 39, 53
         new MMWaypoint(4.5, .38, 47, 63, 63),
         new MMWaypoint(4.78, .379, 47, 63, 63));
     configShooterRotateCanCoder();
@@ -329,6 +331,7 @@ public class Shooter extends SubsystemBase {
 
     // predictedTargetAngleSpeaker =
     targetAngleSpeaker = transformFromSpeaker.getAngle();
+
     Translation2d transformLeftBoundarySpeaker = MMField.currentLeftBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
     leftBoundaryAngleSpeaker = transformLeftBoundarySpeaker.getAngle();
@@ -381,6 +384,7 @@ public class Shooter extends SubsystemBase {
           runElevatorDownHome();
           transitioningHomeStates = false;
         }
+
         if (!elevatorHomeSensor.get()) {// hitting the sensor
           elevatorHomingEnum = HomingEnum.Homed;
           transitioningHomeStates = true;
@@ -399,11 +403,15 @@ public class Shooter extends SubsystemBase {
 
     ssm.update();
 
-    // TODO: Check this for Red.
     turnPidController.initialize(targetAngleSpeaker);
+
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
     if (Navigation.predictedPose != null) {
-      predictedTurnRate = turnPidController.execute(Navigation.predictedPose.getRotation());
+      Translation2d predictedTransformFromSpeaker = speakerPose.getTranslation()
+          .minus(Navigation.predictedPose.getTranslation());
+      predictedTargetAngleSpeaker = predictedTransformFromSpeaker.getAngle();
+      predictedTurnPIDController.initialize(predictedTargetAngleSpeaker);
+      predictedTurnRate = predictedTurnPIDController.execute(Navigation.predictedPose.getRotation());
     }
 
     // TODO: This might not work for red. We may need to
@@ -505,6 +513,9 @@ public class Shooter extends SubsystemBase {
         setWooferSlamFlag(false);
         setElevatorIndexFlag(false);
         setAutoForce(false);
+        setRunBeam(false);
+        setLightBeam(false);
+        setAmpFlag(false);
         shooterDown();
         // abortIntakeCounter=0;
         idleCounter++;
@@ -594,6 +605,8 @@ public class Shooter extends SubsystemBase {
         setIntakeFlag(false);
         // setAimFlag(true); BB
         stopElevatorBelts();
+        setRunBeam(false);
+        setLightBeam(false);
         setShootFlag(false);
         setAimFlag(false);
         setAimWallFlag(false);
@@ -1650,21 +1663,11 @@ public class Shooter extends SubsystemBase {
 
   public void calcFiringSolution() {
     double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
-    if (targetAngleSpeaker != null) {
-      // distanceToSpeaker += Math.abs(.2*
-      // Math.sin(targetAngleSpeaker.getRadians()));
-      // distanceToSpeaker = distanceToSpeaker;
-    }
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
   public void calcPredictedFiringSolution() {
     double distanceToSpeaker = rc.navigation.getPredictedDistanceToSpeaker();
-    if (targetAngleSpeaker != null) {
-      // distanceToSpeaker += Math.abs(.2*
-      // Math.sin(targetAngleSpeaker.getRadians()));
-      // distanceToSpeaker = distanceToSpeaker;
-    }
     predictedWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 

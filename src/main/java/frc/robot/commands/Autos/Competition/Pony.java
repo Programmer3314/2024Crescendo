@@ -37,7 +37,9 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
         new FollowPathFile(rc, "comp_pony_1"),
         // new ChaseAndIntakeBroken(rc),
         new ChaseAndIntakeBroken(rc, true),
+
         new SpinUpForAutoShot(rc, "pony_2"),
+        // new ShootAndWait(rc),
 
         // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
@@ -50,10 +52,13 @@ public class Pony extends MMDeferredCommand<SequentialCommandGroup> {
         // new ChaseAndIntakeBroken(rc),
         new ChaseAndIntakeBroken(rc, true),
         // new InstantCommand(() -> rc.shooterSubsystem.setAutoForce(true)),
+
         new SpinUpForAutoShot(rc, "pony_3"),
+        // new ShootAndWait(rc),
+        
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_pony_4"),
-        // new Delay(rc, 50, true),
+        new Delay(rc, 50, true),
         new ShootAndWait(rc));
   }
 

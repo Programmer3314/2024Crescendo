@@ -32,7 +32,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
 
     // TODO: Test Autos with options below
     private SwerveRequest.ApplyChassisSpeeds autoRequest = new SwerveRequest.ApplyChassisSpeeds()
-            // .withDriveRequestType(DriveRequestType.Velocity)
+            .withDriveRequestType(DriveRequestType.Velocity)
             // .withSteerRequestType(SteerRequestType.MotionMagicExpo)
             ;
 

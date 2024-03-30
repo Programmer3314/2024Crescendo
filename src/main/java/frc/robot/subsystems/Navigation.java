@@ -90,7 +90,6 @@ public class Navigation extends SubsystemBase {
 
   double averageX = 0;
   double averageY = 0;
-  double lastAng = 0;
 
   // private AprilThread aprilThread;
   // protected final ReadWriteLock aprilStateLock = new ReentrantReadWriteLock();
@@ -255,7 +254,7 @@ public class Navigation extends SubsystemBase {
         pose.getY() < 0 || pose.getY() > 8.23) {
       resetVision();
     }
-   
+
     boolean fieldBoundsFilter = (currentPose.getX() < 4.8 || currentPose.getX() > 11.6);
 
     if (useVision) {// || fieldBoundsFilter
@@ -298,8 +297,8 @@ public class Navigation extends SubsystemBase {
               // double latency_capture = backUpLimelight.getEntry("cl").getDouble(0);
               // double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
               // rc.drivetrain.setVisionMeasurementStdDevs(
-              //     VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
-              rc.drivetrain.addVisionMeasurement(llPose, 
+              // VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain.addVisionMeasurement(llPose,
                   Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionBack.append(true);
@@ -341,8 +340,8 @@ public class Navigation extends SubsystemBase {
               // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
               // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
               // rc.drivetrain.setVisionMeasurementStdDevs(
-              //     VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
-              rc.drivetrain.addVisionMeasurement(llPose, 
+              // VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain.addVisionMeasurement(llPose,
                   Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
               updatedVisionFront.append(true);
@@ -353,6 +352,9 @@ public class Navigation extends SubsystemBase {
     }
 
     rc.field.setRobotPose(pose);
+    // if (predictedPose != null) {
+    //   rc.field.setRobotPose(predictedPose);
+    // }
     SmartDashboard.putString("MMpose", pose.toString());
 
     hasNoteTarget = false;
@@ -413,10 +415,6 @@ public class Navigation extends SubsystemBase {
     return averageY;
   }
 
-  public double getAveragePredictedRotation() {
-    return lastAng;
-  }
-
   public double getFullBeamTime() {
     return fullBeamTime;
   }
@@ -429,7 +427,6 @@ public class Navigation extends SubsystemBase {
     // distance -= Math.sin(rc.shooterSubsystem.targetAngleSpeaker.getRadians());
     // }
     return distance;
-
   }
 
   public void setAutoVisionOn(boolean isUpdate) {
@@ -468,10 +465,9 @@ public class Navigation extends SubsystemBase {
     }
     averageX = (xVelocitySum / xVelocity.size()) * fullBeamTime;
     averageY = (yVelocitySum / yVelocity.size()) * fullBeamTime;
-    lastAng = currentPose.getRotation().getRadians();
 
     predictedPose = currentPose
-        .plus(new Transform2d(new Translation2d(averageX, averageY), new Rotation2d(lastAng)));
+        .plus(new Transform2d(new Translation2d(averageX, averageY), new Rotation2d(0)));
   }
 
   public void limitArrayLists() {

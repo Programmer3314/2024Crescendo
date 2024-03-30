@@ -59,8 +59,10 @@ public class MMFiringSolution {
             res = new MMWaypoint(distance, desiredAngle, desiredLeftVelocity, desiredRightVelocity, desiredVelocity);
         }
 
-        // TODO: Try to simplify by using constant velocities (max from waypoints, or maybe a little faster)
-        // see if we can clean up deadzone (blue dots on floor), or maybe we need more more better waypoints. 
+        // TODO: Try to simplify by using constant velocities (max from waypoints, or
+        // maybe a little faster)
+        // see if we can clean up deadzone (blue dots on floor), or maybe we need more
+        // more better waypoints.
 
         // Alternate angle calc...
         // 34 degrees and .389 encoder value
@@ -69,7 +71,7 @@ public class MMFiringSolution {
         // .16 radians
         // .458 encoder value
         // .385 encoder value
-        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .315;// +.315
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .313;// +.315
         SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
         shootAngle += manualChangeAngle;
         if (shootAngle > .458) {
@@ -86,8 +88,10 @@ public class MMFiringSolution {
         SmartDashboard.putNumber("fsDesiredAngle", res.getAngle());
         SmartDashboard.putNumber("fsEncoderValue", rc.shooterSubsystem.getShooterAngle());
 
-        return new MMWaypoint(distance, shootAngle, res.getLeftVelocity(), res.getRightVelocity(),
+        return new MMWaypoint(distance, shootAngle, res.getLeftVelocity(),
+                res.getRightVelocity(),
                 res.getVelocity());
+        // return new MMWaypoint(distance, shootAngle, 47, 63, 63);
         // return new MMWaypoint(distance, desiredAngle, desiredLeftVelocity,
         // desiredRightVelocity, desiredVelocity);
     }
