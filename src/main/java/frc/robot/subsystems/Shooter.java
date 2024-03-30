@@ -139,6 +139,8 @@ public class Shooter extends SubsystemBase {
   boolean autoStartForceAngle;
   boolean shootAutoShot;
   boolean intakeOverNote;
+  boolean runBeam;
+  boolean lightBeam;
 
   double elevatorHomingVelocity = -20;
   boolean firstElevatorHomeCheck;
@@ -146,6 +148,7 @@ public class Shooter extends SubsystemBase {
   // public Orchestra orchestra = new Orchestra();
 
   public MMWaypoint desiredWaypoint;
+  public MMWaypoint predictedWaypoint;
 
   public MMFiringSolution firingSolution;
 
@@ -234,6 +237,7 @@ public class Shooter extends SubsystemBase {
   String diagnosticState = "None";
   HomingEnum elevatorHomingEnum;
   boolean transitioningHomeStates = false;
+  int lightBeamCounter = 0;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
@@ -316,7 +320,7 @@ public class Shooter extends SubsystemBase {
     // chassisSpeeds.omegaRadiansPerSecond);
 
     calcFiringSolution();
-    // calcPredictedFiringSolution();
+    calcPredictedFiringSolution();
     // calcPredictedFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
@@ -401,7 +405,6 @@ public class Shooter extends SubsystemBase {
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
     if (Navigation.predictedPose != null) {
       predictedTurnRate = turnPidController.execute(Navigation.predictedPose.getRotation());
-
     }
 
     // TODO: This might not work for red. We may need to
@@ -477,6 +480,8 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         setAutoStartForceAngle(false);
         setReadyToAutoShoot(false);
+        setLightBeam(false);
+        setRunBeam(false);
         setIntakeUp();
         stopIndexers();
         stopShooterMotors();
@@ -615,6 +620,9 @@ public class Shooter extends SubsystemBase {
         if (runShoot) {
           return PrepareToShoot;
         }
+        if (runBeam) {
+          return PrepareToBeam;
+        }
         if (runChuckLow) {
           return PrepareToChuckLow;
         }
@@ -626,6 +634,43 @@ public class Shooter extends SubsystemBase {
         }
         if (runOutTake) {
           return IntakeReverse;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState PrepareToBeam = new MMStateMachineState("PrepareToBeam") {
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        aimForBeam();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (isReadyToBeam() && lightBeam) {
+          return LightBeam;
+        }
+        return this;
+      }
+    };
+    MMStateMachineState LightBeam = new MMStateMachineState("LightBeam") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
+        runIndexBeam();
+        setLightBeam(false);
+        setRunBeam(false);
+        setShotStartTime();
+        lightBeamCounter++;
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return ShootPauseBroken;
+        }
+        if (shooterBreakBeam.get()) {
+          return ShootPause;
         }
         return this;
       }
@@ -1557,6 +1602,12 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(desiredWaypoint.getAngle());
   }
 
+  public void aimForBeam() {
+    runLeftMotor(desiredWaypoint.getLeftVelocity());
+    runRightMotor(predictedWaypoint.getRightVelocity());
+    setShooterPosition(predictedWaypoint.getAngle());
+  }
+
   // public void aimToSpeakerNoShoot() {
   // setShooterPosition(desiredWaypoint.getAngle());
   // }
@@ -1615,7 +1666,7 @@ public class Shooter extends SubsystemBase {
       // Math.sin(targetAngleSpeaker.getRadians()));
       // distanceToSpeaker = distanceToSpeaker;
     }
-    desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+    predictedWaypoint = firingSolution.calcSolution(distanceToSpeaker);
   }
 
   public MMWaypoint calcManualFiringSolution(Pose2d position) {
@@ -1737,6 +1788,10 @@ public class Shooter extends SubsystemBase {
     return runShoot;
   }
 
+  public int getLightBeamCounter() {
+    return lightBeamCounter;
+  }
+
   public boolean getAbortIntakeFlag() {
     return abortIntake;
   }
@@ -1785,6 +1840,11 @@ public class Shooter extends SubsystemBase {
   public void runIndexShoot() {
     index1.setControl(index1VelVol.withVelocity(desiredWaypoint.getLeftVelocity()));
     index2.setControl(index1VelVol.withVelocity(desiredWaypoint.getRightVelocity()));
+  }
+
+  public void runIndexBeam() {
+    index1.setControl(index1VelVol.withVelocity(predictedWaypoint.getLeftVelocity()));
+    index2.setControl(index1VelVol.withVelocity(predictedWaypoint.getRightVelocity()));
   }
 
   public void runIndexIn() {
@@ -1933,6 +1993,14 @@ public class Shooter extends SubsystemBase {
 
   public String getCurrentStateName() {
     return ssm.currentState.getName();
+  }
+
+  public void setLightBeam(boolean set) {
+    lightBeam = set;
+  }
+
+  public void setRunBeam(boolean set) {
+    runBeam = set;
   }
 
   public void configIntakeBeltMotor() {
@@ -2274,6 +2342,32 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("Autobingo", bingo);
 
     return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo;
+  }
+
+  public boolean isReadyToBeam() {
+    boolean leftShooterAtVelocity = isInMargin(leftMotor.getVelocity().getValue(), predictedWaypoint.getLeftVelocity(),
+        shooterVelocityMargin);
+    boolean rightShooterAtVelocity = isInMargin(rightMotor.getVelocity().getValue(),
+        predictedWaypoint.getRightVelocity(),
+        shooterVelocityMargin);
+    boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), predictedWaypoint.getAngle(),
+        shooterAngleMargin);
+    // Pose2d a = currentPose;
+    // currentPosePublisher.set(a);
+    // Transform2d b = new Transform2d(new
+    // Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    // Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+    // boolean bingo = isInMargin(c.getY(),
+    // MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+    // &&
+    // Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees())
+    // < 90;//TODO: gotta check angleTOTarget L8r
+    SmartDashboard.putBoolean("BeamleftShooterAt", leftShooterAtVelocity);
+    SmartDashboard.putBoolean("BeamrightShooterAt", rightShooterAtVelocity);
+    SmartDashboard.putBoolean("BeamshooterAt", shooterAtAngle);
+    // SmartDashboard.putBoolean("Autobingo", bingo);
+
+    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle;
   }
 
   public void setLeftAutoShooterVelocity(double v) {

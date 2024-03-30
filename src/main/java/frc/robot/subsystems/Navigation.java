@@ -50,6 +50,7 @@ public class Navigation extends SubsystemBase {
   private String limelightBackDownName = "limelight-bd";
   public boolean useVision = true;
   public boolean oneTargetBack = false;
+  public boolean updatePredictedPose = true;
 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable backUpLimelight = inst.getTable(limelightBackUpName);
@@ -83,8 +84,12 @@ public class Navigation extends SubsystemBase {
   private ArrayList<Double> angVelocity = new ArrayList<Double>();
   public static Pose2d predictedPose;
   private int predictionCycles = 25;
-  double timeToShoot = .1;
+  double fullBeamTime = .8;
   private Pose2d currentPose;
+
+  double averageX = 0;
+  double averageY = 0;
+  double lastAng = 0;
 
   // private AprilThread aprilThread;
   // protected final ReadWriteLock aprilStateLock = new ReentrantReadWriteLock();
@@ -372,9 +377,10 @@ public class Navigation extends SubsystemBase {
     SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
     SmartDashboard.putNumber("NOTE TX", noteX);
     SmartDashboard.putNumber("NOTE TY", noteY);
-    ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
-    updatePredictedPosition(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond,
-        chassisSpeeds.omegaRadiansPerSecond);
+    if (updatePredictedPose) {
+      ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
+      updatePredictedPosition(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+    }
     predictedPosePublisher.accept(predictedPose);
     xVelocityLog.append(xVelocity.toString());
     yVelocityLog.append(yVelocity.toString());
@@ -385,6 +391,10 @@ public class Navigation extends SubsystemBase {
 
   public double getNoteX() {
     return noteX;
+  }
+
+  public void setUpdatePredictedPose(boolean set) {
+    updatePredictedPose = set;
   }
 
   public double getNoteY() {
@@ -405,6 +415,22 @@ public class Navigation extends SubsystemBase {
     } else {
       return "NoteStraight";
     }
+  }
+
+  public double getAveragePredictedX() {
+    return averageX;
+  }
+
+  public double getAveragePredictedY() {
+    return averageY;
+  }
+
+  public double getAveragePredictedRotation() {
+    return lastAng;
+  }
+
+  public double getFullBeamTime() {
+    return fullBeamTime;
   }
 
   public double getDistanceToSpeaker() {
@@ -436,10 +462,9 @@ public class Navigation extends SubsystemBase {
     return 0;
   }
 
-  public void updatePredictedPosition(double x, double y, double r) {
+  public void updatePredictedPosition(double x, double y) {
     xVelocity.add(x);
     yVelocity.add(y);
-    angVelocity.add(r);
     limitArrayLists();
     syncPredictedPosition();
   }
@@ -447,22 +472,18 @@ public class Navigation extends SubsystemBase {
   public void syncPredictedPosition() {
     double xVelocitySum = 0;
     double yVelocitySum = 0;
-    double angVelocitySum = 0;
     for (int i = 0; i < xVelocity.size(); i++) {
       xVelocitySum += xVelocity.get(i);
     }
     for (int i = 0; i < yVelocity.size(); i++) {
       yVelocitySum += yVelocity.get(i);
     }
-    for (int i = 0; i < angVelocity.size(); i++) {
-      angVelocitySum += angVelocity.get(i);
-    }
-    double averageX = (xVelocitySum / xVelocity.size()) * timeToShoot;
-    double averageY = (yVelocitySum / yVelocity.size()) * timeToShoot;
-    double averageAng = (angVelocitySum / angVelocity.size()) * timeToShoot;
+    averageX = (xVelocitySum / xVelocity.size()) * fullBeamTime;
+    averageY = (yVelocitySum / yVelocity.size()) * fullBeamTime;
+    lastAng = currentPose.getRotation().getRadians();
 
     predictedPose = currentPose
-        .plus(new Transform2d(new Translation2d(averageX, averageY), new Rotation2d(averageAng)));
+        .plus(new Transform2d(new Translation2d(averageX, averageY), new Rotation2d(lastAng)));
   }
 
   public void limitArrayLists() {
@@ -471,9 +492,6 @@ public class Navigation extends SubsystemBase {
     }
     if (yVelocity.size() > predictionCycles) {
       yVelocity.remove(0);
-    }
-    if (angVelocity.size() > predictionCycles) {
-      angVelocity.remove(0);
     }
   }
 
