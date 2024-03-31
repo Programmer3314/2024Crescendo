@@ -15,8 +15,7 @@ public class AngledDriveToChain extends Command {
   RobotContainer rc;
   // TODO: Try orbit with CenterOfRotation option and alternate drive below
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
-  // .withCenterOfRotation(new Tra)
-  //.withCenterOfRotation(new Translation2d(.1778, 0))
+  // .withCenterOfRotation(new Translation2d(Units.inchesToMeters(7), 0))
   ;
   double distanceBetweenWheelsInches = 19;
   double driveTrainRadius = Math
