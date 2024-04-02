@@ -81,8 +81,8 @@ public class Shooter extends SubsystemBase {
   double leftShooterRidLowVelocity = 10;
   double rightShooterRidLowVelocity = 15;
   double shooterChuckLowRotation = .38;
-  double leftShooterChuckHighVelocity = 45;
-  double rightShooterChuckHighVelocity = 55;
+  double leftShooterChuckHighVelocity = 45;// 45, 15
+  double rightShooterChuckHighVelocity = 55;// 55, 25
   double shooterChuckHighRotation = .43;// .43
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
@@ -323,6 +323,7 @@ public class Shooter extends SubsystemBase {
 
     calcFiringSolution();
     calcPredictedFiringSolution();
+
     // calcPredictedFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
@@ -452,6 +453,8 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
     SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
     SmartDashboard.putBoolean("IntakeBreakbeam", intakeBreakBeam.get());
+    boolean rts = readyToShoot();
+    boolean rtb = isReadyToBeam();
   }
 
   public class ShooterStateMachine extends MMStateMachine {
@@ -2368,7 +2371,7 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("BeamBingo", bingo);
     // SmartDashboard.putBoolean("Autobingo", bingo);
 
-    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo;
+    return leftShooterAtVelocity && rightShooterAtVelocity && shooterAtAngle && bingo && readyToShoot();
   }
 
   public void setLeftAutoShooterVelocity(double v) {

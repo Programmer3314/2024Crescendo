@@ -29,15 +29,20 @@ public class Aim extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    rc.shooterSubsystem.aimToSpeaker();
+
+    
     rc.drivetrain.setControl(drive
         .withVelocityX(rc.driverController.getLeftYSmoothed() * Robot.resetDriverValue)
         .withVelocityY(rc.driverController.getLeftXSmoothed() * Robot.resetDriverValue)
         .withRotationalRate(rc.shooterSubsystem.getSpeakerTurnRate()));
-    
+
     // rc.drivetrain.setControl(drive
-    //     .withVelocityX(rc.driverController.getLeftYSmoothed() * Robot.resetDriverValue)
-    //     .withVelocityY(rc.driverController.getLeftXSmoothed() * Robot.resetDriverValue)
-    //     .withRotationalRate(rc.shooterSubsystem.getPredictedSpeakerTurnRate()));
+    // .withVelocityX(rc.driverController.getLeftYSmoothed() *
+    // Robot.resetDriverValue)
+    // .withVelocityY(rc.driverController.getLeftXSmoothed() *
+    // Robot.resetDriverValue)
+    // .withRotationalRate(rc.shooterSubsystem.getPredictedSpeakerTurnRate()));
   }
 
   // Called once the command ends or is interrupted.

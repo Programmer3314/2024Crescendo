@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMField;
+import us.hebi.quickbuf.UninitializedMessageException;
 
 public class Navigation extends SubsystemBase {
   RobotContainer rc;
@@ -49,7 +50,7 @@ public class Navigation extends SubsystemBase {
   private String limelightFrontName = "limelight-front";
   private String limelightBackUpName = "limelight-backup";
   private String limelightBackDownName = "limelight-bd";
-  public boolean useVision = true;
+  public boolean autoVisionOn = true;
   public boolean oneTargetBack = false;
   public boolean updatePredictedPose = true;
 
@@ -257,11 +258,11 @@ public class Navigation extends SubsystemBase {
 
     boolean fieldBoundsFilter = (currentPose.getX() < 4.8 || currentPose.getX() > 11.6);
 
-    if (useVision) {// || fieldBoundsFilter
+    if (autoVisionOn) {// || fieldBoundsFilter
       double currentHB = backUpLimelight.getEntry("hb").getDouble(0);
       boolean hasBackUpTarget = backUpLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-      if (currentHB != llBackUpHeartBeat) {
+      if (currentHB != llBackUpHeartBeat && hasBackUpTarget) {
         llBackUpHeartBeat = currentHB;
 
         double[] def = new double[] { 0, 0 };
@@ -279,7 +280,21 @@ public class Navigation extends SubsystemBase {
 
           // if (hasBackUpTarget && ((numberOfTargets >= 1 && oneTargetBack)
           // || numberOfTargets > 1 || visionUpdate < 50)) {
-          if (hasBackUpTarget && robotOnFloor && closeToTag) {
+          if ((hasBackUpTarget && robotOnFloor && closeToTag)) {
+            double distSD = 0;
+            double angleSD = 0;
+            boolean doUpdate = false;
+
+            double tagSize = backUpLimelight.getEntry("ta").getDouble(0);
+            if (numberOfTargets >= 2 && tagSize > .6) {
+              distSD = 0.5;
+              angleSD = .1;
+              doUpdate = true;
+            } else if (tagSize > .6) {
+              distSD = 1;
+              angleSD = .1;
+              doUpdate = true;
+            }
             Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             backLimelightPose.accept(llPose);
             SmartDashboard.putString("llBackUpPose", llPose.toString());
@@ -289,7 +304,7 @@ public class Navigation extends SubsystemBase {
             // || margin < .25
             // || (((numberOfTargets >= 1 && oneTargetBack)
             // || numberOfTargets > 1) && margin < .75)) {
-            if (true) {
+            if (doUpdate) {
               // double[] stdDevArray = { .9, .9, .9 };
               // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
               // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
@@ -298,6 +313,8 @@ public class Navigation extends SubsystemBase {
               // double latency_pipeline = backUpLimelight.getEntry("tl").getDouble(0);
               // rc.drivetrain.setVisionMeasurementStdDevs(
               // VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain
+                  .setVisionMeasurementStdDevs(VecBuilder.fill(distSD, distSD, angleSD));
               rc.drivetrain.addVisionMeasurement(llPose,
                   Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
@@ -309,11 +326,11 @@ public class Navigation extends SubsystemBase {
       }
     }
 
-    if (useVision) {// fieldFilter
+    if (true) {// fieldFilter
       double currentHB = frontLimelight.getEntry("hb").getDouble(0);
       boolean hasFrontTarget = frontLimelight.getEntry("tv").getNumber(0).doubleValue() > 0.5;
 
-      if (currentHB != llFrontHeartBeat) {
+      if (currentHB != llFrontHeartBeat && hasFrontTarget) {
         llFrontHeartBeat = currentHB;
         double[] def = new double[] { 0, 0, 0, 0, 0, 0 };
         double[] bp = frontLimelight.getEntry("botpose_wpiblue").getDoubleArray(def);
@@ -322,8 +339,21 @@ public class Navigation extends SubsystemBase {
           boolean robotOnFloor = Math.abs(bp[2]) <= 1;
 
           // if (hasFrontTarget && numberOfTargets > 1) {
-          if (hasFrontTarget && robotOnFloor) {
+          if ((hasFrontTarget && robotOnFloor) || visionUpdate < 50) {
+            double distSD = 0;
+            double angleSD = 0;
+            boolean doUpdate = false;
 
+            double tagSize = frontLimelight.getEntry("ta").getDouble(0);
+            if (numberOfTargets >= 2 && tagSize > .13) {
+              distSD = 0.5;
+              angleSD = .1;
+              doUpdate = true;
+            } else if (tagSize > .2) {
+              distSD = 1;
+              angleSD = .1;
+              doUpdate = true;
+            }
             Pose2d llPose = new Pose2d(bp[0], bp[1], Rotation2d.fromDegrees(bp[5]));
             frontLimelightPose.accept(llPose);
             SmartDashboard.putString("llFrontPose", llPose.toString());
@@ -332,15 +362,15 @@ public class Navigation extends SubsystemBase {
             // if (visionUpdate < 50
             // || margin < .25
             // || (numberOfTargets > 1 && margin < .75)) {
-            if (true) {
+            if (doUpdate) {
               // double latency_capture = frontLimelight.getEntry("cl").getDouble(0);
               // double latency_pipeline = frontLimelight.getEntry("tl").getDouble(0);
               double totalLatency = bp[6];
               // double[] stdDevArray = { .7, .7, .9 };
               // SimpleMatrix stdDevs = new SimpleMatrix(stdDevArray);
               // rc.drivetrain.setVisionMeasurementStdDevs(new Matrix(stdDevs));
-              // rc.drivetrain.setVisionMeasurementStdDevs(
-              // VecBuilder.fill(.5, .5, Units.degreesToRadians(6)));
+              rc.drivetrain
+                  .setVisionMeasurementStdDevs(VecBuilder.fill(distSD, distSD, angleSD));
               rc.drivetrain.addVisionMeasurement(llPose,
                   Timer.getFPGATimestamp() - (totalLatency / 1000.0));
               visionUpdate++;
@@ -353,7 +383,7 @@ public class Navigation extends SubsystemBase {
 
     rc.field.setRobotPose(pose);
     // if (predictedPose != null) {
-    //   rc.field.setRobotPose(predictedPose);
+    // rc.field.setRobotPose(predictedPose);
     // }
     SmartDashboard.putString("MMpose", pose.toString());
 
@@ -430,7 +460,7 @@ public class Navigation extends SubsystemBase {
   }
 
   public void setAutoVisionOn(boolean isUpdate) {
-    useVision = isUpdate;
+    autoVisionOn = isUpdate;
   }
 
   public void setOneTargetBack(boolean isOneTarget) {
