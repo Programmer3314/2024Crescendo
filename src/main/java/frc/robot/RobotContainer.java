@@ -46,6 +46,7 @@ import frc.robot.commands.RobotCentricDriveCmd;
 import frc.robot.commands.SetColor;
 import frc.robot.commands.ShootTheConeOut;
 import frc.robot.commands.SignalForNote;
+import frc.robot.commands.StageSideSlam;
 import frc.robot.commands.StartClimb;
 import frc.robot.commands.StartClimbManual;
 import frc.robot.commands.Autos.AutoSamplerShootSmove;
@@ -233,6 +234,7 @@ public class RobotContainer {
     oppController.button(7).onTrue(new InstantCommand(() -> climber.setClimbUnwindFlag(true)));
 
     oppController.button(8).onTrue(new InstantCommand(() -> shooterSubsystem.setRunDiagnosticFlag(true)));
+    oppController.button(9).whileTrue(new StageSideSlam(this));
     oppController.povUp().whileTrue(new GoClimb(this,
         MMField.getBlueStageFieldPose()));
     oppController.povLeft().whileTrue(new GoClimb(this,

@@ -90,6 +90,9 @@ public class Shooter extends SubsystemBase {
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;
+  double leftShooterStageSideSlamVelocity = 37;
+  double rightShooterStageSideSlamVelocity = 53;
+  double shooterAngleStageSideSlam = .3915;
 
   int abortIntakeCounter;
 
@@ -106,6 +109,7 @@ public class Shooter extends SubsystemBase {
   boolean runChuckLow;
   boolean runChuckHigh;
   boolean runWooferSlam;
+  boolean runStageSideSlam;
   boolean runShootOverride;
   boolean manualAngleIncrement;
   boolean manualAngleDecrement;
@@ -349,7 +353,6 @@ public class Shooter extends SubsystemBase {
       abortIntakeCounter++;
     }
 
-
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
     SmartDashboard.putBoolean("RunAim", runAimLogFlag);
     SmartDashboard.putString("Elevator Home State", elevatorHomingEnum.toString());
@@ -510,6 +513,7 @@ public class Shooter extends SubsystemBase {
         setChuckLowFlag(false);
         setShootOverrideFlag(false);
         setWooferSlamFlag(false);
+        setStageSideSlam(false);
         setElevatorIndexFlag(false);
         setAutoForce(false);
         setRunBeam(false);
@@ -611,6 +615,7 @@ public class Shooter extends SubsystemBase {
         setAimWallFlag(false);
         setChuckLowFlag(false);
         setShootOverrideFlag(false);
+        setStageSideSlam(false);
         setWooferSlamFlag(false);
         setElevatorIndexFlag(false);
         indexCounter++;
@@ -642,6 +647,9 @@ public class Shooter extends SubsystemBase {
         }
         if (runWooferSlam) {
           return PrepareToWooferSlam;
+        }
+        if (runStageSideSlam) {
+          return PrepareToStageSideSlam;
         }
         if (runOutTake) {
           return IntakeReverse;
@@ -743,6 +751,20 @@ public class Shooter extends SubsystemBase {
       public MMStateMachineState calcNextState() {
         if (readyToWooferSlam()) {
           return WooferSlam;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState PrepareToStageSideSlam = new MMStateMachineState("PrepareToStageSideSlam") {
+      public void transitionTo(MMStateMachineState previousState) {
+        aimForStageSideSlam();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (readyToStageSideSlam()) {
+          return StageSideSlam;
         }
         return this;
       }
@@ -974,6 +996,29 @@ public class Shooter extends SubsystemBase {
         runIndexShoot();
         setShootFlag(false);
         setWooferSlamFlag(false);
+        setShotStartTime();
+      }
+
+      @Override
+      public MMStateMachineState calcNextState() {
+        if (!shooterBreakBeam.get()) {
+          return ShootPauseBroken;
+        }
+        if (shooterBreakBeam.get()) {
+          return ShootPause;
+        }
+        return this;
+      }
+    };
+
+    MMStateMachineState StageSideSlam = new MMStateMachineState("StageSideSlam") {
+
+      @Override
+      public void transitionTo(MMStateMachineState previousState) {
+        runIntakeIn();
+        runIndexShoot();
+        setShootFlag(false);
+        setStageSideSlam(false);
         setShotStartTime();
       }
 
@@ -1623,6 +1668,12 @@ public class Shooter extends SubsystemBase {
     setShooterPosition(shooterAngleWooferSlam);
   }
 
+  public void aimForStageSideSlam() {
+    runLeftMotor(leftShooterStageSideSlamVelocity);
+    runRightMotor(rightShooterStageSideSlamVelocity);
+    setShooterPosition(shooterAngleStageSideSlam);
+  }
+
   public void aimForChuckLow() {
     runLeftMotor(leftShooterChuckLowVelocity);
     runRightMotor(rightShooterChuckLowVelocity);
@@ -1715,6 +1766,11 @@ public class Shooter extends SubsystemBase {
     if (isSlam) {
       runAimLogFlag = false;
     }
+    return this;
+  }
+
+  public Shooter setStageSideSlam(boolean runSlam) {
+    runStageSideSlam = runSlam;
     return this;
   }
 
@@ -1962,6 +2018,33 @@ public class Shooter extends SubsystemBase {
     return isInMargin(getLeftShooterVelocity(), leftShooterWooferSlamVelocity, shooterVelocityMargin) &&
         isInMargin(getRightShooterVelocity(), rightShooterWooferSlamVelocity, shooterVelocityMargin) &&
         isInMargin(getShooterAngle(), shooterAngleWooferSlam, shooterAngleMargin);
+  }
+
+  public boolean readyToStageSideSlam() {
+
+    Pose2d a = currentPose;
+    currentPosePublisher.set(a);
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToSpeaker(), 0), new Rotation2d());
+    Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+
+    boolean bingo = isInMargin(c.getY(),
+        MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
+    SmartDashboard.putBoolean("bingo", bingo);
+    atTargetAngleLog.append(bingo);
+
+    boolean leftAtVelocity = isInMargin(getLeftShooterVelocity(), leftShooterStageSideSlamVelocity,
+        shooterVelocityMargin);
+    boolean rightAtVelocity = isInMargin(getRightShooterVelocity(), rightShooterStageSideSlamVelocity,
+        shooterVelocityMargin);
+    boolean shooterAngleAt = isInMargin(getShooterAngle(), shooterAngleStageSideSlam, shooterAngleMargin);
+    SmartDashboard.putBoolean("SLeftAtVelocity", leftAtVelocity);
+    SmartDashboard.putBoolean("SRightAtVelocity", rightAtVelocity);
+    SmartDashboard.putBoolean("SAngle", shooterAngleAt);
+
+    return leftAtVelocity &&
+        rightAtVelocity &&
+        shooterAngleAt && bingo;
   }
 
   public boolean isInMargin(double value1, double value2, double margin) {
