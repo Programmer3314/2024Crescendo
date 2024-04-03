@@ -22,6 +22,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -34,8 +35,10 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -172,6 +175,8 @@ public class Shooter extends SubsystemBase {
   DigitalInput shooterBreakBeam = new DigitalInput(1);
   DigitalInput elevatorHomeSensor = new DigitalInput(0);
   DigitalInput elevatorBreakBeam = new DigitalInput(3);
+
+  Relay blowerRelay = new Relay(0);
 
   double intakeTop = .823;
   double intakeUpPos = intakeTop - .005;
@@ -511,6 +516,7 @@ public class Shooter extends SubsystemBase {
         setLightBeam(false);
         setAmpFlag(false);
         shooterDown();
+        blowerRelay.set(Value.kOff);
         // abortIntakeCounter=0;
         idleCounter++;
       }
@@ -716,6 +722,7 @@ public class Shooter extends SubsystemBase {
       public void transitionTo(MMStateMachineState previousState) {
         // aimToWall();
         aimForChuckHigh();
+        blowerRelay.set(Value.kForward);
       }
 
       @Override
