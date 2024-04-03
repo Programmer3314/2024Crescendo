@@ -14,7 +14,7 @@ public class MMTurnPIDController extends MMPIDController {
     }
 
     public MMTurnPIDController(boolean isFastTurn) {
-        super(isFastTurn ? 13 : 6.5, 0, 0, Math.PI / 2.0, Math.toRadians(1), true);
+        super(isFastTurn ? 12 : 6.5, 0, 1.15, Math.PI, Math.toRadians(1), true);
     }
 
     public double execute(Rotation2d rotation) {

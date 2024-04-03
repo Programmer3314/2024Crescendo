@@ -72,7 +72,6 @@ public class MMFiringSolution {
         // .458 encoder value
         // .385 encoder value
         double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .309;// +.315
-        SmartDashboard.putNumber("fsShootAnglePrior", shootAngle);
         shootAngle += manualChangeAngle;
         if (shootAngle > .458) {
             shootAngle = .458;
@@ -80,13 +79,7 @@ public class MMFiringSolution {
         if (shootAngle < .378) {
             shootAngle = .378;
         }
-        SmartDashboard.putNumber("fsRise", (speakerHeight - pivotHeight));
-        SmartDashboard.putNumber("fsRun", distance);
-        SmartDashboard.putNumber("fsAtan2", Math.atan2((speakerHeight - pivotHeight), distance));
-        SmartDashboard.putNumber("fsDistance", distance);
-        SmartDashboard.putNumber("fsShootAngle", shootAngle);
-        SmartDashboard.putNumber("fsDesiredAngle", res.getAngle());
-        SmartDashboard.putNumber("fsEncoderValue", rc.shooterSubsystem.getShooterAngle());
+       
 
         return new MMWaypoint(distance, shootAngle, res.getLeftVelocity(),
                 res.getRightVelocity(),

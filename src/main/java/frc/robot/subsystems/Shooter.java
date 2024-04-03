@@ -344,11 +344,6 @@ public class Shooter extends SubsystemBase {
       abortIntakeCounter++;
     }
 
-    SmartDashboard.putNumber("changed angle", MMFiringSolution.manualChangeAngle);
-
-    SmartDashboard.putString("Check NonSpeakerApproach", MMField.currentStageNonSpeakerPose().toString());
-    SmartDashboard.putString("Check SpeakerApproach", MMField.currentStageSpeakerSidePose().toString());
-    SmartDashboard.putString("Check FieldApproach", MMField.currentStagePose().toString());
 
     SmartDashboard.putBoolean("Elevator Home", elevatorHomeSensor.get());
     SmartDashboard.putBoolean("RunAim", runAimLogFlag);
@@ -446,11 +441,7 @@ public class Shooter extends SubsystemBase {
       SmartDashboard.putBoolean("diagnosticShooterVel", diagnosticDesiredLeftShooterVel);
     }
     SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
-    SmartDashboard.putBoolean(" Not Move Intake Beam", intakeBreakBeam.get());
     SmartDashboard.putString("State Machine State", getCurrentStateName());
-    SmartDashboard.putBoolean("AbortIntakeFlag", abortIntake);
-    SmartDashboard.putNumber("AbortIntakeCounter", abortIntakeCounter);
-    SmartDashboard.putNumber("TotalShotTime", shotTotalTime);
     SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
     SmartDashboard.putBoolean("IntakeBreakbeam", intakeBreakBeam.get());
     boolean rts = readyToShoot();
@@ -1111,8 +1102,6 @@ public class Shooter extends SubsystemBase {
         setIntakeDown();
         setAimFlag(false);
         diagnosticState = "IntakeDown";
-        // TODO: make the first noise
-        // startOrchestra();
       }
 
       @Override
@@ -1164,9 +1153,6 @@ public class Shooter extends SubsystemBase {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
         runIndexIn();
-        // runIntakeOut();
-        // TODO: make second noise
-        // stopOrchestra();
         diagnosticState = "MoveToIndex";
       }
 
@@ -1194,8 +1180,6 @@ public class Shooter extends SubsystemBase {
         stopIntake();
         setShooterPosition(diagnosticShooterAngle);
         diagnosticState = "DiagnosticShooterAngle";
-        // TODO: make Third noise
-        // orchestra.play();
 
       }
 
@@ -1222,9 +1206,6 @@ public class Shooter extends SubsystemBase {
         runShooters(diagnosticLeftMotorSpeed, diagnosticRightMotorSpeed);
 
         diagnosticState = "DiagnosticSlowShoot";
-        // TODO: make fourth noise
-        // orchestra.play();
-
       }
 
       @Override
@@ -1290,7 +1271,6 @@ public class Shooter extends SubsystemBase {
         runIndexOut();
         runIntakeOut();
         // runIntakeOut();
-        // TODO: make fifth noise
         diagnosticState = "DiagnosticReverseToIndex";
       }
 
@@ -1388,7 +1368,6 @@ public class Shooter extends SubsystemBase {
         runIndexOut();
         runIntakeOut();
         // runIntakeOut();
-        // TODO: make fifth noise
         diagnosticState = "DiagnosticReverseToIndex";
       }
 
@@ -1439,7 +1418,6 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState DiagnosticIntakeOut = new MMStateMachineState("DiagnosticIntakeOut") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
-        // TODO: make another noise
         stopShooterMotors();
         runIntakeOut();
       }
@@ -1907,21 +1885,9 @@ public class Shooter extends SubsystemBase {
     // && leftBoundaryAngleSpeaker.getDegrees() >
     // currentPose.getRotation().getDegrees()));
 
-    SmartDashboard.putNumber("leftMotor Actual", leftMotor.getVelocity().getValue());
-    SmartDashboard.putNumber("RightMotor Actual", rightMotor.getVelocity().getValue());
-    SmartDashboard.putNumber("Shooter Rotate Motor Actual", shooterRotateMotor.getPosition().getValue());
-    SmartDashboard.putNumber("desired left motor", desiredWaypoint.getLeftVelocity());
-    SmartDashboard.putNumber("desired right motor", desiredWaypoint.getRightVelocity());
-    SmartDashboard.putNumber("desired rotate motor", desiredWaypoint.getAngle());
-    SmartDashboard.putNumber("desired Pose Something",
-        Math.abs(currentPose.getRotation().minus(targetAngleSpeaker).getDegrees()));
     SmartDashboard.putBoolean("at velocity left", leftShooterAtVelocity);
     SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
     SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
-    // SmartDashboard.putBoolean("at Boundary", atBoundary);
-    SmartDashboard.putNumber("angle left boundary", leftBoundaryAngleSpeaker.getDegrees());
-    SmartDashboard.putNumber("angle right boundary", rightBoundaryAngleSpeaker.getDegrees());
-    SmartDashboard.putNumber("angle Robot", currentPose.getRotation().getDegrees());
 
     // Try using the Pose and a transform to project your position forward by your
     // distance to the target.
@@ -1931,7 +1897,6 @@ public class Shooter extends SubsystemBase {
     // Don't get locked into the code below, but start by understanding it and
     // making it work.
 
-    // TODO: TRY 360 NO-Scope again, but reverse b and d...
     // a.plus(b).plus(d), this should be our real position, modified by our
     // velocity, modified by the vector to the speaker.
     // double shotTime = 5;

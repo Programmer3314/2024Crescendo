@@ -68,9 +68,6 @@ public class Climber extends SubsystemBase {
   MotionMagicVelocityVoltage climbMagicVelocityVoltage = new MotionMagicVelocityVoltage(0);
   MotionMagicVoltage climbMagicVol = new MotionMagicVoltage(0);
 
-  // Should the pigeon be owned in the navigation or here
-  // it's only used in climber(for now), so this makes sense(for now)
-  //TODO: Clean up the entire climb subsystem (please)
 
   public Climber(RobotContainer rc) {
     this.rc = rc;

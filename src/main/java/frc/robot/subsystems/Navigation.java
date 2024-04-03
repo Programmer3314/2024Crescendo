@@ -385,7 +385,6 @@ public class Navigation extends SubsystemBase {
     // if (predictedPose != null) {
     // rc.field.setRobotPose(predictedPose);
     // }
-    SmartDashboard.putString("MMpose", pose.toString());
 
     hasNoteTarget = false;
     double tv = backDownLimelight.getEntry("tv").getDouble(0);
@@ -395,8 +394,6 @@ public class Navigation extends SubsystemBase {
       noteY = backDownLimelight.getEntry("ty").getDouble(0);
     }
     SmartDashboard.putBoolean("NOTE TV", hasNoteTarget);
-    SmartDashboard.putNumber("NOTE TX", noteX);
-    SmartDashboard.putNumber("NOTE TY", noteY);
     if (updatePredictedPose) {
       ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
       updatePredictedPosition(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
