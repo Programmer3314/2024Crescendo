@@ -115,7 +115,7 @@ public class RobotContainer {
       // .withDriveRequestType(DriveRequestType.Velocity)
       .withSteerRequestType(SteerRequestType.MotionMagic)
       .withAngleSlewRate(Rotation2d.fromDegrees(180))
-      .withSpeedSlewRate(75, -100);
+      .withSpeedSlewRate(150, -450);
   SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   // Telemetry logger = new Telemetry(MaxSpeed);

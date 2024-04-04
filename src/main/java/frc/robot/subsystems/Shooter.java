@@ -92,7 +92,7 @@ public class Shooter extends SubsystemBase {
   double shooterAngleWooferSlam = .45;
   double leftShooterStageSideSlamVelocity = 37;
   double rightShooterStageSideSlamVelocity = 53;
-  double shooterAngleStageSideSlam = .3915;
+  double shooterAngleStageSideSlam = .395;//.3925
 
   int abortIntakeCounter;
 
@@ -127,7 +127,7 @@ public class Shooter extends SubsystemBase {
   double DiagnosticElevatorBeltVel = 10;
   double DiagnosticElevatorBeltMargin = 5;
   double autoShooterAngle;
-  double autoShotChange = 0;
+  double autoShotChange = .005;
   double autoShooterLeftVelocity;
   double autoShooterRightVelocity;
 
@@ -191,7 +191,7 @@ public class Shooter extends SubsystemBase {
 
   double elevatorInPerRev = 5.125 / 30;
   double elevatorDownPosition = .1;
-  double elevatorAmpPosition = 47.2;
+  double elevatorAmpPosition = 48;//47.2
   double elevatorTrapShootPosition = 46;
   double elevatorTrapPosition = 67.0;
 
@@ -257,8 +257,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .3875, 37, 53, 40));
-    determineShot.put("pony_3", new MMWaypoint(0, .385, 37, 53, 40));
+    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));//.3875
+    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));//.385
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
@@ -2336,7 +2336,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBeltShoot() {
-    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(60));
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(70));//60
   }
 
   public void stopElevator() {
