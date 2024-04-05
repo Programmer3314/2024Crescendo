@@ -92,7 +92,7 @@ public class Shooter extends SubsystemBase {
   double shooterAngleWooferSlam = .45;
   double leftShooterStageSideSlamVelocity = 37;
   double rightShooterStageSideSlamVelocity = 53;
-  double shooterAngleStageSideSlam = .395;//.3925
+  double shooterAngleStageSideSlam = .395;// .3925
 
   int abortIntakeCounter;
 
@@ -191,7 +191,7 @@ public class Shooter extends SubsystemBase {
 
   double elevatorInPerRev = 5.125 / 30;
   double elevatorDownPosition = .1;
-  double elevatorAmpPosition = 48;//47.2
+  double elevatorAmpPosition = 48;// 47.2
   double elevatorTrapShootPosition = 46;
   double elevatorTrapPosition = 67.0;
 
@@ -206,6 +206,7 @@ public class Shooter extends SubsystemBase {
   int indexCounter = 0;
   int reverseCounter = 0;
   int idleCounter = 0;
+  int breakBeamChangeCounter = 0;
 
   double index1OutVel = -30;
   double index2OutVel = index1OutVel;
@@ -249,6 +250,7 @@ public class Shooter extends SubsystemBase {
   HomingEnum elevatorHomingEnum;
   boolean transitioningHomeStates = false;
   int lightBeamCounter = 0;
+  boolean previousElevatorBreakBeam;
 
   /** Creates a new Shooter. */
   public Shooter(RobotContainer rc) {
@@ -257,14 +259,14 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));//.3875
-    determineShot.put("pony_3", new MMWaypoint(0, .39, 37, 53, 40));//.388
+    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));// .3875
+    determineShot.put("pony_3", new MMWaypoint(0, .39, 37, 53, 40));// .388
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
-    determineShot.put("thoroughbred_2", new MMWaypoint(0, .404, 37, 53, 40));
-    determineShot.put("thoroughbred_3", new MMWaypoint(0, .385, 37, 53, 40));
-    determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
+    determineShot.put("thoroughbred_2", new MMWaypoint(0, .40, 37, 53, 40));
+    determineShot.put("thoroughbred_3", new MMWaypoint(0, .3825, 37, 53, 40));
+    determineShot.put("thoroughbred_4", new MMWaypoint(0, .3825, 37, 53, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
@@ -319,6 +321,7 @@ public class Shooter extends SubsystemBase {
     autoShootLog = new BooleanLogEntry(log, "my/autoShooterCondition/shoot");
 
     // var status = orchestra.loadMusic("rickroll.chrp");
+    breakBeamChangeCounter = 0;
     // orchestra.addInstrument(rc.climber.climbMotor);
   }
 
@@ -451,6 +454,13 @@ public class Shooter extends SubsystemBase {
     }
     SmartDashboard.putBoolean("Shooter Beam", shooterBreakBeam.get());
     SmartDashboard.putString("State Machine State", getCurrentStateName());
+    if (elevatorBreakBeam.get() == previousElevatorBreakBeam) {
+      previousElevatorBreakBeam = elevatorBreakBeam.get();
+    } else {
+      breakBeamChangeCounter++;
+      previousElevatorBreakBeam = elevatorBreakBeam.get();
+    }
+    SmartDashboard.putNumber("Cycles Broken", breakBeamChangeCounter);
     SmartDashboard.putBoolean("Elevator Break Beam", elevatorBreakBeam.get());
     SmartDashboard.putBoolean("IntakeBreakbeam", intakeBreakBeam.get());
     boolean rts = readyToShoot();
@@ -2337,7 +2347,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBeltShoot() {
-    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(70));//60
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(70));// 60
   }
 
   public void stopElevator() {

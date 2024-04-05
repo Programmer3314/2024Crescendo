@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7352951848760846,
-        "y": 4.397837367103306
+        "x": 0.7358234536288891,
+        "y": 6.683920394867817
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.579230015602889,
-        "y": 1.363329583802025
+        "x": 1.4829275372836466,
+        "y": 6.919264124242535
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.892267498820712,
-        "y": 1.6418592837185677
+        "x": 1.845187834519813,
+        "y": 6.8595697551755475
       },
       "prevControl": {
-        "x": 5.221089299321457,
-        "y": 0.439783736710331
+        "x": 1.1415338557832846,
+        "y": 6.874229213065893
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "comp_wb_1"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.5,
+    "maxVelocity": 2.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 2.0,
-    "rotation": -151.92751306414704,
+    "velocity": 0.5,
+    "rotation": -167.2756443145778,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "PonyCompetition",
+  "folder": "ThoroughbredSkip",
   "previewStartingState": {
-    "rotation": 118.92642583525361,
+    "rotation": -120.57922687248896,
     "velocity": 0
   },
   "useDefaultConstraints": false
