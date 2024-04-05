@@ -13,6 +13,7 @@ import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
+import frc.robot.commands.ShootAndWaitForced;
 import frc.robot.commands.ShootAndWaitRegular;
 import frc.robot.commands.SitShootAndWait;
 import frc.robot.commands.SpinUpForAutoShot;
@@ -41,8 +42,10 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
         new FollowPathFile(rc, "comp_tb_1"),
-        // new Delay(rc, 50),
-        new ShootAndWaitRegular(rc),
+        new SpinUpForAutoShot(rc, "thoroughbred_2"),
+        new Delay(rc, 15, true),
+        new ShootAndWaitForced(rc),
+
         // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
         // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
         new FollowPathFile(rc, "comp_tb_2"),
@@ -51,13 +54,14 @@ public class Thoroughbred extends MMDeferredCommand<SequentialCommandGroup> {
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_tb_3"),
         new Delay(rc, 15, true),
-        new ShootAndWait(rc),
+        new ShootAndWaitForced(rc),
         new FollowPathFile(rc, "comp_tb_4"),
         new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "thoroughbred_4"),
         // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new FollowPathFile(rc, "comp_tb_5"),
-        new ShootAndWait(rc));
+        new Delay(rc, 15, true),
+        new ShootAndWaitForced(rc));
   }
 
   @Override

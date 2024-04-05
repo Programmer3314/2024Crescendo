@@ -258,12 +258,13 @@ public class Shooter extends SubsystemBase {
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));//.3875
-    determineShot.put("pony_3", new MMWaypoint(0, .388, 37, 53, 40));//.385
+    determineShot.put("pony_3", new MMWaypoint(0, .39, 37, 53, 40));//.388
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
-    determineShot.put("thoroughbred_3", new MMWaypoint(0, .378, 37, 53, 40));
-    determineShot.put("thoroughbred_4", new MMWaypoint(0, .378, 37, 53, 40));
+    determineShot.put("thoroughbred_2", new MMWaypoint(0, .404, 37, 53, 40));
+    determineShot.put("thoroughbred_3", new MMWaypoint(0, .385, 37, 53, 40));
+    determineShot.put("thoroughbred_4", new MMWaypoint(0, .385, 37, 53, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
