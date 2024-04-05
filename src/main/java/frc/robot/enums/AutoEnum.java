@@ -13,5 +13,6 @@ public enum AutoEnum {
     HorseshoeTwo,
     Pony,
     Thoroughbred,
+    ThoroughbredSkip,
     PeddiePony
 }
