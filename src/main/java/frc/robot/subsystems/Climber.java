@@ -42,13 +42,13 @@ public class Climber extends SubsystemBase {
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
   double climbAbsoluteBottom = .1;
-  double climbDownPosition = 0.015 + climbAbsoluteBottom;
+  double climbDownPosition = 0.02 + climbAbsoluteBottom;//.015
   double climbUpPosition = .235 + climbAbsoluteBottom;
   double climbEngaged = .227 + climbAbsoluteBottom;
   double climbSlowPos = .083 + climbAbsoluteBottom;//.145
   double elevatorSafety = .172 + climbAbsoluteBottom;//.203
   double climbPositionMargin = 0;
-  double emergencyStopClimber = .013 + climbAbsoluteBottom;
+  double emergencyStopClimber = .01 + climbAbsoluteBottom;
 
   int idleCounter = 0;
 
@@ -203,7 +203,7 @@ public class Climber extends SubsystemBase {
       @Override
       public MMStateMachineState calcNextState() {
         if (leftCanCoder.getAbsolutePosition().getValue() >= climbUpPosition
-            && rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
+            || rightCanCoder.getAbsolutePosition().getValue() >= climbUpPosition) {
           if (moveHooksUp) {
             return Idle;
           }

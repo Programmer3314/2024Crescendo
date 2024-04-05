@@ -259,8 +259,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .388, 37, 53, 40));// .3875
-    determineShot.put("pony_3", new MMWaypoint(0, .39, 37, 53, 40));// .388
+    determineShot.put("pony_2", new MMWaypoint(0, .383, 47, 63, 40));// .3875
+    determineShot.put("pony_3", new MMWaypoint(0, .383, 47, 63, 40));// .388
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
@@ -2331,11 +2331,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void runElevatorBottomBeltUpSlow() {
-    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(-20));
+    elevatorBottomBelt.setControl(elevatorVelVol.withVelocity(-15));
   }
 
   public void runElevatorTopBeltUpSlow() {
-    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(-20));
+    elevatorTopBelt.setControl(elevatorVelVol.withVelocity(-15));
   }
 
   public void runElevatorBottomBeltDownSlow() {

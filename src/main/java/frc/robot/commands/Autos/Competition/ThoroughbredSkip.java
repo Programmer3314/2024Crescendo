@@ -11,6 +11,8 @@ import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
 import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
+import frc.robot.commands.DriveForwardDist;
+import frc.robot.commands.DriveToNote;
 import frc.robot.commands.FollowPathFile;
 import frc.robot.commands.ShootAndWait;
 import frc.robot.commands.ShootAndWaitForced;
@@ -38,32 +40,23 @@ public class ThoroughbredSkip extends MMDeferredCommand<SequentialCommandGroup> 
             .setPipeLine(0, 0, 0),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new SitShootAndWait(rc),
-
-        
-        // new Reign(rc, new String[] { "comp_wb_1" }),
-        new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_tb_1"),
-        new SpinUpForAutoShot(rc, "thoroughbred_2"),
-        new Delay(rc, 15, true),
-        new ShootAndWaitForced(rc),
-
-        // new ReignChain(rc, "comp_wb_2", "comp_wb_3"),
-        // new ReignChain(rc, "comp_wb_4", "comp_wb_5")
-        new FollowPathFile(rc, "comp_tb_2"),
+        new FollowPathFile(rc, "comp_tbs_1"),
+        new DriveToNote(rc),
+        new DriveForwardDist(rc, 2, -2), // maybe extend l8r
+        new FollowPathFile(rc, "comp_tbs_2"),
         new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "thoroughbred_3"),
-        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_tb_3"),
+        new FollowPathFile(rc, "comp_tbs_3"),
         new Delay(rc, 15, true),
         new ShootAndWaitForced(rc),
-        new FollowPathFile(rc, "comp_tb_4"),
+        new FollowPathFile(rc, "comp_tbs_4"),
         new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "thoroughbred_4"),
-        // new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
-        new FollowPathFile(rc, "comp_tb_5"),
+        new FollowPathFile(rc, "comp_tbs_5"),
         new Delay(rc, 15, true),
-        new ShootAndWaitForced(rc));
+        new ShootAndWaitForced(rc),
+        new FollowPathFile(rc, "comp_tbs_6"),
+        new ChaseAndIntakeBroken(rc, true));
   }
 
   @Override

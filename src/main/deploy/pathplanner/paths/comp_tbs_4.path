@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7358234536288891,
-        "y": 6.683920394867817
+        "x": 4.634710983707682,
+        "y": 6.831307376900469
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.0408986583738933,
-        "y": 6.804101536131
+        "x": 5.29438781272593,
+        "y": 6.714038598720429
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.6880278805602655,
-        "y": 6.961261490090548
+        "x": 6.408505388439349,
+        "y": 6.406183098080483
       },
       "prevControl": {
-        "x": 1.3644632694670795,
-        "y": 6.887303864697819
+        "x": 5.7341703254835075,
+        "y": 6.6553938822163365
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,20 +32,20 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.5,
+    "maxVelocity": 3.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0.5,
-    "rotation": -167.2756443145778,
+    "velocity": 3.0,
+    "rotation": 172.40535663140872,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "ThoroughbredSkip",
   "previewStartingState": {
-    "rotation": -120.57922687248896,
+    "rotation": -170.30261950246756,
     "velocity": 0
   },
   "useDefaultConstraints": false
