@@ -1,0 +1,68 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.7358234536288891,
+        "y": 6.683920394867817
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.4682680793933023,
+        "y": 8.414528829057659
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.582386879059473,
+        "y": 7.68155593454044
+      },
+      "prevControl": {
+        "x": 2.2992657208899274,
+        "y": 7.68155593454044
+      },
+      "nextControl": {
+        "x": 2.9928516999891146,
+        "y": 7.68155593454044
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.364527014768315,
+        "y": 7.388366776733554
+      },
+      "prevControl": {
+        "x": 6.056678399071084,
+        "y": 7.417685692514242
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 2.5,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0.5,
+    "rotation": -167.2756443145778,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "ThoroughbredSkip",
+  "previewStartingState": {
+    "rotation": -120.57922687248896,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

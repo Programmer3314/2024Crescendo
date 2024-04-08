@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.66,
-        "y": 5.541275082550166
+        "x": 6.980224246162779,
+        "y": 6.186291229725318
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.039986937116732,
-        "y": 5.2187670089625895
+        "x": 6.188613520084184,
+        "y": 6.728691171668059
       },
       "isLocked": false,
-      "linkedName": "horseshoe1"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.802278747414638,
-        "y": 4.251242788199862
+        "x": 4.634710983707682,
+        "y": 6.831307376900469
       },
       "prevControl": {
-        "x": 2.0868240025348004,
-        "y": 4.978278840277905
+        "x": 5.47030008345731,
+        "y": 6.728691171668058
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "horseshoe2_2"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 150.0,
-    "rotateFast": true
+    "velocity": 0.0,
+    "rotation": -160.97439396243124,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "HorseShoe2Competition",
+  "folder": "ThoroughbredSkip",
   "previewStartingState": {
-    "rotation": 179.90470120919403,
+    "rotation": 151.260204708312,
     "velocity": 0
   },
   "useDefaultConstraints": false

@@ -267,8 +267,9 @@ public class Shooter extends SubsystemBase {
     determineShot.put("thoroughbred_2", new MMWaypoint(0, .40, 37, 53, 40));
     determineShot.put("thoroughbred_3", new MMWaypoint(0, .3825, 37, 53, 40));
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .3825, 37, 53, 40));
-    determineShot.put("thoroughbred_skip_3", new MMWaypoint(0, .385, 37, 53, 40));
-    determineShot.put("thoroughbred_skip_4", new MMWaypoint(0, .385, 37, 53, 40));
+    determineShot.put("thoroughbred_skip_3", new MMWaypoint(0, .3825, 37, 53, 40));
+    determineShot.put("thoroughbred_skip_4", new MMWaypoint(0, .3825, 37, 53, 40));
+   determineShot.put("thoroughbred_skip_pony_4", new MMWaypoint(0, .383, 47, 63, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));

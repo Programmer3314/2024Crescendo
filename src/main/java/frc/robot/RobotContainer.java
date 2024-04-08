@@ -60,6 +60,7 @@ import frc.robot.commands.Autos.Competition.PeddiePony;
 import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Competition.ThoroughbredSkip;
+import frc.robot.commands.Autos.Competition.ThoroughbredSkipPony;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.enums.AutoEnum;
 import frc.robot.generated.TunerConstants;
@@ -146,6 +147,7 @@ public class RobotContainer {
   public HorseShoeTwo horseShoeTwo; // = new HorseShoeTwo(this);
   public Thoroughbred thoroughbred; // = new Thoroughbred(this);
   public ThoroughbredSkip thoroughbredSkip;
+  public ThoroughbredSkipPony thoroughbredSkipPony;
   public PeddiePony peddiePony;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
@@ -273,6 +275,7 @@ public class RobotContainer {
     autoChooser.addOption("ArabianAuto-Comp", AutoEnum.Arabian);
     autoChooser.addOption("Thoroughbred-Comp", AutoEnum.Thoroughbred);
     autoChooser.addOption("ThoroughbredSkip-Comp", AutoEnum.ThoroughbredSkip);
+    autoChooser.addOption("ThoroughbredSkipPony-Comp", AutoEnum.ThoroughbredSkipPony);
     autoChooser.addOption("Horseshoe2-Comp", AutoEnum.HorseshoeTwo);
     autoChooser.addOption("Pony-Comp", AutoEnum.Pony);
     autoChooser.addOption("CrazyHorse-Comp", AutoEnum.CrazyHorse);
@@ -345,6 +348,8 @@ public class RobotContainer {
         return thoroughbred;
       case ThoroughbredSkip:
         return thoroughbredSkip;
+      case ThoroughbredSkipPony:
+        return thoroughbredSkipPony;
       case PeddiePony:
         return peddiePony;
       case none:

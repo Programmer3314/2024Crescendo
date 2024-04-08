@@ -29,11 +29,11 @@ import frc.robot.commands.Autos.StandardAutoInit;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ThoroughbredSkip extends MMDeferredCommand<SequentialCommandGroup> {
+public class ThoroughbredSkipPony extends MMDeferredCommand<SequentialCommandGroup> {
   RobotContainer rc;
 
   /** Creates a new TwoShotAuto. */
-  public ThoroughbredSkip(RobotContainer rc) {
+  public ThoroughbredSkipPony(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
     // Add your commands in the addCommands() call, e.g.
@@ -48,28 +48,24 @@ public class ThoroughbredSkip extends MMDeferredCommand<SequentialCommandGroup> 
         new FollowPathFile(rc, "comp_tbs_1"),
         new DriveToNote(rc),
         new DriveForwardDist(rc, 2, -2), // maybe extend l8r
-        new FollowPathFile(rc, "comp_tbs_2"),
+        new FollowPathFile(rc, "comp_tbsp_2"),
         new ChaseAndIntakeBroken(rc, true),
         // new SpinUpForAutoShot(rc, "thoroughbred_skip_3"),
         // new FollowPathFile(rc, "comp_tbs_3"),
         // new Delay(rc, 5, true),
         // new ShootAndWaitForced(rc),
         // new FollowPathFile(rc, "comp_tbs_4"),
-        Commands.select(Map.ofEntries(
-            Map.entry(true, new SequentialCommandGroup(
-                new SpinUpForAutoShot(rc, "thoroughbred_skip_3"),
-                new FollowPathFile(rc, "comp_tbs_3"),
-                new Delay(rc, 5, true),
-                new ShootAndWaitForced(rc),
-                new FollowPathFile(rc, "comp_tbs_4"))),
-            Map.entry(false, new FollowPathFile(rc, "lookforNote"))),
-            () -> rc.shooterSubsystem.getCurrentStateName() == "Index"),
+        new SpinUpForAutoShot(rc, "thoroughbred_skip_3"),
+        new FollowPathFile(rc, "comp_tbsp_3"),
+        new Delay(rc, 5, true),
+        new ShootAndWaitForced(rc),
+        new FollowPathFile(rc, "comp_tbsp_4"),
         new ChaseAndIntakeBroken(rc, true),
-        new SpinUpForAutoShot(rc, "thoroughbred_skip_4"),
-        new FollowPathFile(rc, "comp_tbs_5"),
+        new SpinUpForAutoShot(rc, "thoroughbred_skip_pony_4"),
+        new FollowPathFile(rc, "comp_tbsp_5"),
         new Delay(rc, 15, true),
         new ShootAndWaitForced(rc),
-        new FollowPathFile(rc, "comp_tbs_6"),
+        new FollowPathFile(rc, "comp_tbsp_6"),
         new ChaseAndIntakeBroken(rc, true));
   }
 

@@ -14,5 +14,6 @@ public enum AutoEnum {
     Pony,
     Thoroughbred,
     ThoroughbredSkip,
+    ThoroughbredSkipPony,
     PeddiePony
 }
