@@ -71,7 +71,7 @@ import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
-  public final double MaxSpeed = 6; // 6 meters per second desired top speed
+  public final double MaxSpeed = 5.212; // 6 meters per second desired top speed
   public final double MaxAngularRate = 2 * Math.PI; // a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
