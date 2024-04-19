@@ -52,6 +52,7 @@ import frc.robot.MMUtilities.MMStateMachine;
 import frc.robot.MMUtilities.MMStateMachineState;
 import frc.robot.MMUtilities.MMTurnPIDController;
 import frc.robot.MMUtilities.MMWaypoint;
+import frc.robot.commands.DynamicChuckAim;
 import frc.robot.commands.SetColor;
 import frc.robot.enums.HomingEnum;
 
@@ -62,17 +63,22 @@ public class Shooter extends SubsystemBase {
 
   private ShooterStateMachine ssm = new ShooterStateMachine();
   private MMTurnPIDController turnPidController = new MMTurnPIDController(true);
+  private MMTurnPIDController chuckPidController = new MMTurnPIDController(true);
   private MMTurnPIDController predictedTurnPIDController = new MMTurnPIDController(true);
   private MMTurnPIDController turnWallPidController = new MMTurnPIDController(true);
   public Rotation2d targetAngleSpeaker;
+  public Rotation2d targetAngleChuck;
   public Rotation2d predictedTargetAngleSpeaker;
   Rotation2d leftBoundaryAngleSpeaker;
   Rotation2d rightBoundaryAngleSpeaker;
   Pose2d speakerPose;
   Pose2d currentPose;
   double speakerTurnRate;
+  double chuckTurnRate;
   double predictedTurnRate = 0;
   double WallTurnRate;
+  double desiredLeftChuckVelocity;
+  double desiredRightChuckVelocity;
 
   public double shooterAngleMargin = .002;
   double shooterVelocityMargin = 2;
@@ -84,8 +90,8 @@ public class Shooter extends SubsystemBase {
   double leftShooterRidLowVelocity = 10;
   double rightShooterRidLowVelocity = 15;
   double shooterChuckLowRotation = .38;
-  double leftShooterChuckHighVelocity = 45;// 45, 15
-  double rightShooterChuckHighVelocity = 55;// 55, 25
+  double leftShooterChuckHighVelocity = 40;// 45, 15
+  double rightShooterChuckHighVelocity = 50;// 55, 25
   double shooterChuckHighRotation = .43;// .43
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
@@ -150,6 +156,7 @@ public class Shooter extends SubsystemBase {
   boolean intakeOverNote;
   boolean runBeam;
   boolean lightBeam;
+  boolean runDynamicChuck;
 
   double elevatorHomingVelocity = -20;
   boolean firstElevatorHomeCheck;
@@ -194,6 +201,8 @@ public class Shooter extends SubsystemBase {
   double elevatorAmpPosition = 48;// 47.2
   double elevatorTrapShootPosition = 46;
   double elevatorTrapPosition = 67.0;
+
+  double setPointChuck = 0;
 
   double shooterAngleDownPos = .38;
 
@@ -259,8 +268,8 @@ public class Shooter extends SubsystemBase {
     // sets up our targets for the auto shots
     determineShot.put("arabian_2", new MMWaypoint(0, .391, 37, 53, 40));
     determineShot.put("arabian_3", new MMWaypoint(0, .391, 37, 53, 40));
-    determineShot.put("pony_2", new MMWaypoint(0, .383, 47, 63, 40));// .3875
-    determineShot.put("pony_3", new MMWaypoint(0, .383, 47, 63, 40));// .388
+    determineShot.put("pony_2", new MMWaypoint(0, .378, 47, 63, 40));// .3875
+    determineShot.put("pony_3", new MMWaypoint(0, .378, 47, 63, 40));// .388
     determineShot.put("peddie_pony_2", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("peddie_pony_3", new MMWaypoint(0, .390, 37, 53, 40));
     determineShot.put("Horseshoe2_5", new MMWaypoint(0, .386, 37, 53, 40));
@@ -269,12 +278,17 @@ public class Shooter extends SubsystemBase {
     determineShot.put("thoroughbred_4", new MMWaypoint(0, .3825, 37, 53, 40));
     determineShot.put("thoroughbred_skip_3", new MMWaypoint(0, .3825, 37, 53, 40));
     determineShot.put("thoroughbred_skip_4", new MMWaypoint(0, .3825, 37, 53, 40));
-   determineShot.put("thoroughbred_skip_pony_4", new MMWaypoint(0, .383, 47, 63, 40));
+    determineShot.put("thoroughbred_skip_pony_4", new MMWaypoint(0, .383, 47, 63, 40));
     determineShot.put("crazyhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_2", new MMWaypoint(0, .406, 37, 53, 40));
     determineShot.put("crazyhorse_3", new MMWaypoint(0, .41, 37, 53, 40));
     determineShot.put("crazyhorse_4", new MMWaypoint(0, .404, 37, 53, 40));
     determineShot.put("crazyhorse_5", new MMWaypoint(0, .378, 47, 63, 55));
+    determineShot.put("warhorse_1", new MMWaypoint(0, .41, 37, 53, 40));
+    determineShot.put("warhorse_2", new MMWaypoint(0, .44, 37, 53, 40));
+    determineShot.put("warhorse_3", new MMWaypoint(0, .407, 37, 53, 40));
+    determineShot.put("trojan_center_2", new MMWaypoint(0, .3825, 37, 53, 40));
+    determineShot.put("trojan_center_3", new MMWaypoint(0, .3825, 37, 53, 40));
 
     firingSolution = new MMFiringSolution(
         rc,
@@ -326,10 +340,14 @@ public class Shooter extends SubsystemBase {
     // var status = orchestra.loadMusic("rickroll.chrp");
     breakBeamChangeCounter = 0;
     // orchestra.addInstrument(rc.climber.climbMotor);
+
+    SmartDashboard.putNumber("setPointChuckValue", setPointChuck);
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("leftSV", leftShooterChuckHighVelocity);
+    SmartDashboard.putNumber("rightSV", rightShooterChuckHighVelocity);
     // SmartDashboard.putNumber("Played Time", orchestra.getCurrentTime());
     // ChassisSpeeds chassisSpeeds = rc.drivetrain.getCurrentRobotChassisSpeeds();
 
@@ -339,15 +357,19 @@ public class Shooter extends SubsystemBase {
 
     calcFiringSolution();
     calcPredictedFiringSolution();
+    calcChuckFiringSolution();
 
     // calcPredictedFiringSolution();
     speakerPose = MMField.currentSpeakerPose();
     currentPose = rc.drivetrain.getState().Pose;
 
     Translation2d transformFromSpeaker = speakerPose.getTranslation().minus(currentPose.getTranslation());
+    Translation2d transformFromChuckPosition = MMField.getCurrentDesiredChuckPose().getTranslation()
+        .minus(currentPose.getTranslation());
 
     // predictedTargetAngleSpeaker =
     targetAngleSpeaker = transformFromSpeaker.getAngle();
+    targetAngleChuck = transformFromChuckPosition.getAngle();
 
     Translation2d transformLeftBoundarySpeaker = MMField.currentLeftBoundaryPose().getTranslation()
         .minus(currentPose.getTranslation());
@@ -416,7 +438,11 @@ public class Shooter extends SubsystemBase {
 
     turnPidController.initialize(targetAngleSpeaker);
 
+    chuckPidController.initialize(targetAngleChuck);
+
     speakerTurnRate = turnPidController.execute(currentPose.getRotation());
+    chuckTurnRate = chuckPidController.execute(currentPose.getRotation());
+
     if (Navigation.predictedPose != null) {
       Translation2d predictedTransformFromSpeaker = speakerPose.getTranslation()
           .minus(Navigation.predictedPose.getTranslation());
@@ -468,6 +494,11 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("IntakeBreakbeam", intakeBreakBeam.get());
     boolean rts = readyToShoot();
     boolean rtb = isReadyToBeam();
+    setPointChuck = SmartDashboard.getNumber("setPointChuckValue", setPointChuck);
+
+    SmartDashboard.putNumber("DistanceToTarget", rc.navigation.getDistanceToSpeaker());
+    SmartDashboard.putNumber("returnedSetPointChuckValue", setPointChuck);
+    SmartDashboard.putBoolean("ChuckBoolean", runDynamicChuck);
   }
 
   public class ShooterStateMachine extends MMStateMachine {
@@ -504,6 +535,7 @@ public class Shooter extends SubsystemBase {
         rc.navigation.setUpdatePredictedPose(true);
         setAutoStartForceAngle(false);
         setReadyToAutoShoot(false);
+        setDynamicChuckFlag(false);
         setRunBeam(false);
         setIntakeUp();
         stopIndexers();
@@ -742,7 +774,11 @@ public class Shooter extends SubsystemBase {
     MMStateMachineState PrepareToChuckHigh = new MMStateMachineState("PrepareToChuckHigh") {
       @Override
       public void transitionTo(MMStateMachineState previousState) {
+ 
         // aimToWall();
+        leftShooterChuckHighVelocity = desiredLeftChuckVelocity;
+        rightShooterChuckHighVelocity = desiredRightChuckVelocity;
+
         aimForChuckHigh();
         blowerRelay.set(Value.kForward);
       }
@@ -1596,6 +1632,10 @@ public class Shooter extends SubsystemBase {
     return speakerTurnRate;
   }
 
+  public double getChuckTurnRate() {
+    return chuckTurnRate;
+  }
+
   public double getPredictedSpeakerTurnRate() {
     return predictedTurnRate;
   }
@@ -1717,6 +1757,34 @@ public class Shooter extends SubsystemBase {
   public void calcFiringSolution() {
     double distanceToSpeaker = rc.navigation.getDistanceToSpeaker();
     desiredWaypoint = firingSolution.calcSolution(distanceToSpeaker);
+  }
+
+  public void calcChuckFiringSolution() {
+    double distanceToChuckPosition = rc.navigation.getDistanceToChuckPosition();
+    double minDistance = 8;
+    double maxDistance = 13;
+    double minValue = 30;
+    double maxValue = 45;
+
+    double scale = (distanceToChuckPosition - minDistance) / (maxDistance -
+        minDistance);
+    double newValue = (maxValue - minValue) * scale + minValue;
+
+
+    if (newValue < minValue) {
+      newValue = minValue;
+    }
+    if (newValue > maxValue) {
+      newValue = maxValue;
+    }
+    desiredLeftChuckVelocity = 10 + newValue;
+    desiredRightChuckVelocity = newValue;
+
+    SmartDashboard.putNumber("DistanceToChuck", distanceToChuckPosition);
+    
+    SmartDashboard.putNumber("NewValue", newValue);
+    // desiredLeftChuckVelocity = setPointChuck;
+    // desiredRightChuckVelocity = 10 + setPointChuck;
   }
 
   public void calcPredictedFiringSolution() {
@@ -2006,6 +2074,37 @@ public class Shooter extends SubsystemBase {
     // something custom.
     boolean bingo = isInMargin(c.getY(),
         MMField.blueSpeakerPose.getTranslation().getY(), .3)// .3556
+        && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
+    SmartDashboard.putBoolean("bingo", bingo);
+    atTargetAngleLog.append(bingo);
+
+    return leftShooterAtVelocity
+        && rightShooterAtVelocity
+        && shooterAtAngle
+        && (bingo || autoStartForceAngle);
+  }
+
+  public boolean readyToDynamicChuck() {
+    boolean leftShooterAtVelocity = isInMargin(leftMotor.getVelocity().getValue(), leftShooterChuckHighVelocity,
+        shooterVelocityMargin);
+    boolean rightShooterAtVelocity = isInMargin(rightMotor.getVelocity().getValue(), rightShooterChuckHighVelocity,
+        shooterVelocityMargin);
+    boolean shooterAtAngle = isInMargin(shooterRotateMotor.getPosition().getValue(), shooterChuckHighRotation,
+        shooterAngleMargin);
+
+    SmartDashboard.putBoolean("at velocity left", leftShooterAtVelocity);
+    SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
+    SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
+
+    Pose2d a = currentPose;
+    currentPosePublisher.set(a);
+    Transform2d b = new Transform2d(new Translation2d(rc.navigation.getDistanceToChuckPosition(), 0), new Rotation2d());
+    Translation2d c = MMField.getBlueTranslation(a.plus(b).getTranslation());
+
+    // TODO: Reveiw the following change to bingo to handle NOT resetting angle to
+    // something custom.
+    boolean bingo = isInMargin(c.getY(),
+        MMField.desiredChuckPosition.getTranslation().getY(), .3)// .3556
         && Math.abs(Robot.allianceSpeakerRotation.minus(currentPose.getRotation()).getDegrees()) < 90;
     SmartDashboard.putBoolean("bingo", bingo);
     atTargetAngleLog.append(bingo);
@@ -2311,6 +2410,10 @@ public class Shooter extends SubsystemBase {
 
   public void runElevatorUpHome() {
     elevatorMotor.setControl(elevatorVoltageOut.withOutput(2));
+  }
+
+  public void setDynamicChuckFlag(boolean set) {
+    runDynamicChuck = set;
   }
 
   public void setElevatorZero() {

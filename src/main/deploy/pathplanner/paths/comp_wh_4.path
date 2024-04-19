@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.487794571295762,
-        "y": 4.038562638842631
+        "x": 1.86729904765713,
+        "y": 5.228102907010823
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.298254303127568,
-        "y": 4.435076061565362
+        "x": 1.9994701885647073,
+        "y": 5.007817672164862
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.10501716888943703,
-        "y": 7.0050704681015805
+        "x": 2.63,
+        "y": 4.2147908267194
       },
       "prevControl": {
-        "x": 1.1477006138269887,
-        "y": 6.726042503963363
+        "x": 2.013201342431307,
+        "y": 4.449761743888426
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "comp_wh_4"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": 147.65255650055795,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "WarHorse",
   "previewStartingState": {
-    "rotation": 159.775140568821,
+    "rotation": 180.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

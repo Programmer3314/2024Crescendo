@@ -456,6 +456,14 @@ public class Navigation extends SubsystemBase {
     return distance;
   }
 
+  public double getDistanceToChuckPosition(){
+    Pose2d currentPose = rc.drivetrain.getState().Pose;
+    Translation2d target = MMField.getCurrentDesiredChuckPose().getTranslation();
+    double distance = currentPose.getTranslation().minus(target).getNorm();
+
+    return distance;
+  }
+
   public void setAutoVisionOn(boolean isUpdate) {
     autoVisionOn = isUpdate;
   }

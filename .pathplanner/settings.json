@@ -7,11 +7,13 @@
     "CrazyHorse",
     "HorseShoe2Competition",
     "HorseShoeCompetition",
-    "ThoroughbredSkip",
+    "CenterTrojan",
     "PeddiePony",
     "PonyCompetition",
     "StageSideStart",
-    "ThoroughbredCompetition"
+    "ThoroughbredCompetition",
+    "ThoroughbredSkip",
+    "WarHorse"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,

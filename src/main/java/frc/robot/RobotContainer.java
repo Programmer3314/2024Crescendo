@@ -36,6 +36,7 @@ import frc.robot.commands.AngledDriveToChain;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.ClawsUpAndIndex;
+import frc.robot.commands.DynamicChuckAim;
 import frc.robot.commands.FullChuckLow;
 import frc.robot.commands.FullClimb;
 import frc.robot.commands.GoAmp;
@@ -61,6 +62,8 @@ import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Competition.ThoroughbredSkip;
 import frc.robot.commands.Autos.Competition.ThoroughbredSkipPony;
+import frc.robot.commands.Autos.Competition.TrojanCenter;
+import frc.robot.commands.Autos.Competition.WarHorse;
 import frc.robot.commands.Autos.Warehouse.FourNoteAuto;
 import frc.robot.enums.AutoEnum;
 import frc.robot.generated.TunerConstants;
@@ -148,7 +151,8 @@ public class RobotContainer {
   public Thoroughbred thoroughbred; // = new Thoroughbred(this);
   public ThoroughbredSkip thoroughbredSkip;
   public ThoroughbredSkipPony thoroughbredSkipPony;
-  public PeddiePony peddiePony;
+  public WarHorse warHorse;
+  public TrojanCenter trojanCenter;
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private void configureBindings() {
@@ -245,12 +249,12 @@ public class RobotContainer {
         MMField.getBlueStageSpeakerSidePose()));
     oppController.povRight().whileTrue(new GoClimb(this,
         MMField.getBlueStageNonSpeakerSidePose()));
-    oppController.povDown().whileTrue(new LaserBeam(this));
+    // oppController.povDown().whileTrue(new LaserBeam(this));
+    oppController.povDown().whileTrue(new DynamicChuckAim(this));
     oppController.leftBumper().whileTrue(new AimToWall(this));
     oppController.button(10)
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
             new InstantCommand(() -> climber.resetStateMachine())));
-
   }
 
   public RobotContainer() {
@@ -279,7 +283,8 @@ public class RobotContainer {
     autoChooser.addOption("Horseshoe2-Comp", AutoEnum.HorseshoeTwo);
     autoChooser.addOption("Pony-Comp", AutoEnum.Pony);
     autoChooser.addOption("CrazyHorse-Comp", AutoEnum.CrazyHorse);
-    autoChooser.addOption("PeddiePony-Comp", AutoEnum.PeddiePony);
+    autoChooser.addOption("WarHorse-Comp", AutoEnum.WarHorse);
+    autoChooser.addOption("TrojanCenter-Comp", AutoEnum.TrojanCenter);
 
     // autoChooser.addOption("FourNoteAuto", new badAuto(this));
 
@@ -350,8 +355,10 @@ public class RobotContainer {
         return thoroughbredSkip;
       case ThoroughbredSkipPony:
         return thoroughbredSkipPony;
-      case PeddiePony:
-        return peddiePony;
+      case WarHorse:
+        return warHorse;
+      case TrojanCenter:
+        return trojanCenter;
       case none:
       default:
         return Commands.none();

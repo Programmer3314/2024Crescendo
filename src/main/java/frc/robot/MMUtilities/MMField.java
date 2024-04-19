@@ -17,16 +17,21 @@ import frc.robot.Robot;
 public class MMField {
   static Pose2d leftBoundarySpeaker = new Pose2d(0, 5.5 - .356, new Rotation2d());
   static Pose2d rightBoundarySpeaker = new Pose2d(0, 5.5 + .356, new Rotation2d());
+
+  public static Pose2d desiredChuckPosition = new Pose2d(0, 7, new Rotation2d());
+
   public static double fieldX = 16.54;
   public static double fieldY = 8.23;
-  private static Pose2d speakerStageTagPose = new Pose2d(4.641, 4.508, Rotation2d.fromDegrees(120));// x: fieldX/2 - 3.629, y:
-                                                                                              // fieldY
+  private static Pose2d speakerStageTagPose = new Pose2d(4.641, 4.508, Rotation2d.fromDegrees(120));// x: fieldX/2 -
+                                                                                                    // 3.629, y:
+  // fieldY
   // + .393
-  private static Pose2d nonSpeakerStageTagPose = new Pose2d(4.641, 3.722, Rotation2d.fromDegrees(-120));// x: fieldX/2 - 3.63
-                                                                                                  // y:
+  private static Pose2d nonSpeakerStageTagPose = new Pose2d(4.641, 3.722, Rotation2d.fromDegrees(-120));// x: fieldX/2 -
+                                                                                                        // 3.63
+  // y:
   // fieldY/2-.392
   private static Pose2d fieldStageTagPose = new Pose2d(5.32, 4.05, Rotation2d.fromDegrees(0));// x:fieldx/2 -2.95, y:
-                                                                                          // fieldy/2
+  // fieldy/2
 
   private static Transform2d distanceToStage = new Transform2d(1.5, 0, Rotation2d.fromDegrees(0));
 
@@ -57,6 +62,13 @@ public class MMField {
     return pose;
   }
 
+  public static Rotation2d getCurrentChuckRotation(){
+    if (Robot.alliance.equals(DriverStation.Alliance.Red)) {
+      return redChuckRotation;
+    }
+    return blueChuckRotation;
+  }
+
   public static Pose2d blueSpeakerPose = new Pose2d(new Translation2d(0, 5.55), new Rotation2d());
 
   public static Pose2d currentSpeakerPose() {
@@ -72,6 +84,18 @@ public class MMField {
 
   private static Pose2d blueWooferNonHumanPlayerPose = new Pose2d(0.74, 4.29, Rotation2d.fromDegrees(120));// -120
 
+  private static Rotation2d blueChuckRotation = Rotation2d.fromDegrees(170);
+
+  private static Rotation2d redChuckRotation = Rotation2d.fromDegrees(10);
+
+  public static Rotation2d getRedChuckRotation() {
+    return redChuckRotation;
+  }
+
+  public static Rotation2d getBlueChuckRotation() {
+    return blueChuckRotation;
+  }
+
   public static Pose2d getBlueWooferPose() {
     return blueWooferPose;
   }
@@ -80,7 +104,7 @@ public class MMField {
     return blueWooferHumanPlayerPose;
   }
 
-  public static Pose2d getPeddiePonyPose(){
+  public static Pose2d getPeddiePonyPose() {
     return peddiePonyPose;
   }
 
@@ -88,8 +112,12 @@ public class MMField {
     return getBluePose(blueWooferHumanPlayerPose);
   }
 
-  public static Pose2d getCurrentPeddiePonyPose(){
+  public static Pose2d getCurrentPeddiePonyPose() {
     return getBluePose(peddiePonyPose);
+  }
+
+  public static Pose2d getCurrentDesiredChuckPose() {
+    return getBluePose(desiredChuckPosition);
   }
 
   public static Pose2d getBlueWooferNonHumanPlayerPose() {

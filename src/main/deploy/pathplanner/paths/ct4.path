@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.487794571295762,
-        "y": 4.038562638842631
+        "x": 6.243632379930235,
+        "y": 3.9210771802581177
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.298254303127568,
-        "y": 4.435076061565362
+        "x": 5.50934826377703,
+        "y": 4.258847873688592
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.10501716888943703,
-        "y": 7.0050704681015805
+        "x": 4.158265490055131,
+        "y": 5.007817672164862
       },
       "prevControl": {
-        "x": 1.1477006138269887,
-        "y": 6.726042503963363
+        "x": 4.731007100654631,
+        "y": 4.581932884796002
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "ctshot"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 1.0,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": 167.0053832080835,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "CenterTrojan",
   "previewStartingState": {
-    "rotation": 159.775140568821,
+    "rotation": 156.0375110254219,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

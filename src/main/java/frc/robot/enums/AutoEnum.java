@@ -15,5 +15,6 @@ public enum AutoEnum {
     Thoroughbred,
     ThoroughbredSkip,
     ThoroughbredSkipPony,
-    PeddiePony
+    WarHorse,
+    TrojanCenter
 }

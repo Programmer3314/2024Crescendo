@@ -26,6 +26,8 @@ import frc.robot.commands.Autos.Competition.Pony;
 import frc.robot.commands.Autos.Competition.Thoroughbred;
 import frc.robot.commands.Autos.Competition.ThoroughbredSkip;
 import frc.robot.commands.Autos.Competition.ThoroughbredSkipPony;
+import frc.robot.commands.Autos.Competition.TrojanCenter;
+import frc.robot.commands.Autos.Competition.WarHorse;
 import frc.robot.subsystems.Navigation;
 
 public class Robot extends TimedRobot {
@@ -94,7 +96,8 @@ public class Robot extends TimedRobot {
         m_robotContainer.thoroughbred = new Thoroughbred(m_robotContainer);
         m_robotContainer.thoroughbredSkip = new ThoroughbredSkip(m_robotContainer);
         m_robotContainer.thoroughbredSkipPony = new ThoroughbredSkipPony(m_robotContainer);
-        m_robotContainer.peddiePony = new PeddiePony(m_robotContainer);
+        m_robotContainer.warHorse = new WarHorse(m_robotContainer);
+        m_robotContainer.trojanCenter = new TrojanCenter(m_robotContainer);
         SmartDashboard.putBoolean("AutosConfigured", true);
         SmartDashboard.putString("alliance", alliance.toString());
       }
