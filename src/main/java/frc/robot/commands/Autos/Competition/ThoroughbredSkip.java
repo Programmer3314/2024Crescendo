@@ -54,16 +54,17 @@ public class ThoroughbredSkip extends MMDeferredCommand<SequentialCommandGroup> 
         // new FollowPathFile(rc, "comp_tbs_3"),
         // new Delay(rc, 5, true),
         // new ShootAndWaitForced(rc),
-        // new FollowPathFile(rc, "comp_tbs_4"),
-        Commands.select(Map.ofEntries(
-            Map.entry(true, new SequentialCommandGroup(
-                new SpinUpForAutoShot(rc, "thoroughbred_skip_3"),
-                new FollowPathFile(rc, "comp_tbs_3"),
-                new Delay(rc, 5, true),
-                new ShootAndWaitForced(rc),
-                new FollowPathFile(rc, "comp_tbs_4"))),
-            Map.entry(false, new FollowPathFile(rc, "lookforNote"))),
-            () -> rc.shooterSubsystem.getCurrentStateName() == "Index"),
+        // // new FollowPathFile(rc, "comp_tbs_4"),
+        // Commands.select(Map.ofEntries(
+        // Map.entry(true, new SequentialCommandGroup(
+        new SpinUpForAutoShot(rc, "thoroughbred_skip_3"),
+        new FollowPathFile(rc, "comp_tbs_3"),
+        new Delay(rc, 5, true),
+        new ShootAndWaitForced(rc),
+        new FollowPathFile(rc, "comp_tbs_4"),
+        // )),
+        // Map.entry(false, new FollowPathFile(rc, "lookforNote"))),
+        // () -> !rc.shooterSubsystem.getShooterBreakBeam()),
         new ChaseAndIntakeBroken(rc, true),
         new SpinUpForAutoShot(rc, "thoroughbred_skip_4"),
         new FollowPathFile(rc, "comp_tbs_5"),

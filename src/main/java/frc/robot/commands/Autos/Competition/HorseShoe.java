@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.MMUtilities.MMDeferredCommand;
 import frc.robot.MMUtilities.MMField;
+import frc.robot.commands.ChaseAndIntakeBroken;
 import frc.robot.commands.Delay;
 import frc.robot.commands.DriveForwardDistBroken;
 import frc.robot.commands.FollowPathFile;
@@ -38,8 +39,9 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        new FollowPathFile(rc, "comp_hs_1"),
-        new DriveForwardDistBroken(rc, .5, -1),
+        // new FollowPathFile(rc, "comp_hs_1"),
+        // new DriveForwardDistBroken(rc, .5, -1),
+        new ChaseAndIntakeBroken(rc),
 
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
