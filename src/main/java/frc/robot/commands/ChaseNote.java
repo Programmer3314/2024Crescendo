@@ -17,8 +17,8 @@ public class ChaseNote extends Command {
   MMPIDController yPIDController;
   // double targetX = 233;
   // double targetY = 308;
-  double targetX = 300;
-  double targetY = 391;
+  double targetX = 200;//300
+  double targetY = 391;//391
 
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
 
@@ -30,7 +30,6 @@ public class ChaseNote extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rc.shooterSubsystem.setIntakeFlag(true);
     rotationPIDController = new MMPIDController(1.0 / 150, 0, 0, 3.0 / 2.0, 10, false);
     rotationPIDController.initialize(targetX);
     yPIDController = new MMPIDController(1.0 / 100, 0, 0, 3.0 / 2.0, 10, false);

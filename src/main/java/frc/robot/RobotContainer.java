@@ -35,6 +35,8 @@ import frc.robot.commands.AimToWall;
 import frc.robot.commands.AngledDriveToChain;
 import frc.robot.commands.ChaseAndIntake;
 import frc.robot.commands.ChaseAndIntakeBroken;
+import frc.robot.commands.ChaseNote;
+import frc.robot.commands.ChaseNoteBroken;
 import frc.robot.commands.ClawsUpAndIndex;
 import frc.robot.commands.DynamicChuckAim;
 import frc.robot.commands.FullChuckLow;
@@ -205,12 +207,15 @@ public class RobotContainer {
     driverController.povRight().whileTrue(new RobotCentricDriveCmd(this));
     driverController.povLeft().whileTrue(new AngledDriveToChain(this));
 
-    driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this, true));
+    // driverController.rightBumper().whileTrue(new ChaseAndIntakeBroken(this,
+    // true));
+    driverController.rightBumper().onTrue(new InstantCommand(
+        () -> drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(0)))));
     // driverController.rightTrigger().onTrue(new InstantCommand(() ->
     // shooterSubsystem.setChuckLowFlag(true)));
     driverController.leftTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckLowFlag(true)));
     driverController.rightTrigger().onTrue(new InstantCommand(() -> shooterSubsystem.setChuckHighFlag(true)));
-    driverController.leftBumper().onTrue(new SignalForNote(this));
+    driverController.leftBumper().whileTrue(new ChaseNoteBroken(this));
 
     // Trigger aimTrigger = new Trigger(() -> shooterSubsystem.getCurrentStateName()
     // == "ElevatorIndexed");

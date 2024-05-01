@@ -85,13 +85,13 @@ public class Shooter extends SubsystemBase {
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .24;
   double elevatorPositionMargin = 1;
-  double leftShooterChuckLowVelocity = 30;
-  double rightShooterChuckLowVelocity = 40;
+  double leftShooterChuckLowVelocity = 20; //30
+  double rightShooterChuckLowVelocity = 25; //40
   double leftShooterRidLowVelocity = 10;
   double rightShooterRidLowVelocity = 15;
   double shooterChuckLowRotation = .38;
-  double leftShooterChuckHighVelocity = 40;// 45, 15
-  double rightShooterChuckHighVelocity = 50;// 55, 25
+  double leftShooterChuckHighVelocity = 5; //40
+  double rightShooterChuckHighVelocity = 10; //50
   double shooterChuckHighRotation = .43;// .43
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
@@ -1763,8 +1763,8 @@ public class Shooter extends SubsystemBase {
     double distanceToChuckPosition = rc.navigation.getDistanceToChuckPosition();
     double minDistance = 8;
     double maxDistance = 13;
-    double minValue = 30;
-    double maxValue = 45;
+    double minValue = 20; //30
+    double maxValue = 25; //45
 
     double scale = (distanceToChuckPosition - minDistance) / (maxDistance -
         minDistance);
@@ -1777,7 +1777,7 @@ public class Shooter extends SubsystemBase {
     if (newValue > maxValue) {
       newValue = maxValue;
     }
-    desiredLeftChuckVelocity = 10 + newValue;
+    desiredLeftChuckVelocity = 5 + newValue; //10
     desiredRightChuckVelocity = newValue;
 
     SmartDashboard.putNumber("DistanceToChuck", distanceToChuckPosition);

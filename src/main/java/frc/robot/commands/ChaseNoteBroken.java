@@ -18,7 +18,7 @@ public class ChaseNoteBroken extends Command {
   // double targetX = 233;
   // double targetY = 308;
   double targetX = 0;
-  double targetY = 0;
+  double targetY = 10;
   int cyclesWithoutNote;
   SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric();
   boolean hasHadNote;
@@ -26,7 +26,7 @@ public class ChaseNoteBroken extends Command {
   public ChaseNoteBroken(RobotContainer rc) {
     this.rc = rc;
     addRequirements(rc.drivetrain);
-    rotationPIDController = new MMPIDController(.15, 0, 0.005, 3.0 / 2.0, 0.25, false);
+    rotationPIDController = new MMPIDController(.05, 0, 0, 3.0 / 2.0, 0.5, false);
   }
 
   public ChaseNoteBroken(RobotContainer rc, boolean noteBelowThreshold) {
@@ -39,9 +39,9 @@ public class ChaseNoteBroken extends Command {
   @Override
   public void initialize() {
     cyclesWithoutNote = 0;
-    rc.shooterSubsystem.setIntakeFlag(true);
+    // rc.shooterSubsystem.setIntakeFlag(true);TODO: BABY MODE
     rotationPIDController.initialize(targetX);
-    yPIDController = new MMPIDController(1.0 / 5, 0, 0, 3.0 / 2.0, 0.25, false);// 100
+    yPIDController = new MMPIDController(1.0 / 10, 0, 0, 3.0 / 2.0, 0.25, false);// 100
     yPIDController.initialize(targetY);
     hasHadNote = false;
   }
@@ -58,6 +58,11 @@ public class ChaseNoteBroken extends Command {
     double driveRotationVelocity = rotationPIDController.execute(rc.navigation.getNoteX());
     double driveYVelocity = yPIDController.execute(rc.navigation.getNoteY());
 
+    if (Math.abs(rc.navigation.getNoteY() - targetY) < 5
+        && Math.abs(rc.navigation.getNoteX() - targetX) < 5) {
+      driveRotationVelocity = 0;
+      driveYVelocity = 0;
+    }
     SmartDashboard.putNumber("drive X VEL", driveRotationVelocity);
     rc.drivetrain.setControl(drive
         .withVelocityX(driveYVelocity)
@@ -76,9 +81,10 @@ public class ChaseNoteBroken extends Command {
 
     ChaseAndIntakeBroken.abortDrive = !hasHadNote;
 
-    return (Math.abs(rc.navigation.getNoteY() - targetY) < 15
-        && Math.abs(rc.navigation.getNoteX() - targetX) < 15)
-        || !rc.shooterSubsystem.getIntakeBreakbeam()
-        || cyclesWithoutNote > 15;
+    // return (Math.abs(rc.navigation.getNoteY() - targetY) < 15
+    // && Math.abs(rc.navigation.getNoteX() - targetX) < 15);
+    // // || !rc.shooterSubsystem.getIntakeBreakbeam()
+    // // || cyclesWithoutNote > 15;BABYMODE
+    return false;
   }
 }
