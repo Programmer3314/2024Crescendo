@@ -74,7 +74,7 @@ import frc.robot.subsystems.Navigation;
 import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
-  public final double MaxSpeed = 5.212; // 6 meters per second desired top speed
+  public final double MaxSpeed = 5.212*3; // 6 meters per second desired top speed
   public final double MaxAngularRate = 2 * Math.PI; // a rotation per second max angular velocity
 
   public final Field2d field = new Field2d();
@@ -101,7 +101,7 @@ public class RobotContainer {
 
   // Controllers
   public MMController driverController = new MMController(0)
-      .setDeadzone(.1 / 2)
+      .setDeadzone(.1 / 4)//.1/2
       .setScaleXLeft(-MaxSpeed)
       .setScaleYLeft(-MaxSpeed)
       .setScaleXRight(-MaxAngularRate);
@@ -161,7 +161,7 @@ public class RobotContainer {
         drivetrain.applyRequest(() -> driveControlled// drive
             .withVelocityX(driverController.getLeftYSmoothed() * Robot.resetDriverValue)
             .withVelocityY(driverController.getLeftXSmoothed() * Robot.resetDriverValue)
-            .withRotationalRate(driverController.getRightXSmoothed())));
+            .withRotationalRate(driverController.getRightXSmoothed())));//TODO: Changed
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -250,7 +250,9 @@ public class RobotContainer {
     oppController.povRight().whileTrue(new GoClimb(this,
         MMField.getBlueStageNonSpeakerSidePose()));
     // oppController.povDown().whileTrue(new LaserBeam(this));
-    oppController.povDown().whileTrue(new DynamicChuckAim(this));
+     oppController.povDown()
+        .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),
+            new InstantCommand(() -> climber.resetStateMachine())));
     oppController.leftBumper().whileTrue(new AimToWall(this));
     oppController.button(10)
         .onTrue(new ParallelCommandGroup(new InstantCommand(() -> shooterSubsystem.resetStateMachine()),

@@ -2034,6 +2034,10 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putBoolean("at velocity right", rightShooterAtVelocity);
     SmartDashboard.putBoolean("at Shooter angle", shooterAtAngle);
 
+     SmartDashboard.putBoolean("at slam left", leftShooterAtVelocity);
+    SmartDashboard.putBoolean("at slam right", rightShooterAtVelocity);
+    SmartDashboard.putBoolean("at slam angle", shooterAtAngle);
+
     // Try using the Pose and a transform to project your position forward by your
     // distance to the target.
     // If the resulting point (translation) is within the width of the speaker,

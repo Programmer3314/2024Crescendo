@@ -39,9 +39,9 @@ public class HorseShoe extends MMDeferredCommand<SequentialCommandGroup> {
         // new Reign(rc, new String[] { "comp_hs_1", "comp_hs_2", "comp_hs_3" })
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),
         new InstantCommand(() -> rc.shooterSubsystem.setIntakeFlag(true)),
-        // new FollowPathFile(rc, "comp_hs_1"),
+        // new FollowPathFile(rc, "comp_hs_1"),//urepl
         // new DriveForwardDistBroken(rc, .5, -1),
-        new ChaseAndIntakeBroken(rc),
+        new ChaseAndIntakeBroken(rc), //repl
 
         new ShootAndWait(rc),
         new InstantCommand(() -> rc.shooterSubsystem.setAimFlag(true)),

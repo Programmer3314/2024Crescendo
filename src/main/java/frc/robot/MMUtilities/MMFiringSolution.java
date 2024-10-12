@@ -71,7 +71,7 @@ public class MMFiringSolution {
         // .16 radians
         // .458 encoder value
         // .385 encoder value
-        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .3125;// +.315
+        double shootAngle = Math.atan2((speakerHeight - pivotHeight), distance) / (2 * Math.PI) + .305;// +.3125 THIS IS THE LINE TO CHANGE THE OFFSET
         shootAngle += manualChangeAngle;
         if (shootAngle > .458) {
             shootAngle = .458;
