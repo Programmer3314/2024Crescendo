@@ -81,18 +81,18 @@ public class Shooter extends SubsystemBase {
   double desiredRightChuckVelocity;
 
   public double shooterAngleMargin = .002;
-  double shooterVelocityMargin = 2;
+  double shooterVelocityMargin = 5;
   double intakeVelocityMargin = 20;
   double intakeRotationMargin = .24;
   double elevatorPositionMargin = 1;
-  double leftShooterChuckLowVelocity = 20; //30
-  double rightShooterChuckLowVelocity = 25; //40
+  double leftShooterChuckLowVelocity = 20; //30 , 20
+  double rightShooterChuckLowVelocity = 25; //40 , 25
   double leftShooterRidLowVelocity = 10;
   double rightShooterRidLowVelocity = 15;
-  double shooterChuckLowRotation = .38;
+  double shooterChuckLowRotation = .4;
   double leftShooterChuckHighVelocity = 5; //40
   double rightShooterChuckHighVelocity = 10; //50
-  double shooterChuckHighRotation = .43;// .43
+  double shooterChuckHighRotation = .4;// .43
   double leftShooterWooferSlamVelocity = 35;
   double rightShooterWooferSlamVelocity = 45;
   double shooterAngleWooferSlam = .45;

@@ -2,10 +2,10 @@ package frc.robot.generated;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstantsFactory;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.ClosedLoopOutputType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants.SteerFeedbackType;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstantsFactory;
 
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -92,7 +92,7 @@ public class TunerConstants {
     private static final int kFrontLeftDriveMotorId = 1;
     private static final int kFrontLeftSteerMotorId = 2;
     private static final int kFrontLeftEncoderId = 1;
-    private static final double kFrontLeftEncoderOffset = -0.19287109375;
+    private static final double kFrontLeftEncoderOffset = 0.312255859375 ;
 
     private static double driveRadius = 23.5/2.0;
 
@@ -103,7 +103,7 @@ public class TunerConstants {
     private static final int kFrontRightDriveMotorId = 3;
     private static final int kFrontRightSteerMotorId = 4;
     private static final int kFrontRightEncoderId = 2;
-    private static final double kFrontRightEncoderOffset = 0.025390625;
+    private static final double kFrontRightEncoderOffset = -0.46728515625;
 
      
 
@@ -112,10 +112,10 @@ public class TunerConstants {
 
   
     // Back Left
-    private static final int kBackLeftDriveMotorId = 8;
-    private static final int kBackLeftSteerMotorId = 7;
+    private static final int kBackLeftDriveMotorId = 7;
+    private static final int kBackLeftSteerMotorId = 8;
     private static final int kBackLeftEncoderId = 4;
-    private static final double kBackLeftEncoderOffset = -0.3017578125;
+    private static final double kBackLeftEncoderOffset = 0.27392578125;//0.406982421875;
 
     private static final double kBackLeftXPosInches = -driveRadius;//-15
     private static final double kBackLeftYPosInches = driveRadius;//15
@@ -124,7 +124,7 @@ public class TunerConstants {
     private static final int kBackRightDriveMotorId = 5;
     private static final int kBackRightSteerMotorId = 6;
     private static final int kBackRightEncoderId = 3;
-    private static final double kBackRightEncoderOffset = -0.320068359375;
+    private static final double kBackRightEncoderOffset = 0.406982421875;//0.27392578125;
 
     private static final double kBackRightXPosInches = -driveRadius;//-15
     private static final double kBackRightYPosInches = -driveRadius;//-15
